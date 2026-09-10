@@ -1,0 +1,11 @@
+{
+  "reviewed": "2026-09-10",
+  "roi_wire_contract_confirmed": false,
+  "source_sha256": {
+    "services/ocr_pipeline_paddle/main.py": "6c38df0d226ff6a72f61fbbde1d629b2328728229e4af3bab5b2fdbef6189d31",
+    "services/gateway/main.py": "c071d7787432ce1b43fa153ec79fcbebfb2096765b9d6c49c02a52c42c84d8e4",
+    "shared/api.py": "5a6a327d4f4149a25e27d6699eaca3e5d0cd934016960a673610c4ed48787084",
+    "shared/upstream.py": "a8c8799efbdfa591c9a570ce645246e744c974a97464557cd80ce5fdfa244400"
+  },
+  "finding": "Paddle predict reads only three detection parameters and passes image.path to model.predict; no selected ROI handling."
+}

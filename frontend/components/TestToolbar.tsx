@@ -1,0 +1,7 @@
+import { t } from "@/lib/i18n/th";
+import { Crop, Loader2, Play, RotateCcw, Save } from "lucide-react";
+import DocumentUploader from "./DocumentUploader";
+
+export default function TestToolbar({ onUpload, onReset, onRegion, onRun, onRunAll, onSave, busy, hasDocument, regionMode, canRun, canRunAll }: { onUpload: (file: File) => void; onReset: () => void; onRegion: () => void; onRun: () => void; onRunAll: () => void; onSave: () => void; busy: string | null; hasDocument: boolean; regionMode: boolean; canRun: boolean; canRunAll: boolean }) {
+  return <div className="panel workspace-toolbar"><DocumentUploader onUpload={onUpload} disabled={!!busy} /><button className="button ghost" disabled={!!busy || !hasDocument} onClick={onReset}><RotateCcw size={13} />{t("Reset")}</button><span className="toolbar-divider" /><button className={`button ${regionMode ? "active" : "secondary"}`} disabled={!!busy || !hasDocument} onClick={onRegion}><Crop size={13} />{t("Create test region")}</button><div className="toolbar-end"><button className="button secondary" disabled={!!busy || !hasDocument} onClick={onSave}><Save size={13} />{t("Save test case")}</button><button className="button secondary" disabled={!!busy || !hasDocument || !canRun} onClick={onRun}>{t("Run selected")}</button><button className="button primary" disabled={!!busy || !hasDocument || !canRunAll} onClick={onRunAll}>{busy === t("Running pipelines") ? <Loader2 size={13} className="busy-spinner" /> : <Play size={13} fill="currentColor" />}{t("Run all pipelines")}</button></div></div>;
+}

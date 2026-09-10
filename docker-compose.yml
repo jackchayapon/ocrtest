@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ocr_benchmark
+      POSTGRES_USER: ocr
+      POSTGRES_PASSWORD: ocr_local_dev
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ocr -d ocr_benchmark"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://ocr:ocr_local_dev@postgres:5432/ocr_benchmark}
+      MODEL_GATEWAY_BASE_URL: ${MODEL_GATEWAY_BASE_URL:-http://107.129.186.30:62051}
+      MODEL_GATEWAY_API_KEY: ${MODEL_GATEWAY_API_KEY:-}
+      MODEL_GATEWAY_TIMEOUT_SECONDS: ${MODEL_GATEWAY_TIMEOUT_SECONDS:-240}
+      STORAGE_MODE: local
+      STORAGE_PATH: /app/storage/uploads
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-20}
+      MAX_IMAGE_PIXELS: ${MAX_IMAGE_PIXELS:-40000000}
+      MAX_IMAGE_DIMENSION: ${MAX_IMAGE_DIMENSION:-20000}
+      PDF_RENDER_DPI: ${PDF_RENDER_DPI:-200}
+      MAX_PDF_PAGES: ${MAX_PDF_PAGES:-500}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+    volumes:
+      - uploads:/app/storage/uploads
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=5)"]
+      interval: 10s
+      timeout: 6s
+      retries: 10
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  uploads:

@@ -1,0 +1,145 @@
+import { expect, test } from "@playwright/test";
+import path from "node:path";
+import { t } from "../lib/i18n/th";
+import type { Document, RunResponse } from "../types";
+
+const backend = process.env.E2E_API_URL || "http://127.0.0.1:8000";
+
+test("Thai multi-page PDF: choose page two, ROI, two upstream results and unresolved Full contract, save and reopen", async ({ page, request }) => {
+  const errors: string[] = [];
+  page.on("pageerror", error => errors.push(error.message));
+  for (const id of ["mint", "hutch_crop", "hutch_full"]) {
+    expect((await request.put(`${backend}/api/pipelines/${id}`, { data: { enabled: true } })).ok()).toBeTruthy();
+  }
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("lang", "th");
+  await expect(page.getByRole("heading", { name: t("OCR Testing & Benchmark"), exact: true })).toBeVisible();
+  const uploadResponse = page.waitForResponse(response => response.url().endsWith("/api/documents") && response.request().method() === "POST");
+  await page.locator('input[type="file"]').first().setInputFiles(path.resolve("tests/fixtures/two-pages.pdf"));
+  const document: Document = await (await uploadResponse).json();
+  expect(document.page_count).toBe(2);
+  const navigation = page.getByRole("navigation", { name: t("PDF page navigation") });
+  await expect(navigation).toContainText("2 หน้า");
+  await expect(page.getByLabel(t("Select PDF page"))).toHaveValue("1");
+  await expect(page.getByLabel(t("Previous page"))).toBeDisabled();
+  await expect(page.getByTestId("document-viewer")).toBeVisible();
+  await expect(page.getByTestId("document-viewer").getByText(t("Loading document…"), { exact: true })).toBeHidden();
+  await expect(page.getByTestId("pdf-page-indicator")).toHaveText("หน้า 1 จาก 2");
+  await page.getByLabel(t("What should the document say?"), { exact: true }).fill("ข้อความที่ยังไม่บันทึกของหน้าแรก");
+  await page.getByRole("button", { name: t("Draw test region"), exact: true }).click();
+  const firstCanvas = page.getByTestId("document-viewer").locator(".konvajs-content");
+  await firstCanvas.scrollIntoViewIfNeeded();
+  const firstFrame = (await firstCanvas.boundingBox())!;
+  const firstScale = Math.min((firstFrame.width - 64) / document.width, (firstFrame.height - 64) / document.height, 1);
+  const firstX = firstFrame.x + (firstFrame.width - document.width * firstScale) / 2;
+  const firstY = firstFrame.y + (firstFrame.height - document.height * firstScale) / 2;
+  await page.mouse.move(firstX + 100 * firstScale, firstY + 100 * firstScale);
+  await page.mouse.down();
+  await page.mouse.move(firstX + 500 * firstScale, firstY + 400 * firstScale, { steps: 8 });
+  await page.mouse.up();
+  await expect(page.getByAltText(t("Selected test region crop"))).toBeVisible();
+  const pageResponse = page.waitForResponse(response => response.url().includes(`/${document.id}?page_number=2`));
+  await page.getByRole("button", { name: t("Next page"), exact: true }).click();
+  const selected: Document = await (await pageResponse).json();
+  await expect(page.getByLabel(t("Select PDF page"))).toHaveValue("2");
+  await expect(page.getByTestId("pdf-page-indicator")).toHaveText("หน้า 2 จาก 2");
+  await expect(page.getByLabel(t("What should the document say?"), { exact: true })).toHaveValue("");
+  await expect(page.getByAltText(t("Selected test region crop"))).toHaveCount(0);
+  await expect(page.getByLabel(t("Next page"))).toBeDisabled();
+  await expect(page.getByText(t("Loading document…"), { exact: true })).toBeHidden();
+  expect(selected.width).not.toBe(document.width);
+  await page.getByRole("button", { name: t("Draw test region"), exact: true }).click();
+  const viewer = page.getByTestId("document-viewer");
+  await viewer.locator(".konvajs-content").scrollIntoViewIfNeeded();
+  const frame = (await viewer.locator(".konvajs-content").boundingBox())!;
+  const scale = Math.min((frame.width - 64) / selected.width, (frame.height - 64) / selected.height, 1);
+  const x = frame.x + (frame.width - selected.width * scale) / 2;
+  const y = frame.y + (frame.height - selected.height * scale) / 2;
+  await page.mouse.move(x + 100 * scale, y + 250 * scale);
+  await page.mouse.down();
+  await page.mouse.move(x + 800 * scale, y + 850 * scale, { steps: 10 });
+  await page.mouse.up();
+  await expect(page.getByAltText(t("Selected test region crop"))).toBeVisible();
+  await page.getByLabel(t("What should the document say?"), { exact: true }).fill("บริษัท ซีดีจี จำกัด");
+  await page.getByRole("button", { name: "ข้อความภาษาไทย", exact: true }).click();
+  const runResponse = page.waitForResponse(response => response.url().endsWith("/run") && response.request().method() === "POST");
+  await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
+  const result: RunResponse = await (await runResponse).json();
+  expect(result.runs).toHaveLength(3);
+  expect(result.runs.map(run => run.status)).toEqual(["success", "success", "error"]);
+  expect(result.runs[2].error_code).toBe("ROI_CONTRACT_UNCONFIRMED");
+  expect(result.runs[2].input_width).toBe(selected.width);
+  expect(result.runs[2].input_height).toBe(selected.height);
+  expect(result.runs.slice(0, 2).every(run => run.metrics?.cer != null && run.metrics?.wer != null)).toBeTruthy();
+  expect(new Set(result.runs.slice(0, 2).map(run => run.crop_sha256)).size).toBe(1);
+  await page.getByRole("button", { name: t("Confirm ground truth"), exact: true }).click();
+  await expect(page.getByText(t("CONFIRMED"), { exact: true })).toBeVisible();
+  await page.goto("/history");
+  const row = page.locator("tr").filter({ has: page.locator(`a[href="/test/${result.test_case_id}"]`).first() });
+  await expect(row).toContainText("two-pages.pdf");
+  await expect(row).toContainText("หน้า 2 / 2");
+  await row.locator("a").first().click();
+  await expect(page.getByRole("heading", { name: t("Test case detail"), exact: true })).toBeVisible();
+  await expect(page.getByLabel(t("Select PDF page"))).toHaveValue("2");
+  await expect(page.getByLabel(t("What should the document say?"), { exact: true })).toHaveValue("บริษัท ซีดีจี จำกัด");
+  await expect(page.getByTestId("result-text-mint")).toBeVisible();
+  await page.getByTestId("technical-details").locator("summary").first().click();
+  await expect(page.getByText("SAME INPUT", { exact: true })).toBeVisible();
+  await page.screenshot({ path: "test-results/pdf-page-two-thai.png", fullPage: true });
+  await page.getByRole("button", { name: t("Previous page"), exact: true }).click();
+  await expect(page.getByTestId("pdf-page-indicator")).toHaveText("หน้า 1 จาก 2");
+  await expect(page.getByTestId("result-text-mint")).toHaveCount(0);
+  await expect(page.getByAltText(t("Selected test region crop"))).toHaveCount(0);
+  await expect(page.getByLabel(t("What should the document say?"), { exact: true })).toHaveValue("");
+  const saved = await (await request.get(`${backend}/api/test-cases/${result.test_case_id}`)).json();
+  expect(saved.page_number).toBe(2);
+  expect(saved.document.image_url).toContain("/pages/2/image");
+  const cropResponse = await request.get(`${backend}${saved.document.image_url}`);
+  expect(cropResponse.headers()["content-type"]).toContain("image/png");
+  for (const route of ["/matrix", "/analytics/categories"]) {
+    await page.goto(route);
+    await expect(page.locator("main h1")).toBeVisible();
+    await expect(page.locator("main").getByRole("alert")).toHaveCount(0);
+  }
+  expect(errors).toEqual([]);
+});
+
+test("Thai PDF error and browser upload-size validation", async ({ page }) => {
+  await page.route("**/api/upload-config", route => route.fulfill({ json: { max_upload_mb: 1, pdf_render_dpi: 200 } }));
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: t("Upload document"), exact: true })).toBeEnabled();
+  await page.locator('input[type="file"]').first().setInputFiles({ name: "broken.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-broken") });
+  await expect(page.locator("main").getByRole("alert")).toContainText("ไม่สามารถเปิดไฟล์ PDF นี้ได้ กรุณาตรวจสอบว่าไฟล์ไม่เสียหาย");
+  await page.locator('input[type="file"]').first().setInputFiles({ name: "large.pdf", mimeType: "application/pdf", buffer: Buffer.alloc(1024 * 1024 + 1) });
+  await expect(page.locator("main").getByRole("alert")).toContainText("ไฟล์มีขนาดใหญ่เกินกำหนด");
+  await page.locator('input[type="file"]').first().setInputFiles({ name: "file.txt", mimeType: "text/plain", buffer: Buffer.from("not a document image") });
+  await expect(page.locator("main").getByRole("alert")).toContainText("ไม่รองรับไฟล์ประเภทนี้ กรุณาเลือก PDF, PNG หรือ JPG");
+});
+
+for (const width of [1440, 1024, 768]) {
+  test(`Thai PDF workspace remains usable at ${width}px`, async ({ page, request }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    const fs = await import("node:fs");
+    const document = await (await request.post(`${backend}/api/documents`, { multipart: { file: { name: "responsive.pdf", mimeType: "application/pdf", buffer: fs.readFileSync(path.resolve("tests/fixtures/two-pages.pdf")) } } })).json();
+    const saved = await (await request.post(`${backend}/api/test-cases`, { data: { document_id: document.id, page_number: 2, roi: { x1: 100, y1: 200, x2: 900, y2: 700 }, ground_truth_raw: "บริษัท ซีดีจี จำกัด" } })).json();
+    await request.post(`${backend}/api/test-cases/${saved.id}/run`, { data: { pipelines: ["mint", "hutch_crop", "hutch_full"] } });
+    await page.goto(`/test/${saved.id}`);
+    await expect(page.getByTestId("pdf-page-indicator")).toHaveText("หน้า 2 จาก 2");
+    await expect(page.getByTestId("result-text-mint")).toBeVisible();
+    await expect(page.getByTestId("document-viewer")).toBeVisible();
+    await expect(page.getByTestId("document-viewer").getByText(t("Loading document…"), { exact: true })).toBeHidden();
+    await expect(page.getByTestId("document-viewer").locator(".konvajs-content")).toBeVisible();
+    await expect.poll(() => page.getByAltText(t("Selected test region crop")).evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    const clippedButtons = await page.locator("main button").evaluateAll(buttons => buttons.filter(button => button.getBoundingClientRect().width > 0 && button.scrollWidth > button.clientWidth + 2).map(button => button.textContent));
+    expect(clippedButtons).toEqual([]);
+    const details = page.getByTestId("technical-details");
+    await expect(details).not.toHaveAttribute("open", "");
+    await details.locator("summary").first().click();
+    await expect(page.getByText("SAME INPUT", { exact: true })).toBeVisible();
+    await details.locator("summary").first().click();
+    await expect(page.getByText("SAME INPUT", { exact: true })).toBeHidden();
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.screenshot({ path: `test-results/thai-pdf-${width}.png`, fullPage: true });
+  });
+}
