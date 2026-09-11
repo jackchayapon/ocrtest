@@ -129,6 +129,7 @@ def config_json(record, settings=None):
     )
     return {
         **{key: getattr(record, key) for key in keys},
+        "base_url": settings.model_gateway_base_url if settings else record.base_url,
         "api_key_configured": bool(settings.api_key(record.pipeline_id)) if settings else False,
         "created_at": timestamp(record.created_at),
         "updated_at": timestamp(record.updated_at),

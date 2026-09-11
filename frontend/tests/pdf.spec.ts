@@ -5,7 +5,7 @@ import type { Document, RunResponse } from "../types";
 
 const backend = process.env.E2E_API_URL || "http://127.0.0.1:8000";
 
-test("Thai multi-page PDF: choose page two, ROI, two upstream results and unresolved Full contract, save and reopen", async ({ page, request }) => {
+test("Thai multi-page PDF: choose page two, ROI, three upstream results including full image, save and reopen", async ({ page, request }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   for (const id of ["mint", "hutch_crop", "hutch_full"]) {
@@ -66,8 +66,8 @@ test("Thai multi-page PDF: choose page two, ROI, two upstream results and unreso
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const result: RunResponse = await (await runResponse).json();
   expect(result.runs).toHaveLength(3);
-  expect(result.runs.map(run => run.status)).toEqual(["success", "success", "error"]);
-  expect(result.runs[2].error_code).toBe("ROI_CONTRACT_UNCONFIRMED");
+  expect(result.runs.map(run => run.status)).toEqual(["success", "success", "success"]);
+  expect(result.runs[2].status).toBe("success");
   expect(result.runs[2].input_width).toBe(selected.width);
   expect(result.runs[2].input_height).toBe(selected.height);
   expect(result.runs.slice(0, 2).every(run => run.metrics?.cer != null && run.metrics?.wer != null)).toBeTruthy();

@@ -70,12 +70,12 @@ TestCase มี document_id, document, page_number, roi, ground_truth_raw/normal
 | confidence, boxes | ค่าจริงที่ upstream มี ไม่มีค่าจะเป็น null/ไม่มี geometry |
 | original_width/height, roi | ขนาดภาพต้นฉบับ/selected page และ ROI |
 | input_width/height/sha256, input_byte_size/format | ภาพที่ adapter เตรียม; ไม่รับประกันว่าส่งสำเร็จ |
-| crop_width/height/sha256, crop_stage | Mint/Crop ใช้ app_crop; Full crop fields null และ external_hutch |
+| crop_width/height/sha256, crop_stage | Mint/Crop ใช้ app_crop; Full crop fields null และ full_image |
 | processing_time_ms, gateway_duration_ms | เวลาภายใน adapter และเวลาที่ Gateway รายงานแยกกัน |
 | request_id, gateway_request_id | ID ของเราและ upstream ไม่สร้าง upstream ID ให้ local error |
 | detector_model, recognizer_model, gateway_service/model, model_info | tracing ของโมเดลและบริการ |
 | raw_response | envelope หลัง redact ข้อมูลลับและภาพฝัง ไม่ใช่ unrestricted dump |
-| error_code/message | ข้อผิดพลาดปลอดภัย เช่น MISSING_GATEWAY_KEY หรือ ROI_CONTRACT_UNCONFIRMED |
+| error_code/message | ข้อผิดพลาดปลอดภัย เช่น MISSING_GATEWAY_KEY หรือ GATEWAY_UNAVAILABLE |
 
 Box มี bbox/polygon ในพิกัดเอกสาร, crop_bbox/crop_polygon ในพิกัด crop, text, det_confidence/rec_confidence/confidence สำหรับ Mint/Crop offset ด้วย ROI origin ส่วน geometry contract ของ Hutch Full ต้องยืนยันจากบริการก่อนใช้งานจริง
 

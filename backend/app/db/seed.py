@@ -32,7 +32,7 @@ def seed_database(session, settings: Settings):
         dict(
             pipeline_id="mint",
             name="Mint Custom",
-            base_url=settings.mint_gateway_base_url or settings.model_gateway_base_url,
+            base_url=settings.model_gateway_base_url,
             endpoint=settings.mint_ocr_endpoint,
             engine="custom",
             query_params={"engine": "custom"},
@@ -40,7 +40,7 @@ def seed_database(session, settings: Settings):
         dict(
             pipeline_id="hutch_crop",
             name="Hutch Crop",
-            base_url=settings.hutch_gateway_base_url or settings.model_gateway_base_url,
+            base_url=settings.model_gateway_base_url,
             endpoint=settings.hutch_crop_endpoint,
             engine="paddle",
             query_params={"engine": "paddle"},
@@ -48,7 +48,7 @@ def seed_database(session, settings: Settings):
         dict(
             pipeline_id="hutch_full",
             name="Hutch Full",
-            base_url=settings.hutch_full_base_url or settings.model_gateway_base_url,
+            base_url=settings.model_gateway_base_url,
             endpoint=settings.hutch_full_endpoint or "/api/v1/ocr-results",
             engine="paddle",
             query_params={"engine": "paddle"},

@@ -10,9 +10,9 @@ Next.js/TypeScript/Tailwind/react-konva → FastAPI → Model Gateway ส่ว�
 | --- | --- |
 | Mint | App Crop → `/api/v1/ocr-results?engine=custom` → PP-OCRv5_server_det → ตัดกรอบข้อความในบริการภายนอก → th_PP-OCRv5_mobile_rec |
 | Hutch Crop | App Crop → `/api/v1/ocr-results?engine=paddle` → PP-OCRv6_medium_det + th_PP-OCRv5_mobile_rec |
-| Hutch Full | ภาพเต็ม/หน้า PDF เต็ม + ROI → adapter ที่ **ไม่ crop ในแอป** → รอสัญญา HTTP ของ external Hutch-side ROI handling |
+| Hutch Full | ภาพเต็ม/หน้า PDF เต็ม → Paddle `engine=paddle` โดยไม่ใช้ ROI และไม่ crop |
 
-Mint/Hutch Crop ใช้ PNG ชุดเดียวกัน ค่า Hutch คงที่ `text_det_unclip_ratio=1.7`, `text_det_thresh=0.25`, `text_det_box_thresh=0.6` ปลายทางที่ตั้งใจใช้สำหรับ Hutch Full คือ Paddle เดียวกัน แต่ source ที่ตรวจไม่ยืนยันรูปแบบส่ง ROI จึงคืน `ROI_CONTRACT_UNCONFIRMED` และไม่ส่ง HTTP ที่เดารูปแบบขึ้นมา
+Mint/Hutch Crop ใช้ PNG ชุดเดียวกัน ทั้งสอง Hutch ใช้ Paddle endpoint เดียวกัน พร้อม `text_det_unclip_ratio=1.7`, `text_det_thresh=0.25`, `text_det_box_thresh=0.6` เจ้าของ Pipeline ยืนยันว่า Hutch Full ส่งภาพเต็มเท่านั้น ไม่มี ROI
 
 Auto ROI ใช้ `/api/v1/document-layouts` เพื่อเสนอกรอบให้ผู้ใช้เลือกเท่านั้น ไม่ใช่ Pipeline ที่สี่ ไม่มีโหมดสร้าง OCR จำลองในผลิตภัณฑ์ เมื่อไม่มี API Key จะคืนข้อผิดพลาดชัดเจน
 
@@ -34,7 +34,7 @@ cd ..
 docker compose -p ocr-benchmark up -d postgres
 ```
 
-ตั้ง `DATABASE_URL` ใน `.env` เป็น Neon connection string โดยคง `sslmode=require` หรือปล่อยว่างเพื่อใช้ PostgreSQL local ที่ Compose เตรียมให้ ห้ามใช้ฐาน production เป็น `TEST_DATABASE_URL` กรอก Gateway key จริงใน `MODEL_GATEWAY_API_KEY` เฉพาะเมื่อได้รับจากผู้ดูแลบริการ
+ตั้ง `DATABASE_URL` ใน `.env` เป็น Neon connection string โดยคง `sslmode=require` หรือปล่อยว่างเพื่อใช้ PostgreSQL local ที่ Compose เตรียมให้ ห้ามใช้ฐาน production เป็น `TEST_DATABASE_URL` กรอก Gateway key จริงใน `MODEL_GATEWAY_API_KEY` เฉพาะใน `.env` ส่วนตัว ทั้ง 3 Pipeline และ Auto ROI ใช้ key ตัวนี้ร่วมกัน แนะนำรูปแบบ `MODEL_GATEWAY_API_KEY=your_real_gateway_key` ไม่เว้นวรรครอบ `=` และไม่จำเป็นต้องใส่เครื่องหมายคำพูดสำหรับ token ทั่วไป คง key ใน `.env.example` ว่างไว้ ดู [ตัวอย่างและกติกาเครื่องหมายคำพูด](docs/deployment.md#environment)
 
 เปิด backend:
 
@@ -94,7 +94,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1 -Brows
 - ROI อ้างอิงพิกเซลของภาพ/หน้าที่เลือก ขอบขวาและล่างเป็น exclusive ไม่ resize หรือ enhance โดยเงียบ ๆ
 - Ground Truth แยกจาก prediction; NFC, trim และรวม whitespace เท่านั้น CER เป็นหลักสำหรับภาษาไทย WER ปัจจุบันแบ่งคำด้วย whitespace
 - migration `0004_real_inputs` เก็บผลสังเคราะห์เก่าไว้แต่ไม่แสดง/รวมสถิติ ไม่ลบเอกสารหรือข้อความย้อนหลัง ผล Hutch Full เก่าที่เคยใช้ภาพ crop ไม่รวมในสถิติของนิยามใหม่
-- Live OCR ยังต้องใช้ key และบริการที่พร้อมใช้งาน Hutch Full ยังต้องยืนยัน ROI wire contract เพิ่มเติม
+- key ปัจจุบันผ่าน authenticated readiness HTTP 200 และทดสอบ OCR จริงด้วยภาพสังเคราะห์สำเร็จครบทั้งสาม Pipeline ดู docs/validation.md
 - ไม่มี login ใน MVP ใช้บนเครื่อง/เครือข่ายที่เชื่อถือได้หรือภายใต้ระบบควบคุมการเข้าถึงขององค์กร
 
 อ่านต่อ: [API](docs/api.md) · [Flow](docs/flow.md) · [Architecture](docs/architecture.md) · [Gateway](docs/model-gateway.md) · [ผลตรวจสอบ](docs/validation.md)

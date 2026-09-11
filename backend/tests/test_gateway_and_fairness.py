@@ -7,6 +7,7 @@ from hashlib import sha256
 import httpx
 import pytest
 from PIL import Image
+from pydantic import SecretStr
 
 from app.db.models import PipelineConfig
 from app.integrations.model_gateway import GatewayError, ModelGatewayClient
@@ -165,7 +166,8 @@ def test_full_rejects_prebuilt_crop(settings, png):
 
 
 def test_no_key_means_no_auth_header(settings, png):
-    client = ModelGatewayClient(settings, api_key="")
+    settings.model_gateway_api_key = SecretStr("")
+    client = ModelGatewayClient(settings)
     request = client.build_request(
         png=png, endpoint="/ocr", query_params={}, fields={}, request_id="id"
     )

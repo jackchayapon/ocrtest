@@ -89,15 +89,18 @@ def test_pdf_page_roi_persistence_and_three_real_adapter_contracts(client, gatew
     runs = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": pipelines}).json()[
         "runs"
     ]
-    assert [r["status"] for r in runs] == ["success", "success", "error"]
+    assert [r["status"] for r in runs] == ["success", "success", "success"]
     assert runs[2]["input_width"] == 1200
-    assert runs[2]["error_code"] == "ROI_CONTRACT_UNCONFIRMED"
+    assert runs[2]["status"] == "success"
     assert runs[2]["input_sha256"] == sha256(client.get(f"/api/documents/{doc['id']}/pages/2/image").content).hexdigest()
     inputs = [multipart(request)["image"] for request in calls]
     assert inputs[0] == inputs[1]
+    assert inputs[2] != inputs[0]
+    assert inputs[2] == client.get(f"/api/documents/{doc['id']}/pages/2/image").content
+    assert runs[2]["roi"] is None
     assert {r["crop_sha256"] for r in runs[:2]} == {sha256(inputs[0]).hexdigest()}
     assert {r["crop_width"] for r in runs[:2]} == {100}
-    assert [r["crop_stage"] for r in runs] == ["app_crop", "app_crop", "external_hutch"]
+    assert [r["crop_stage"] for r in runs] == ["app_crop", "app_crop", "full_image"]
     crop = client.get(f"/api/documents/{doc['id']}/crop", params={**roi, "page_number": 2})
     assert crop.content == inputs[0]
     for request in calls[1:]:

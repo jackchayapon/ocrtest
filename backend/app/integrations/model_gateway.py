@@ -57,14 +57,12 @@ def safe_response(value, secrets=()):
 
 
 class ModelGatewayClient:
-    def __init__(self, settings: Settings, base_url: str | None = None, api_key: str | None = None):
+    def __init__(self, settings: Settings):
         self.settings = settings
         self.base_url = (
-            base_url if base_url is not None else settings.model_gateway_base_url
+            settings.model_gateway_base_url
         ).rstrip("/")
-        self.key = (
-            api_key if api_key is not None else settings.model_gateway_api_key.get_secret_value()
-        )
+        self.key = settings.model_gateway_api_key.get_secret_value()
 
     def _client(self, timeout=None):
         return httpx.AsyncClient(
@@ -78,17 +76,6 @@ class ModelGatewayClient:
         if self.key:
             headers["Authorization"] = f"Bearer {self.key}"
         return headers
-
-    def build_full_roi_request(self, *, source, endpoint, query_params, fields, request_id):
-        """Integration boundary only: inspected upstream does not consume logical ROI.
-
-        Implement serialization here only after a verified external ROI contract exists.
-        Arbitrary multipart fields accepted by the gateway are not proof of ROI support.
-        """
-        raise GatewayError(
-            "ยังไม่ยืนยันรูปแบบส่ง ROI ให้ Hutch Full จึงยังเรียกบริการนี้ไม่ได้",
-            "ROI_CONTRACT_UNCONFIRMED",
-        )
 
     def build_request(
         self,
@@ -197,7 +184,7 @@ class ModelGatewayClient:
             "gateway": "unavailable",
             "mint": "unknown",
             "hutch_crop": "unknown",
-            "hutch_full": "contract_unconfirmed",
+            "hutch_full": "unknown",
             "auto_roi": "unknown",
             "api_key_configured": bool(self.key),
         }
@@ -227,7 +214,7 @@ class ModelGatewayClient:
                             services.extend(detail.get("services", []))
                 names = {
                     "ocr-custom": ("mint",),
-                    "ocr-paddle": ("hutch_crop",),
+                    "ocr-paddle": ("hutch_crop", "hutch_full"),
                     "layout": ("auto_roi",),
                 }
                 for service in services:

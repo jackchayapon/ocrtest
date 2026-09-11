@@ -4,6 +4,7 @@ node_modules/
 __pycache__/
 .pytest_cache/
 .pytest_tmp/
+.pytest_*/
 .pytest_e2e/
 .ruff_cache/
 *.pyc
@@ -37,3 +38,4 @@ test-results/
 .runtime/
 .docker-local/
 .npm-cache/
+.vercel/

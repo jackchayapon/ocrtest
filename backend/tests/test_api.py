@@ -90,12 +90,12 @@ def test_roi_validation(client, document, roi):
 
 def test_http_fixture_workflow_and_metrics_update(client, case):
     runs = run(client, case)
-    assert [item["status"] for item in runs] == ["success", "success", "error"]
-    assert runs[2]["error_code"] == "ROI_CONTRACT_UNCONFIRMED"
+    assert [item["status"] for item in runs] == ["success", "success", "success"]
+    assert runs[2]["status"] == "success"
     assert all("is_mock" not in item for item in runs)
     assert len({item["crop_sha256"] for item in runs[:2]}) == 1
     assert runs[0]["metrics"]["cer"] == 0
-    assert runs[2]["metrics"] is None
+    assert runs[2]["metrics"] is not None
     original_prediction = runs[0]["final_text"]
     updated = client.put(
         f"/api/test-cases/{case['id']}/ground-truth",
@@ -159,7 +159,7 @@ def test_failure_isolation_real_mode_and_trace(client, case, gateway):
 
     behavior["handler"] = handler
     runs = run(client, case)
-    assert [item["status"] for item in runs] == ["error", "success", "error"]
+    assert [item["status"] for item in runs] == ["error", "success", "success"]
     assert all("is_mock" not in item for item in runs)
     assert runs[0]["gateway_request_id"] == "mint-failed"
     assert "test-gateway-secret" not in json.dumps(runs)
@@ -213,7 +213,7 @@ def test_gateway_partial_status_and_auth(client, gateway):
     assert (
         status["mint"] == "available"
         and status["hutch_crop"] == "unavailable"
-        and status["hutch_full"] == "contract_unconfirmed"
+        and status["hutch_full"] == "unavailable"
     )
     assert status["auto_roi"] == "available"
     behavior["handler"] = lambda request: httpx.Response(
@@ -249,7 +249,7 @@ def test_auto_roi_and_failure_do_not_block_manual(client, case, document, gatewa
     assert client.post(f"/api/documents/{document['id']}/auto-rois", json={}).status_code == 503
     from tests.upstream_fixture import response
     behavior["handler"] = response
-    assert [item["status"] for item in run(client, case)] == ["success", "success", "error"]
+    assert [item["status"] for item in run(client, case)] == ["success", "success", "success"]
 
 
 def test_crop_is_deterministic(settings, png):

@@ -18,9 +18,6 @@ def settings(tmp_path):
         storage_path=tmp_path / "uploads",
         model_gateway_base_url="https://gateway.example",
         model_gateway_api_key="test-gateway-secret",
-        mint_gateway_base_url="",
-        hutch_gateway_base_url="",
-        hutch_full_base_url="",
     )
 
 

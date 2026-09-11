@@ -11,7 +11,7 @@ Frontend Next.js ใช้ canonical API contract เท่านั้น ไ�
 | `services/test_case_service.py` | จัดการเอกสาร/GT/test case เตรียม crop เฉพาะ Mint/Hutch Crop |
 | `services/pipeline_manager.py` | เลือก 3 adapters เรียก concurrent และแยก failure |
 | `pipelines/mint.py`, `hutch_crop.py` | รับ CanonicalCrop เดียวกัน ไม่สร้าง crop ซ้ำ |
-| `pipelines/hutch_full.py` | FullImageROI ที่เก็บ raster เต็ม + ROI ไม่เรียก crop |
+| `pipelines/hutch_full.py` | FullImage ที่เก็บ raster เต็ม ไม่ใช้ ROI และไม่เรียก crop |
 | `integrations/model_gateway.py` | Bearer, multipart, timeout, response validation, redaction, readiness และจุดเชื่อม ROI contract ในอนาคต |
 | `pipelines/normalizers.py` | แปลงผล Mint/Paddle เก็บ geometry และใช้ null เมื่อไม่มี confidence |
 | `services/image_service.py`, `pdf_service.py` | canonical PNG, SHA-256, render PDF และตรวจขนาด |
@@ -31,7 +31,7 @@ Migration ใหม่เปลี่ยน marker ของผลสังเ�
 
 ## ความเป็นธรรมและข้อมูลย้อนหลัง
 
-Mint/Hutch Crop `crop_stage=app_crop` ใช้ crop PNG เดียวกัน Hutch Full `crop_stage=external_hutch` ใช้ภาพเต็ม ตัว serializer ไม่ส่ง archived runs ออก API ส่วน Matrix/Analytics ตัด archived และ Hutch Full ที่ใช้ semantics เก่าออก เลือกผลล่าสุดต่อ case/pipeline รวม failure ในจำนวน test แต่เฉลี่ยความแม่นยำจากผลสำเร็จที่มี GT เท่านั้น
+Mint/Hutch Crop `crop_stage=app_crop` ใช้ crop PNG เดียวกัน Hutch Full `crop_stage=full_image` ใช้ภาพเต็ม ตัว serializer ไม่ส่ง archived runs ออก API ส่วน Matrix/Analytics ตัด archived และ Hutch Full ที่ใช้ semantics เก่าออก เลือกผลล่าสุดต่อ case/pipeline รวม failure ในจำนวน test แต่เฉลี่ยความแม่นยำจากผลสำเร็จที่มี GT เท่านั้น
 
 ## ความเป็นส่วนตัว
 

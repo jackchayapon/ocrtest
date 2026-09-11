@@ -1,5 +1,36 @@
 # การพัฒนาและ deployment
 
+## Production: Vercel frontend และ backend ที่มี storage ถาวร
+
+Repository: https://github.com/jackchayapon/ocrtest, branch `main` ใช้ Vercel project เดิมถ้ามี ตั้ง Root Directory เป็น `frontend`, Framework เป็น Next.js และใช้ lockfile กับ `npm ci` / `npm run build` ไม่ deploy repository root เป็น FastAPI project
+
+Frontend ต้องมี `NEXT_PUBLIC_API_BASE_URL=<PRODUCTION_BACKEND_HTTPS_URL>` ที่เข้าถึงได้จริงก่อน deploy ห้ามใช้ localhost หรือเดา URL ห้ามใส่ `DATABASE_URL` หรือ `MODEL_GATEWAY_API_KEY` ใน Vercel frontend project
+
+Backend ปัจจุบันใช้ LocalStorageService อ่าน/เขียน original uploads และ PDF ลง STORAGE_PATH เพื่อเปิดประวัติซ้ำ จึงต้องมี persistent disk/volume บน host ที่เหมาะสม ไม่สามารถใช้ filesystem ชั่วคราวของ Vercel Functions เป็น storage ถาวรได้ รอบนี้ไม่เปลี่ยนระบบ storage ดู [ข้อจำกัด runtime ของ Vercel](https://vercel.com/docs/functions/runtimes)
+
+ต้องเตรียม server-side environment ต่อไปนี้บน backend host โดยใช้ private production Neon connection string และ Gateway key ที่หมุนใหม่สำหรับ production ห้ามนำ development key ที่เคยเปิดเผยมาใช้โดยอัตโนมัติ:
+
+```ini
+DATABASE_URL=<PRIVATE_PRODUCTION_NEON_CONNECTION_STRING>
+MODEL_GATEWAY_BASE_URL=http://107.129.186.30:62051
+MODEL_GATEWAY_API_KEY=<FRESH_PRIVATE_PRODUCTION_KEY>
+MODEL_GATEWAY_TIMEOUT_SECONDS=240
+STORAGE_MODE=local
+STORAGE_PATH=<PERSISTENT_VOLUME_MOUNT>/uploads
+MAX_UPLOAD_MB=20
+MAX_IMAGE_PIXELS=40000000
+MAX_IMAGE_DIMENSION=20000
+PDF_RENDER_DPI=200
+MAX_PDF_PAGES=500
+CORS_ORIGINS=<ACTUAL_FRONTEND_PRODUCTION_HTTPS_ORIGIN>
+```
+
+ใน Vercel ไป Project → Settings → Environment Variables: ช่อง Name ใส่ `NEXT_PUBLIC_API_BASE_URL` ช่อง Value ใส่ URL จริงอย่างเดียว ไม่ใส่ `NAME=` หรือเครื่องหมายคำพูด เลือก Production แล้ว deploy/redeploy ใหม่หลังแก้ค่า ตาม [เอกสาร environment variables](https://vercel.com/docs/environment-variables) หากตั้ง secrets บน backend platform ก็ใช้ช่อง Value เป็นค่าดิบ ไม่ครอบ quotes และไม่ส่ง secrets ไป Preview โดยไม่จำเป็น
+
+เมื่อได้ frontend URL จริงแล้วเพิ่ม origin นั้นใน CORS_ORIGINS ของ backend ไม่ใช้ wildcard แทนโดเมนที่ยังไม่ทราบ ก่อนประกาศ production พร้อมใช้ ตรวจ frontend `/` และ `/settings/pipelines`, backend `/api/health`, database/storage และ boolean key status โดยไม่พิมพ์ secrets
+
+ยังไม่มี production backend URL หรือการยืนยัน rotated production credentials ใน workspace จึงเตรียม deployment ได้ แต่ยังไม่ควรเผยแพร่ frontend ที่ชี้ localhost หรืออ้างว่าทดสอบ production แล้ว
+
 ## สิ่งที่ deploy
 
 ใช้ frontend/backend images และ persistent uploads พร้อม DATABASE_URL ของ PostgreSQL/Neon ไม่ deploy model weights, source แพลตฟอร์ม Model API, Python venv, host node_modules หรือ test fixtures
@@ -12,7 +43,21 @@ Pillow/OpenCV/NumPy ใช้จัดการภาพ, pypdfium2 ใช้ PD
 
 ดู [.env.example](../.env.example) สำหรับค่าครบ Backend อ่าน root .env แล้ว backend/.env; process env มีลำดับสูงกว่า DATABASE_URL และ MODEL_GATEWAY_API_KEY เป็น backend-only ค่า NEXT_PUBLIC_API_BASE_URL เป็น URL ที่ **browser** เข้าถึง FastAPI ได้และฝังตอน build
 
-URL/endpoint defaults seed เฉพาะ config ที่ยังไม่มี หากเปลี่ยน env หลังสร้าง records แล้ว ให้ตรวจ Pipeline Settings ด้วย Shared key มีลำดับเหนือ optional per-adapter key; Compose ปัจจุบันส่งเฉพาะ shared Gateway variables ไม่ได้ forward per-adapter overrides
+ตัวแปรหลักสำหรับ production คือ `MODEL_GATEWAY_BASE_URL`, `MODEL_GATEWAY_API_KEY` และ `MODEL_GATEWAY_TIMEOUT_SECONDS` ทุก Pipeline ใช้ URL และ key ชุดนี้ร่วมกัน ไม่ต้องกำหนดตัวแปรการเชื่อมต่อหรือ credentials ราย Pipeline ส่วน endpoint/engine defaults seed เฉพาะ config ที่ยังไม่มี หากเปลี่ยน env หลังสร้าง records แล้ว ให้ตรวจ Pipeline Settings ด้วย ทุก Pipeline และ Auto ROI ใช้ MODEL_GATEWAY_API_KEY ตัวเดียว ไม่มี fallback key ราย Pipeline; Compose ส่ง key นี้เข้า backend ตอนรันเท่านั้น ไม่ส่งผ่าน build args
+
+ใส่ค่าจริงเฉพาะใน `.env` ส่วนตัว ตัวอย่างต่อไปนี้เป็น placeholders เท่านั้น ส่วน `.env.example` ต้องคง `MODEL_GATEWAY_API_KEY=` ว่างไว้เสมอ:
+
+```ini
+DATABASE_URL="YOUR_NEON_CONNECTION_STRING"
+
+MODEL_GATEWAY_BASE_URL=http://107.129.186.30:62051
+MODEL_GATEWAY_API_KEY=YOUR_GATEWAY_API_KEY
+MODEL_GATEWAY_TIMEOUT_SECONDS=240
+```
+
+สำหรับ Gateway token ปัจจุบัน แนะนำ `MODEL_GATEWAY_API_KEY=your_real_gateway_key` โดยไม่ต้องใส่เครื่องหมายคำพูด รูปแบบ `MODEL_GATEWAY_API_KEY="your_real_gateway_key"` ก็ใช้ได้สำหรับ token ทั่วไป เครื่องหมายคำพูดจึงเป็นทางเลือก ไม่ใช่ข้อบังคับ หากมีช่องว่างหรืออักขระพิเศษให้ใช้การครอบค่าตามรูปแบบ dotenv และอย่าเว้นวรรครอบ `=` เช่น หลีกเลี่ยง `MODEL_GATEWAY_API_KEY = abc123` ห้ามคัดลอก key จริง รหัสผ่าน Neon หรือ DATABASE_URL จริงลงเอกสาร
+
+Runtime และ Test Connection ใช้ `settings.model_gateway_base_url` เสมอ ค่า `pipeline_configs.base_url` เดิมเก็บไว้เพื่อ compatibility โดยไม่ใช้เลือกปลายทาง API ส่ง URL ที่มีผลจริงจาก shared environment การแก้ URL ราย Pipeline จึงไม่เปลี่ยนปลายทาง ให้เปลี่ยน `MODEL_GATEWAY_BASE_URL` แล้ว restart backend แทน ไม่ต้องเปลี่ยน schema หรือ reset records
 
 ถ้า DATABASE_URL ว่างจะใช้ PostgreSQL local ของ Compose ไม่ใช้ SQLite เป็น production fallback SQLite ใช้ใน isolated unit tests เท่านั้น เมื่อระบุ Neon แล้วเชื่อมต่อไม่ได้ backend จะแจ้งผิดพลาด ไม่เปลี่ยนฐานเอง
 
@@ -48,4 +93,4 @@ cd backend
 
 รัน `scripts/check.ps1` สำหรับ pytest/Ruff/typecheck/lint/build และเพิ่ม `-Browser` เมื่อกำหนด TEST_DATABASE_URL เป็นฐาน local *_test แล้ว สคริปต์ e2e ใช้ port 8100/3100 และ production Next build พร้อม test-only HTTP interception; ไม่ส่งข้อมูลทดสอบเข้า Neon
 
-ตรวจ health, upload/storage และหน้า browser ของ container หลัง build, ตรวจ missing-key error และไม่พบ product mock generator ใน image การทดสอบ live OCR ต้องรอ key ที่ถูกต้องและสำหรับ Hutch Full ต้องรอ ROI wire contract ด้วย ดู [validation.md](validation.md) สำหรับผลจริงล่าสุด
+ตรวจ health, upload/storage และหน้า browser หลัง build ใช้ MODEL_GATEWAY_API_KEY จาก runtime เท่านั้น Hutch Full ส่งภาพเต็มโดยไม่ใช้ ROI ดูผลจริงล่าสุดใน validation.md

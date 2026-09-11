@@ -24,17 +24,11 @@ class Settings(BaseSettings):
     model_gateway_base_url: str = "http://107.129.186.30:62051"
     model_gateway_api_key: SecretStr = SecretStr("")
     model_gateway_timeout_seconds: float = Field(default=240, gt=0, le=600)
-    mint_gateway_base_url: str = ""
     mint_ocr_endpoint: str = "/api/v1/ocr-results"
     mint_ocr_engine: str = "custom"
-    mint_api_key: SecretStr = SecretStr("")
-    hutch_gateway_base_url: str = ""
     hutch_crop_endpoint: str = "/api/v1/ocr-results"
     hutch_crop_engine: str = "paddle"
-    hutch_api_key: SecretStr = SecretStr("")
-    hutch_full_base_url: str = ""
     hutch_full_endpoint: str = ""
-    hutch_full_api_key: SecretStr = SecretStr("")
 
     @property
     def sqlalchemy_url(self) -> str:
@@ -50,11 +44,5 @@ class Settings(BaseSettings):
         return url
 
     def api_key(self, pipeline_id: str) -> str:
-        shared_key = self.model_gateway_api_key.get_secret_value()
-        if shared_key:
-            return shared_key
-        return {
-            "mint": self.mint_api_key,
-            "hutch_crop": self.hutch_api_key,
-            "hutch_full": self.hutch_full_api_key,
-        }[pipeline_id].get_secret_value()
+        """All benchmark pipelines use the one public Gateway credential."""
+        return self.model_gateway_api_key.get_secret_value()

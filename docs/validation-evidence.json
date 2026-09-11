@@ -1,0 +1,134 @@
+{
+  "date": "2026-09-11",
+  "backend": {
+    "passed": 65,
+    "failed": 0,
+    "warnings": 2,
+    "ruff": "passed"
+  },
+  "frontend": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "build": "passed",
+    "date": "2026-09-11",
+    "unchanged_since_checks": true
+  },
+  "playwright": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "date": "2026-09-11",
+    "http_interception": "test-only upstream"
+  },
+  "shared_key_runtime": {
+    "pipeline_key_status": {
+      "mint": true,
+      "hutch_crop": true,
+      "hutch_full": true
+    },
+    "thai_settings_ui": "passed",
+    "frontend_http": 200
+  },
+  "gateway": {
+    "key_loaded": true,
+    "shared_key": true,
+    "health_http": 200,
+    "readiness_http": 200,
+    "authentication": "verified Bearer with current private key",
+    "mint_live": "success",
+    "hutch_crop_live": "success",
+    "hutch_full_live": "success full image without ROI",
+    "auto_roi_live": "verified"
+  },
+  "security": {
+    "frontend_secret_hits": [],
+    "documentation_secret_hits": [],
+    "git_env_tracked": false,
+    "git_worktree_secret_hits": [],
+    "git_index_secret_hits": [],
+    "backend_image": {
+      "file_secret_hits": [],
+      "env_file_present": false
+    },
+    "frontend_image": {
+      "file_secret_hits": [],
+      "env_file_present": false,
+      "backend_secret_env_present": false
+    }
+  },
+  "neon": {
+    "neon": "connected",
+    "migration": "0004_real_inputs",
+    "data_preserved": true,
+    "counts": {
+      "documents": 34,
+      "test_cases": 34,
+      "pipeline_runs": 87,
+      "metrics": 156,
+      "categories": 14,
+      "test_case_categories": 13
+    },
+    "archived_runs": 84,
+    "schema_drift": "none",
+    "current_read_only_counts": {
+      "documents": 41,
+      "test_cases": 41,
+      "pipeline_runs": 108,
+      "metrics": 156
+    }
+  },
+  "docker_image_bytes": {
+    "ocr-benchmark-backend": 165276677,
+    "ocr-benchmark-frontend": 79251075
+  },
+  "modelsapi_removed": true,
+  "shared_gateway_url": {
+    "runtime_all_three": true,
+    "auto_roi": true,
+    "ignores_stale_database_hosts": true,
+    "new_regression_tests": 1
+  },
+  "live_ocr": [
+    {
+      "pipeline": "mint",
+      "width": 740,
+      "height": 110,
+      "gateway_duration_ms": 206.73
+    },
+    {
+      "pipeline": "hutch_crop",
+      "width": 740,
+      "height": 110,
+      "gateway_duration_ms": 705.84
+    },
+    {
+      "pipeline": "hutch_full",
+      "width": 800,
+      "height": 240,
+      "gateway_duration_ms": 621.81,
+      "roi": null
+    }
+  ],
+  "external_blockers": [],
+  "fairness": {
+    "mint_hutch_crop_identical_png": true,
+    "hutch_full_full_page_bytes_verified": true,
+    "hutch_full_no_roi": true,
+    "crop_stage": "full_image"
+  },
+  "auto_roi_live": {
+    "request_count": 1,
+    "synthetic_only": true,
+    "http_status": 200,
+    "envelope_valid": true,
+    "meta": {
+      "request_id": "roi_3985ca33e80e4b7599f5c81d5b101386",
+      "service": "model-api-gateway",
+      "model": "pipeline-router-v1",
+      "duration_ms": 2505.84
+    },
+    "suggestion_count": 3,
+    "bounds_valid": true,
+    "verified": true
+  }
+}

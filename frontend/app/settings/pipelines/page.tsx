@@ -23,7 +23,7 @@ function editable(config: PipelineConfig) {
 const DESCRIPTIONS: Record<string, string> = {
   mint: t("Custom OCR pipeline. Receives the selected crop, or the full image when no region is selected."),
   hutch_crop: t("Crop input strategy. Receives an image cropped to the selected test region."),
-  hutch_full: t("เตรียมภาพเต็มพร้อม ROI โดยไม่ครอบภาพในแอป รอยืนยันรูปแบบ HTTP จาก Hutch"),
+  hutch_full: t("ส่งภาพเต็มหรือหน้า PDF เต็มไปยัง Paddle โดยไม่ใช้ ROI และไม่ครอบภาพในแอป"),
 };
 
 function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
@@ -80,7 +80,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
           </div>
           <div className="mt-5 flex flex-wrap gap-x-8 gap-y-4 rounded-lg bg-slate-50 p-4">
             <label className="flex cursor-pointer items-start gap-2.5"><input type="checkbox" className="mt-0.5 h-4 w-4 accent-indigo-600" checked={form.enabled} onChange={(event) => change("enabled", event.target.checked)} /><span><span className="block text-xs font-medium text-slate-700">{t("Pipeline enabled")}</span><span className="mt-1 block text-[10px] text-slate-500">{t("Available for benchmark runs")}</span></span></label>
-            <div className="text-xs text-slate-500"><span className="block font-medium">{t("API Key configured:")} {saved.api_key_configured ? t("Yes") : t("No")}</span><span className="mt-1 block text-[10px]">{t("Mint และ Hutch Crop ส่ง PNG ที่ครอบแล้ว ส่วน Hutch Full รอยืนยันสัญญาการส่งภาพเต็มพร้อม ROI")}</span></div>
+            <div className="text-xs text-slate-500"><span className="block font-medium">{t("API Key configured:")} {saved.api_key_configured ? t("Yes") : t("No")}</span><span className="mt-1 block text-[10px]">{t("Mint และ Hutch Crop ส่ง PNG ที่ครอบแล้ว ส่วน Hutch Full ส่งภาพเต็มโดยไม่ใช้ ROI")}</span></div>
           </div>
           {!form.base_url.trim() && <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-amber-700"><Globe2 size={15} className="mt-0.5 shrink-0" /><span>{t("กรุณาตั้งค่า Gateway URL ก่อนใช้งาน")}</span></p>}
           {saved.pipeline_id !== "mint" && <p className="mt-3 text-xs leading-5 text-slate-500">{t("Hutch request parameters are fixed for this benchmark: unclip ratio 1.7 · detection threshold 0.25 · box threshold 0.6.")}</p>}

@@ -7,7 +7,7 @@ import type { PipelineRun, TestCase } from "../types";
 const backend = process.env.E2E_API_URL || "http://127.0.0.1:8000";
 
 for (const imageFile of ["public/sample-document.png", "tests/fixtures/sample-document.jpg"]) {
-test(`upload ${imageFile}, original-coordinate ROI, two upstream results and unresolved Full contract, ground truth, saved detail and dashboards`, async ({ page, request }) => {
+test(`upload ${imageFile}, original-coordinate ROI, three upstream results including full image, ground truth, saved detail and dashboards`, async ({ page, request }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
   const configs = await (await request.get(`${backend}/api/pipelines`)).json();
@@ -46,12 +46,12 @@ test(`upload ${imageFile}, original-coordinate ROI, two upstream results and unr
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const result = await (await responsePromise).json();
   expect(result.runs).toHaveLength(3);
-  expect(result.runs.map((run: PipelineRun) => run.status)).toEqual(["success", "success", "error"]);
-  expect(result.runs[2].error_code).toBe("ROI_CONTRACT_UNCONFIRMED");
+  expect(result.runs.map((run: PipelineRun) => run.status)).toEqual(["success", "success", "success"]);
+  expect(result.runs[2].status).toBe("success");
   const hashes = result.runs.slice(0, 2).map((run: { crop_sha256: string }) => run.crop_sha256);
   expect(hashes[0]).toMatch(/^[a-f0-9]{64}$/);
   expect(new Set(hashes).size).toBe(1);
-  expect(result.runs.find((run: { pipeline_id: string }) => run.pipeline_id === "hutch_full").crop_stage).toBe("external_hutch");
+  expect(result.runs.find((run: { pipeline_id: string }) => run.pipeline_id === "hutch_full").crop_stage).toBe("full_image");
   await expect(page.getByTestId("result-text-mint")).toHaveText("บริษัท ซีดีจี จำกัด");
   await page.getByTestId("technical-details").locator("summary").first().click();
   await expect(page.getByText(t("SAME INPUT"), { exact: true })).toBeVisible();
@@ -81,11 +81,11 @@ test(`upload ${imageFile}, original-coordinate ROI, two upstream results and unr
   expect(persisted.runs).toHaveLength(3);
   for (const run of persisted.runs) {
     if (run.pipeline_id === "hutch_full") {
-      expect(run.error_code).toBe("ROI_CONTRACT_UNCONFIRMED");
+      expect(run.status).toBe("success");
       expect(run.crop_sha256).toBeNull();
       expect(run.input_width).toBe(1000);
       expect(run.input_height).toBe(1320);
-      expect(run.metrics).toBeNull();
+      expect(run.metrics).not.toBeNull();
       continue;
     }
     expect(run.raw_text).toBeTruthy();

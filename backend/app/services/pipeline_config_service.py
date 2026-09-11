@@ -28,19 +28,15 @@ class PipelineConfigService:
 
     async def test_connection(self, pipeline_id):
         config = self.repository.config(pipeline_id)
-        if pipeline_id == "hutch_full":
-            status, message = "contract_unconfirmed", "ยังไม่ยืนยันรูปแบบส่ง ROI ของ Hutch Full"
-        elif not self.settings.api_key(pipeline_id):
+        if not self.settings.api_key(pipeline_id):
             status, message = "missing_key", "ยังไม่ได้ตั้งค่า API Key"
-        elif not config.base_url or not config.endpoint:
+        elif not self.settings.model_gateway_base_url or not config.endpoint:
             status, message = (
                 "not_configured",
                 "กรุณาตั้งค่า Gateway URL และ endpoint",
             )
         else:
-            result = await ModelGatewayClient(
-                self.settings, config.base_url, self.settings.api_key(pipeline_id)
-            ).status()
+            result = await ModelGatewayClient(self.settings).status()
             status = result[pipeline_id]
             message = f"Gateway: {result['gateway']}. Pipeline: {status}. " + result.get(
                 "message", ""

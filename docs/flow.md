@@ -16,20 +16,19 @@ flowchart TD
   Select --> Crop[ImageService สร้าง canonical PNG crop]
   Crop --> Mint[Mint: engine=custom]
   Crop --> Hutch[Hutch Crop: engine=paddle]
-  Page --> Full[Hutch Full: ภาพเต็มและ logical ROI]
-  Select --> Full
-  Full --> Pending[ไม่มี local crop / รอยืนยัน external ROI contract]
+  Page --> Full[Hutch Full: ภาพเต็ม ไม่ใช้ ROI]
+  Full --> Paddle[Paddle: engine=paddle]
   Mint --> Save[บันทึกผลและ metrics]
   Hutch --> Save
-  Pending --> Error[บันทึกสถานะ error พร้อม input tracing]
+  Paddle --> Save
 ```
 
 Mint ภายนอกใช้ DET V5 แล้วตัด text regions ก่อน Thai REC; Hutch Crop ใช้ DET V6 + Thai REC ผ่าน Paddle ค่า detection ส่งชัดเจน 1.7 / 0.25 / 0.6
 
-Hutch Full เตรียมภาพเต็มและ ROI แยกกันใน `FullImageROI` ขณะนี้ไม่ส่งคำขอออกไปเพราะ source ไม่ยืนยัน ROI HTTP contract ไม่มี local crop fallback และไม่มีผลสำเร็จที่สร้างขึ้นแทน
+Hutch Full ส่งภาพเต็มหรือหน้า PDF ที่เลือกเป็น PNG ไปยัง Paddle โดยไม่ใช้ ROI และไม่ crop ในแอป ตามคำยืนยันล่าสุดจากเจ้าของ Pipeline ไม่มีขั้นตอนรอ ROI contract
 
 ## การอ่านข้อมูล debug
 
-`SAME INPUT`/`DIFFERENT INPUT` เปรียบเทียบ crop SHA ของ Mint กับ Hutch Crop เท่านั้น ทั้งคู่ต้องรับ PNG bytes เดียวกัน Hutch Full เก็บ `input_sha256`/ขนาดภาพเต็ม โดย `crop_sha256` เป็น null และ `crop_stage=external_hutch` ค่านี้ระบุขอบเขตที่ตั้งใจใช้ ไม่ยืนยันว่าภายนอกได้ crop แล้ว
+`SAME INPUT`/`DIFFERENT INPUT` เปรียบเทียบ crop SHA ของ Mint กับ Hutch Crop เท่านั้น ทั้งคู่ต้องรับ PNG bytes เดียวกัน Hutch Full เก็บ `input_sha256`/ขนาดภาพเต็ม โดย `crop_sha256` เป็น null และ `crop_stage=full_image` ค่านี้หมายถึงไม่มีการ crop และไม่ใช้ ROI
 
-ห้ามนำ hash ภาพเต็มไปตัดสินว่าความต่างระหว่าง Hutch Crop กับ Hutch Full เกิดจาก inference เพียงอย่างเดียว ต้องรอ contract และผลจริงของ external ROI handling
+Hutch Full ใช้ภาพเต็มต่างจาก crop จึงต้องพิจารณาขอบเขตข้อความและ Ground Truth ก่อนเทียบความแม่นยำ ห้ามสรุปว่าความต่างเกิดจาก inference อย่างเดียว

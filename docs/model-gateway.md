@@ -10,18 +10,18 @@ Base URL ที่ได้รับ: `http://107.129.186.30:62051` เรีย
 | --- | --- |
 | Mint | POST `/api/v1/ocr-results?engine=custom`, multipart `image` เป็น PNG crop |
 | Hutch Crop | POST `/api/v1/ocr-results?engine=paddle`, multipart `image` เป็น PNG crop |
-| Hutch Full | ตั้งใจใช้ Paddle endpoint เดียวกันกับภาพเต็ม + ROI แต่ยัง **ไม่มี wire contract ที่ยืนยันได้** |
+| Hutch Full | POST `/api/v1/ocr-results?engine=paddle`, multipart `image` เป็น PNG ภาพเต็ม ไม่มี ROI |
 | Auto ROI | POST `/api/v1/document-layouts`, `image` เป็นภาพเต็มของหน้าที่เลือก, `auto_roi_mode=text-line`, `expand_text_rois=false` |
 | Health | GET `/health` หรือ `/api/v1/health` ไม่ต้อง auth |
 | Readiness | GET `/api/v1/readiness` ต้อง auth เมื่อปลายทางเปิดใช้ ไม่มี alias `/readiness` ที่ยืนยันจาก source |
 
 ทั้งสอง Hutch adapters กำหนด `text_det_unclip_ratio=1.7`, `text_det_thresh=0.25`, `text_det_box_thresh=0.6` ค่า unclip เริ่มต้นใน Paddle source คือ 2.0 จึงห้ามอาศัย default ของปลายทาง
 
-## เหตุผลที่ Hutch Full ยังส่งจริงไม่ได้
+## Hutch Full ตามคำยืนยันเจ้าของ Pipeline
 
 ไฟล์อ้างอิง `services/ocr_pipeline_paddle/main.py` เรียก `parse_image_request(request)` แล้วอ่านเพียงสาม detection fields ก่อน `model().predict(image.path, ...)` ไม่พบการอ่าน ROI หรือ crop ตาม ROI ที่เลือก `shared/api.py` เก็บ arbitrary multipart/JSON fields ได้ แต่ไม่ได้แปลว่า Paddle ใช้ field นั้น ส่วน Gateway เพียง forward image/fields ไป pipeline
 
-จึงไม่เดา `roi` JSON, x/y/width/height หรือ x1/y1/x2/y2 บน HTTP ตัว `FullImageROI` ในแอปเป็น **logical contract ภายใน** เท่านั้น ฟังก์ชัน `ModelGatewayClient.build_full_roi_request` เป็นจุดเดียวสำหรับเพิ่ม serialization หลังผู้ให้บริการยืนยัน พร้อมเพิ่ม fixture จริงและทดสอบพิกัดผลลัพธ์ ปัจจุบันคืน `ROI_CONTRACT_UNCONFIRMED` โดยไม่ส่ง network request และไม่มี crop fallback
+Hutch Full ส่งภาพเต็มหรือหน้า PDF ที่เลือกเป็น PNG ไปยัง Paddle โดยไม่ใช้ ROI และไม่ crop ในแอป ตามคำยืนยันล่าสุดจากเจ้าของ Pipeline ไม่มีขั้นตอนรอ ROI contract
 
 ## รูปแบบตอบกลับและ tracing
 
@@ -47,4 +47,6 @@ Reference Compose map host 8080 → container 8000; nginx ฟัง 80/443 → 1
 
 ## สถานะภายนอก
 
-ดูผล reachability ล่าสุดใน [validation.md](validation.md) ไม่มี Gateway key ที่ใช้งานได้ใน environment ที่ตรวจ จึงยังไม่ยืนยัน Mint/Hutch live OCR เมื่อมี key ให้ตรวจ readiness แล้วส่งภาพสังเคราะห์ที่ไม่มีข้อมูลส่วนบุคคลอย่างควบคุมหนึ่งครั้งต่อ engine ห้ามถือผลจาก test fixture เป็นผลโมเดลจริง
+ผลตรวจล่าสุด: health และ Bearer readiness HTTP 200 ใช้ key จาก private environment ทดสอบ OCR จริงด้วยภาพสังเคราะห์สำเร็จครบ Mint/Hutch Crop/Hutch Full ไม่บันทึก key ในเอกสาร
+
+ทุก OCR Pipeline และ Auto ROI ใช้ MODEL_GATEWAY_API_KEY ตัวเดียว ไม่รองรับ secret fallback ราย Pipeline API ส่งเพียง api_key_configured boolean และไม่ส่งค่า/ส่วนของ key ออกไป

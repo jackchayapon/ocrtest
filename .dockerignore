@@ -1,5 +1,4 @@
 # Compose uses backend/ and frontend/ contexts; this also protects a root build.
-modelsapi
 **/weights
 **/.venv*
 **/node_modules
@@ -9,6 +8,7 @@ modelsapi
 **/*.pyc
 **/.pytest_cache
 **/.pytest_tmp
+**/.pytest_*
 **/.pytest_e2e
 **/.ruff_cache
 **/test-results

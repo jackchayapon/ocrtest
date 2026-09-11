@@ -4,6 +4,7 @@ storage
 tests
 .pytest_cache
 .pytest_tmp
+.pytest_*
 .pytest_e2e
 .ruff_cache
 __pycache__

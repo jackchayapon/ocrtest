@@ -51,7 +51,7 @@ def test_bad_metadata_cannot_cancel_other_runs(client, case, gateway):
         json={"pipelines": ["mint", "hutch_crop", "hutch_full"]},
     )
     assert response.status_code == 200
-    assert [run["status"] for run in response.json()["runs"]] == ["success", "success", "error"]
+    assert [run["status"] for run in response.json()["runs"]] == ["success", "success", "success"]
     assert response.json()["runs"][0]["gateway_service"] is None
 
 
@@ -109,7 +109,7 @@ def test_live_postgresql_repository_roundtrip(tmp_path, png, gateway):
         assert response.status_code == 200
         assert len(response.json()["runs"]) == 3
         assert len({run["crop_sha256"] for run in response.json()["runs"][:2]}) == 1
-        assert response.json()["runs"][2]["error_code"] == "ROI_CONTRACT_UNCONFIRMED"
+        assert response.json()["runs"][2]["status"] == "success"
         assert (
             client.get("/api/matrix", params={"document": document["id"]}).json()[0]["tests"] == 1
         )
