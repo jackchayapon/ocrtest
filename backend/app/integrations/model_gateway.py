@@ -122,9 +122,9 @@ class ModelGatewayClient:
                     body = bytearray()
                     async for chunk in response.aiter_bytes():
                         body.extend(chunk)
-                        if len(body) > 16 * 1024 * 1024:
+                        if len(body) > self.settings.model_gateway_max_response_mb * 1024 * 1024:
                             raise GatewayError(
-                                "Gateway response exceeds the 16 MB limit", "RESPONSE_TOO_LARGE"
+                                f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB", "RESPONSE_TOO_LARGE"
                             )
                     try:
                         payload = json.loads(body)

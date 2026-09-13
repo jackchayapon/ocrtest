@@ -5,6 +5,7 @@ from app.core.errors import AppError
 from app.db.models import Document, Metric, TestCase, new_id, now
 from app.repositories.benchmark_repository import BenchmarkRepository
 from app.services.image_service import ImageService
+from app.services.log_service import LogService
 from app.services.metrics_service import calculate_metrics, normalize_text
 from app.services.pdf_service import PdfService
 from app.services.pipeline_manager import PipelineManager
@@ -17,6 +18,7 @@ class TestCaseService:
         self.storage = storage
         self.images = ImageService(settings)
         self.pdfs = PdfService(settings)
+        self.logs = LogService(session, settings)
 
     def upload(self, data: bytes, filename: str, mime: str) -> Document:
         is_pdf = mime == "application/pdf" or (
@@ -47,6 +49,7 @@ class TestCaseService:
             sha256=sha256(encoded).hexdigest(),
         )
         try:
+            self.logs.add("document_uploaded", document_id=document_id)
             return self.repository.save(record)
         except Exception:
             self.storage.delete(key)
@@ -59,6 +62,7 @@ class TestCaseService:
         roi = data.roi.model_dump() if data.roi else None
         self.images.validate_roi(roi, width, height)
         record = TestCase(
+            id=new_id(),
             document=document,
             page_number=page_number,
             page_width=width if page_number else None,
@@ -71,6 +75,10 @@ class TestCaseService:
             categories=self.repository.categories(data.category_codes),
             status="draft",
         )
+        record.document_id = document.id
+        self.logs.add("test_case_created", case=record)
+        if page_number:
+            self.logs.add("pdf_page_selected", case=record)
         return self.repository.save(record)
 
     def update(self, case_id, data):
@@ -88,17 +96,32 @@ class TestCaseService:
                     409,
                 )
             record.roi = roi
+            self.logs.add("roi_updated", case=record)
         if "category_codes" in data.model_fields_set and data.category_codes is not None:
             record.categories = self.repository.categories(data.category_codes)
+            self.logs.add("categories_updated", case=record)
         if "ground_truth_raw" in data.model_fields_set:
             self._set_ground_truth(record, data.ground_truth_raw, False)
+            self.logs.add("ground_truth_updated", case=record)
         record.updated_at = now()
         return self.repository.save(record)
 
     def ground_truth(self, case_id, data):
         record = self.repository.test_case(case_id)
         self._set_ground_truth(record, data.ground_truth_raw, data.confirmed)
+        self.logs.add("ground_truth_updated", case=record)
         return self.repository.save(record)
+
+    def delete(self, case_id):
+        session = self.repository.session
+        record = self.repository.test_case(case_id)
+        try:
+            self.logs.add("history_deleted", case=record)
+            session.delete(record)
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
 
     def _set_ground_truth(self, record, text, confirmed):
         record.ground_truth_raw = text
@@ -126,6 +149,8 @@ class TestCaseService:
     async def run(self, case_id, pipeline_ids):
         record = self.repository.test_case(case_id)
         configs = [self.repository.config(pipeline_id) for pipeline_id in pipeline_ids]
+        self.logs.add("ocr_run_started", case=record)
+        self.repository.session.commit()
         page_data, _, _ = self.page_image(record.document, record.page_number)
         original = self.images.open(page_data)
         try:
@@ -144,6 +169,7 @@ class TestCaseService:
         for run in runs:
             self.evaluate(run, record.ground_truth_raw)
             record.runs.append(run)
+            self.logs.add("ocr_run_success" if run.status == "success" else "ocr_run_error", case=record, run=run)
         if record.status != "confirmed":
             record.status = "tested"
         record.updated_at = now()

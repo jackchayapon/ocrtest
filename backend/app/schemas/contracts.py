@@ -54,6 +54,18 @@ class RunRequest(InputModel):
         return value
 
 
+class BatchRequest(RunRequest):
+    pages: list[int] = Field(min_length=1, max_length=5000)
+    category_codes: list[str] = Field(default_factory=list, max_length=30)
+
+    @field_validator("pages", mode="before")
+    @classmethod
+    def valid_pages(cls, value):
+        if not isinstance(value, list) or any(type(page) is not int or not 1 <= page <= 5000 for page in value):
+            raise ValueError("Pages must be integers from 1 to 5000")
+        return sorted(set(value))
+
+
 class PipelineConfigUpdate(InputModel):
     name: str = Field(default="Pipeline", min_length=1, max_length=100)
     base_url: str = Field(default="", max_length=500)

@@ -1,4 +1,5 @@
 "use client";
+import PdfBatchPanel from "@/components/PdfBatchPanel";
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -140,6 +141,8 @@ export default function TestingWorkspace({ initialTestCaseId }: { initialTestCas
     {error && <div className="error-banner mb-4" role="alert">{error}<button className="button small ghost ml-3" onClick={() => window.location.reload()}>{t("Reload workspace")}</button></div>}
     {notice && <div className="success-banner mb-4" role="status">{notice}</div>}
     {busy && <div className="notice-banner mb-4" role="status"><Loader2 size={13} className="busy-spinner" />{busy}…</div>}
+    {document?.document_type === "pdf" && <PdfBatchPanel key={document.id} documentId={document.id} pageCount={document.page_count} pipelines={selectedPipelines} categoryCodes={categoryCodes} disabled={!!busy} onBusy={value => setBusy(value ? "ประมวลผลหน้าที่เลือก" : null)} />}
+    {testCase && <Link className="button secondary mb-3" href={`/logs?test_case_id=${testCase.id}`}>บันทึกเหตุการณ์ของการทดสอบนี้</Link>}
     <div className="testing-grid"><div>
       <section className="panel preview-panel"><div className="panel-header"><h2><FileImage size={15} />{t("Document preview")}</h2><div className="document-info">{document ? <span className="max-w-40 truncate" title={document.filename}>{document.filename}</span> : t("NO DOCUMENT")}{document && <span className="badge neutral">{document.width} × {document.height}</span>}</div></div>
         {document?.document_type === "pdf" && <nav className="pdf-pages" aria-label={t("PDF page navigation")}><strong>{t("PDF document")} · {document.page_count} {t("pages")}</strong><button className="button small" aria-label={t("Previous page")} disabled={!!busy || document.page_number === 1} onClick={() => changePage(document.page_number! - 1)}>‹</button><span data-testid="pdf-page-indicator" aria-live="polite">{messages.page(document.page_number ?? 1, document.page_count)}</span><label>{t("Go to page")} <select aria-label={t("Select PDF page")} disabled={!!busy} value={document.page_number ?? 1} onChange={event => changePage(Number(event.target.value))}>{Array.from({ length: document.page_count }, (_, i) => <option key={i + 1} value={i + 1}>{i + 1}</option>)}</select></label><button className="button small" aria-label={t("Next page")} disabled={!!busy || document.page_number === document.page_count} onClick={() => changePage(document.page_number! + 1)}>›</button><p>{t("Changing page clears unsaved ROI and text. Save your test first to keep it.")}</p></nav>}

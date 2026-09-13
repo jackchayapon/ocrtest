@@ -1,5 +1,30 @@
 # ผลตรวจสอบ OCR Testing & Benchmark
 
+## Controlled local live review - 2026-09-13
+
+- No application code changes in this review. Existing 79 passing backend tests and 11/11 Playwright suite results from 2026-09-11 remain applicable. Ruff, frontend typecheck and lint were checked again and passed; the existing production build served this browser smoke.
+- All three pipelines succeeded on a synthetic 1600 x 2200 image (13 normalized boxes each). Hutch Crop received 43,759,767 response bytes (41.73 MiB); Hutch Full received 48,939,977 bytes (46.67 MiB). Both exceeded the old 16 MiB cap and passed the effective 64 MiB cap (67,108,864 bytes). Their sanitized stored responses were 3,929 and 3,939 bytes. Request IDs, Gateway duration, service and model remained available.
+- A five-page synthetic PDF was submitted once through the UI with pages 1, 3, 5 selected and all three pipelines. All nine runs succeeded. SQL audit timestamps prove page 1 saved at 12:44:53.191551 UTC before page 3 started at 12:44:53.195706; page 3 saved at 12:45:41.032615 before page 5 started at 12:45:41.037190. Page 5 saved at 12:46:15.648616. Page concurrency was 1; pages 2 and 4 were not processed.
+- Smoke setup caveat: uploading cleared the category selected before upload, so the live batch initially had no category. Categories were then applied to all three saved cases and edited independently without repeating OCR. Batch-time category propagation remains covered by the passing automated test. Request-building review confirms categories are never passed as model hints, including Auto ROI.
+- The browser verified logs, level filtering and pagination, cancelled deletion, then explicitly confirmed deletion of the disposable page-1 case. SQL checks confirmed dependent runs/metrics/joins were removed without orphan metrics; category definitions, original PDF, page-3/page-5 cases and an unrelated case remained. Missing-case GET/DELETE returned 404.
+- Persisted responses and logs were checked without printing raw payloads or secrets. No embedded image data, credentials, full OCR text or Ground Truth were found in application logs; heavy Paddle image data was redacted before persistence.
+- Only the dedicated local PostgreSQL review database was migrated: current/head `0005_app_logs`, `alembic check` reports no drift. Neon was not accessed or migrated. No app deployment was performed.
+- The initial sandbox-blocked requests did not reach the Gateway. After health verified network access outside the sandbox, one real three-pipeline image run and one three-page batch were performed, without stress testing or increasing the limit.
+- Sequential batch remains request-bound and intended for the current single-worker/local MVP, not a distributed background-job system.
+
+## Feature implementation validation - 2026-09-11
+
+This pass adds the bounded 64 MB Gateway response setting, sequential PDF page batches, category analytics details, confirmed history deletion, and safe application logs.
+
+- Backend: **79 passed**, 2 dependency deprecation warnings; Ruff passed.
+- Frontend: typecheck, lint and production build passed; Playwright **11/11 passed**.
+- Local PostgreSQL: `alembic upgrade head` to `0005_app_logs` and `alembic check` passed with no schema drift.
+- Tests prove ascending single-page execution, continuation after page failure, independent saved cases, transactional deletion, document preservation, and safe filtered logs.
+- No live OCR requests, Neon migration, application deployment, commit or push in this pass. Docker was used only to start local PostgreSQL for validation.
+- Batch processing requires one FastAPI worker/instance and an open streaming connection. Committed page results survive interruption. See [batch-activity.md](batch-activity.md).
+
+The following sections retain **previous validation evidence**. Their live Gateway, Neon and Docker results do not validate this uncommitted feature revision.
+
 อัปเดต 11 กันยายน 2026 ตามคำยืนยันล่าสุดจากเจ้าของ Hutch: Hutch Full ใช้ภาพเต็มเท่านั้น ไม่ใช้ ROI และไม่ crop ในแอป
 
 ## สถาปัตยกรรม

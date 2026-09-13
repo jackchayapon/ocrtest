@@ -130,5 +130,135 @@
     "suggestion_count": 3,
     "bounds_valid": true,
     "verified": true
+  },
+  "current_feature_pass": {
+    "date": "2026-09-11",
+    "backend_passed": 79,
+    "backend_warnings": 2,
+    "ruff": "passed",
+    "frontend_typecheck": "passed",
+    "frontend_lint": "passed",
+    "frontend_build": "passed",
+    "playwright_passed": 11,
+    "playwright_total": 11,
+    "local_postgresql_migration": "0005_app_logs",
+    "alembic_check": "passed, no schema drift",
+    "neon_migrated": false,
+    "live_ocr_requested": false,
+    "application_deployed": false,
+    "committed": false,
+    "pushed": false,
+    "historical_sections_note": "Other top-level validation sections describe the preceding revision, not this feature pass."
+  },
+  "controlled_local_review": {
+    "date": "2026-09-13",
+    "application_code_changed": false,
+    "effective_response_limit_bytes": 67108864,
+    "single_image": [
+      {
+        "pipeline": "mint",
+        "status": "success",
+        "error_code": null,
+        "text_length": 449,
+        "boxes": 13,
+        "persisted_response_bytes": 12691,
+        "redactions": 0,
+        "request_id": "ocr_65c2ec021f514c4aa2e7190f4609f887",
+        "gateway_request_id": "ocr_65c2ec021f514c4aa2e7190f4609f887",
+        "duration_ms": 21642.54,
+        "service": "model-api-gateway",
+        "model": "pipeline-router-v1"
+      },
+      {
+        "pipeline": "hutch_crop",
+        "status": "success",
+        "error_code": null,
+        "text_length": 449,
+        "boxes": 13,
+        "persisted_response_bytes": 3929,
+        "redactions": 1,
+        "request_id": "ocr_01762af8f23a473fadda83e92f381377",
+        "gateway_request_id": "ocr_01762af8f23a473fadda83e92f381377",
+        "duration_ms": 13684.81,
+        "service": "model-api-gateway",
+        "model": "pipeline-router-v1"
+      },
+      {
+        "pipeline": "hutch_full",
+        "status": "success",
+        "error_code": null,
+        "text_length": 450,
+        "boxes": 13,
+        "persisted_response_bytes": 3939,
+        "redactions": 1,
+        "request_id": "ocr_e138f581b64946a3b6025503d856a35c",
+        "gateway_request_id": "ocr_e138f581b64946a3b6025503d856a35c",
+        "duration_ms": 7146.68,
+        "service": "model-api-gateway",
+        "model": "pipeline-router-v1"
+      }
+    ],
+    "hutch_crop_response_bytes": 43759767,
+    "hutch_full_response_bytes": 48939977,
+    "batch": {
+      "sequential_order": [
+        1,
+        3,
+        5
+      ],
+      "maximum_page_concurrency": 1,
+      "unselected_pages_processed": false,
+      "deletion_cascade_verified": true,
+      "no_orphan_metrics": true,
+      "documents_and_other_cases_preserved": true,
+      "safe_persisted_responses_and_logs": true,
+      "timestamps": [
+        {
+          "event": "page_started",
+          "page": 1,
+          "at": "2026-09-13T12:43:44.243012+00:00"
+        },
+        {
+          "event": "page_success",
+          "page": 1,
+          "at": "2026-09-13T12:44:53.191551+00:00"
+        },
+        {
+          "event": "page_started",
+          "page": 3,
+          "at": "2026-09-13T12:44:53.195706+00:00"
+        },
+        {
+          "event": "page_success",
+          "page": 3,
+          "at": "2026-09-13T12:45:41.032615+00:00"
+        },
+        {
+          "event": "page_started",
+          "page": 5,
+          "at": "2026-09-13T12:45:41.037190+00:00"
+        },
+        {
+          "event": "page_success",
+          "page": 5,
+          "at": "2026-09-13T12:46:15.648616+00:00"
+        }
+      ]
+    },
+    "batch_all_nine_runs": "success",
+    "category_setup_note": "Upload cleared preselected category; applied to saved cases and independently edited without more OCR. Batch propagation covered by existing automated tests.",
+    "logs_ui": "passed filters and pagination",
+    "delete_confirmation_ui": "passed cancel and confirm",
+    "ruff": "passed",
+    "frontend_typecheck": "passed",
+    "frontend_lint": "passed",
+    "existing_backend_tests": 79,
+    "existing_playwright_tests": 11,
+    "existing_build": "unchanged application code; production build used for live browser smoke",
+    "local_alembic_current": "0005_app_logs",
+    "local_alembic_heads": "0005_app_logs",
+    "local_alembic_check": "passed",
+    "neon_migrated": false,
+    "deployed": false
   }
 }

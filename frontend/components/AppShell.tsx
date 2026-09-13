@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ArrowUpRight, BarChart3, BookOpen, FlaskConical, History, Layers3, ScanLine, Settings2 } from "lucide-react";
 
 const links = [
+  { href: "/logs", label: "บันทึกการทำงาน", icon: BookOpen },
   { href: "/", label: t("Testing workspace"), icon: FlaskConical },
   { href: "/history", label: t("Test history"), icon: History },
   { href: "/matrix", label: t("Benchmark matrix"), icon: BarChart3 },

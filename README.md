@@ -97,4 +97,4 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1 -Brows
 - key ปัจจุบันผ่าน authenticated readiness HTTP 200 และทดสอบ OCR จริงด้วยภาพสังเคราะห์สำเร็จครบทั้งสาม Pipeline ดู docs/validation.md
 - ไม่มี login ใน MVP ใช้บนเครื่อง/เครือข่ายที่เชื่อถือได้หรือภายใต้ระบบควบคุมการเข้าถึงขององค์กร
 
-อ่านต่อ: [API](docs/api.md) · [Flow](docs/flow.md) · [Architecture](docs/architecture.md) · [Gateway](docs/model-gateway.md) · [ผลตรวจสอบ](docs/validation.md)
+อ่านต่อ: [หลายหน้า PDF / ลบประวัติ / Logs / response 64 MB](docs/batch-activity.md) · [API](docs/api.md) · [Flow](docs/flow.md) · [Architecture](docs/architecture.md) · [Gateway](docs/model-gateway.md) · [ผลตรวจสอบ](docs/validation.md)

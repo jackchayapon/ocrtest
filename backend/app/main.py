@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -8,7 +9,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.api.routes import benchmark, documents, health, pipelines, test_cases
+from app.api.routes import activity, benchmark, documents, health, pipelines, test_cases
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.db.database import Database
@@ -38,6 +39,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.database = database
     app.state.settings = settings
     app.state.storage = storage
+    app.state.ocr_lock = asyncio.Lock()
     logging.getLogger("httpx").setLevel(logging.WARNING)
     app.add_middleware(
         CORSMiddleware,
@@ -45,7 +47,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
         ],
         allow_credentials=False,
-        allow_methods=["GET", "POST", "PUT", "OPTIONS"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type"],
     )
 
@@ -80,7 +82,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def unknown_error(request: Request, exc):
         return JSONResponse({"detail": "The operation could not be completed."}, status_code=500)
 
-    for module in (health, documents, test_cases, pipelines, benchmark):
+    for module in (health, documents, test_cases, pipelines, benchmark, activity):
         app.include_router(module.router, prefix="/api")
     return app
 

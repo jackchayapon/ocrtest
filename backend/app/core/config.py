@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     model_gateway_base_url: str = "http://107.129.186.30:62051"
     model_gateway_api_key: SecretStr = SecretStr("")
     model_gateway_timeout_seconds: float = Field(default=240, gt=0, le=600)
+    model_gateway_max_response_mb: int = Field(default=64, ge=1, le=256)
     mint_ocr_endpoint: str = "/api/v1/ocr-results"
     mint_ocr_engine: str = "custom"
     hutch_crop_endpoint: str = "/api/v1/ocr-results"

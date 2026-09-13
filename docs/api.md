@@ -1,5 +1,7 @@
 # คู่มือ API สำหรับเชื่อมต่อแอป Benchmark
 
+เพิ่มเติม: [POST documents/{id}/run-pages, DELETE test-cases/{id}, GET logs](batch-activity.md) พร้อมคำอธิบาย sequential processing, confirmation, retention และ response limit
+
 เรียก FastAPI ของแอป เช่น `http://localhost:8000` ไม่เรียก Gateway จาก frontend และไม่ส่ง Gateway key ให้ browser OpenAPI อยู่ที่ `/docs` และ `/openapi.json`; response dictionaries บางส่วนอธิบายเพิ่มเติมด้านล่าง
 
 ID เอกสาร/case เป็น UUID ส่วน Pipeline ID มีเพียง `mint`, `hutch_crop`, `hutch_full` การสร้างเอกสาร/case คืน 201 การทำงานปกติอื่นคืน 200 JSON request ไม่รับ field ที่ไม่รู้จัก Sensitive responses ใช้ no-store ไม่มีระบบ login ใน MVP ให้ใช้ภายใต้ขอบเขตการเข้าถึงที่เชื่อถือได้

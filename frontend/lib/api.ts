@@ -26,6 +26,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       : `Request failed (${response.status}). Please try again.`;
     throw new Error(userError(message, response.status));
   }
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -47,6 +48,27 @@ export const testConnection = (id: string) => request<{ status: string; message:
 export const uploadDocument = (file: File) => { const form = new FormData(); form.set("file", file); return request<Document>("/documents", { method: "POST", body: form }); };
 export const createTestCase = (input: TestCaseInput) => request<TestCase>("/test-cases", { method: "POST", body: JSON.stringify(input) });
 export const getTestCase = (id: string) => request<TestCase>(`/test-cases/${id}`);
+export const deleteTestCase = (id: string) => request<void>(`/test-cases/${id}`, { method: "DELETE" });
+
+export type AppLog = { id: string; created_at: string; level: string; event_type: string; message: string; page_number: number | null; pipeline_id: string | null; request_id: string | null; gateway_request_id: string | null; metadata: { error_code?: string; duration_ms?: number } };
+export const getLogs = (params: URLSearchParams) => request<{ total: number; items: AppLog[] }>(`/logs?${params}`);
+export type PageProgress = { event: string; page?: number; pages?: number[]; status?: string; test_case_id?: string; message?: string };
+export async function runPages(id: string, pages: number[], pipelines: string[], category_codes: string[], onEvent: (event: PageProgress) => void) {
+  const response = await fetch(`${API_BASE_URL}/api/documents/${id}/run-pages`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pages, pipelines, category_codes }) });
+  if (!response.ok || !response.body) throw new Error("เริ่มประมวลผลไม่ได้ กรุณาตรวจหมายเลขหน้าและการเชื่อมต่อ");
+  const reader = response.body.getReader(), decoder = new TextDecoder();
+  let buffer = "", finished = false;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      buffer += decoder.decode(value, { stream: !done });
+      const lines = buffer.split("\n"); buffer = lines.pop() ?? "";
+      for (const line of lines) if (line.trim()) { const event = JSON.parse(line) as PageProgress; if (event.event === "batch_finished") finished = true; onEvent(event); }
+      if (done) break;
+    }
+    if (!finished) throw new Error("การเชื่อมต่อขาด กรุณาตรวจประวัติและบันทึกการทำงานก่อนลองใหม่");
+  } finally { reader.releaseLock(); }
+}
 export const updateTestCase = (id: string, input: Partial<TestCaseInput>) => request<TestCase>(`/test-cases/${id}`, { method: "PUT", body: JSON.stringify(input) });
 export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed = false) => request<TestCase>(`/test-cases/${id}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });

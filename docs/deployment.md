@@ -15,6 +15,7 @@ DATABASE_URL=<PRIVATE_PRODUCTION_NEON_CONNECTION_STRING>
 MODEL_GATEWAY_BASE_URL=http://107.129.186.30:62051
 MODEL_GATEWAY_API_KEY=<FRESH_PRIVATE_PRODUCTION_KEY>
 MODEL_GATEWAY_TIMEOUT_SECONDS=240
+MODEL_GATEWAY_MAX_RESPONSE_MB=64
 STORAGE_MODE=local
 STORAGE_PATH=<PERSISTENT_VOLUME_MOUNT>/uploads
 MAX_UPLOAD_MB=20
@@ -40,6 +41,14 @@ Backend เป็น Python 3.12 slim ลง dependencies ตาม requirements
 Pillow/OpenCV/NumPy ใช้จัดการภาพ, pypdfium2 ใช้ PDF จึงยังเป็น dependencies ที่จำเป็น ไม่มีเหตุผลให้เปลี่ยน stack หรือเพิ่ม local PaddleOCR ใช้ `pip check` และ lockfiles เพื่อทำซ้ำ build
 
 ## Environment
+
+Gateway response มีขีดจำกัดแยกจาก upload: `MODEL_GATEWAY_MAX_RESPONSE_MB=64` (1–256 MB) นับ bytes ขณะ stream ก่อน parse JSON ค่า default คือ 64 MiB; เมื่อเกินคืน RESPONSE_TOO_LARGE ข้อความระบุผลตอบกลับ Gateway ไม่ใช่ขนาดภาพที่อัปโหลด ตัวแปรนี้เป็น backend-only
+
+Migration ล่าสุดของงานหลายหน้า/กิจกรรมคือ `0005_app_logs` เพิ่มตารางอย่างเดียว ไม่แก้หรือลบข้อมูล benchmark เดิม ตรวจบน PostgreSQL local ด้วย `alembic upgrade head` และ `alembic check` ก่อนนำไปใช้กับฐานจริง รอบนี้ไม่ deploy และไม่ migrate Neon
+
+Batch ทำงานในคำขอ NDJSON ที่เปิดค้าง ไม่ใช้ distributed queue: ใช้ FastAPI หนึ่ง worker/หนึ่ง instance ตามการรันปัจจุบันเพื่อให้ lock รวม batch, single-run, Auto ROI และ delete มีผลร่วมกัน แต่ละหน้า await pipelines และ commit ผลก่อนหน้าถัดไป ห้ามเพิ่ม worker/replica โดยไม่เพิ่มการประสาน lock ระหว่าง process ไม่ปิดแท็บระหว่างรัน; หากการเชื่อมต่อขาดให้ตรวจ History/Logs ก่อนลองใหม่ ผลที่ commit แล้วจะยังอยู่
+
+App logs เก็บเฉพาะ event/IDs/สถานะ ไม่มี raw response/ภาพ/ข้อความ OCR/GT และไม่มี background retention worker แนะนำผู้ดูแลกำหนดอายุเก็บ 30 วันและล้างเฉพาะ app_logs ตามนโยบายองค์กร การลบ test case ไม่ลบ logs หรือ original document เพื่อรักษา audit และ PDF ที่ใช้งานร่วมกัน
 
 ดู [.env.example](../.env.example) สำหรับค่าครบ Backend อ่าน root .env แล้ว backend/.env; process env มีลำดับสูงกว่า DATABASE_URL และ MODEL_GATEWAY_API_KEY เป็น backend-only ค่า NEXT_PUBLIC_API_BASE_URL เป็น URL ที่ **browser** เข้าถึง FastAPI ได้และฝังตอน build
 

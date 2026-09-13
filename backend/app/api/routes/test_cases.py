@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request, Response
 
 from app.api.dependencies import CaseServiceDep, RepoDep
 from app.schemas.contracts import (
@@ -61,11 +61,19 @@ def update_categories(case_id: UUID, data: CategoriesUpdate, service: CaseServic
 
 
 @router.post("/{case_id}/run")
-async def run_test_case(case_id: UUID, data: RunRequest, service: CaseServiceDep):
-    return {
-        "test_case_id": str(case_id),
-        "runs": [run_json(run) for run in await service.run(str(case_id), data.pipelines)],
-    }
+async def run_test_case(case_id: UUID, data: RunRequest, service: CaseServiceDep, request: Request):
+    async with request.app.state.ocr_lock:
+        return {
+            "test_case_id": str(case_id),
+            "runs": [run_json(run) for run in await service.run(str(case_id), data.pipelines)],
+        }
+
+
+@router.delete("/{case_id}", status_code=204)
+async def delete_test_case(case_id: UUID, service: CaseServiceDep, request: Request):
+    async with request.app.state.ocr_lock:
+        service.delete(str(case_id))
+    return Response(status_code=204)
 
 
 @router.get("/{case_id}/results")

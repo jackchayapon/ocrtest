@@ -156,6 +156,23 @@ class Category(Base):
     display_name: Mapped[str] = mapped_column(String(100))
 
 
+class AppLog(Base):
+    __tablename__ = "app_logs"
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=new_id)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, index=True)
+    level: Mapped[str] = mapped_column(String(10), index=True)
+    event_type: Mapped[str] = mapped_column(String(50), index=True)
+    message: Mapped[str] = mapped_column(String(255))
+    # Audit references deliberately survive test-case deletion; no cascading foreign keys.
+    test_case_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True, index=True)
+    document_id: Mapped[str | None] = mapped_column(Uuid(as_uuid=False), nullable=True)
+    pipeline_id: Mapped[str | None] = mapped_column(String(50), nullable=True, index=True)
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    request_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
+    gateway_request_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    details: Mapped[dict] = mapped_column("metadata", JSON_TYPE, default=dict)
+
+
 class PipelineConfig(Base):
     __tablename__ = "pipeline_configs"
     id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=new_id)
