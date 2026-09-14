@@ -1,75 +1,368 @@
 "use client";
-import { categoryLabel, pipelineLabel, t, userError } from "@/lib/i18n/th";
-
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowDownRight, BarChart3, CheckCheck, FlaskConical, Loader2, RefreshCw, SlidersHorizontal, Timer } from "lucide-react";
-import { getCategories, getMatrix, getPipelines } from "@/lib/api";
-import type { Category, MatrixRow, PipelineConfig, QueryFilters } from "@/types";
+import { RefreshCw } from "lucide-react";
+import { getCategories, getMatrix, getPipelines, getHistory } from "@/lib/api";
+import { pipelineLabel, userError } from "@/lib/i18n/th";
+import type {
+  Category,
+  MatrixRow,
+  PipelineConfig,
+  QueryFilters,
+  TestCase,
+} from "@/types";
 import MatrixTable, { percent } from "@/components/MatrixTable";
-
+import {
+  PageHeader,
+  FilterBar,
+  DatasetFilters,
+  LoadingState,
+  EmptyState,
+  Stat,
+} from "@/components/ConsoleUI";
 export default function MatrixPage() {
-  const [rows, setRows] = useState<MatrixRow[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [pipelines, setPipelines] = useState<PipelineConfig[]>([]);
-  const [filters, setFilters] = useState<QueryFilters>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [revision, setRevision] = useState(0);
-  const invalidDates = !!(filters.date_from && filters.date_to && filters.date_from > filters.date_to);
-
+  const [rows, setRows] = useState<MatrixRow[]>([]),
+    [cases, setCases] = useState<TestCase[]>([]),
+    [categories, setCategories] = useState<Category[]>([]),
+    [pipelines, setPipelines] = useState<PipelineConfig[]>([]);
+  const [filters, setFilters] = useState<QueryFilters>({}),
+    [offset, setOffset] = useState(0),
+    [hasNext, setHasNext] = useState(false),
+    [search, setSearch] = useState(""),
+    [onlyGT, setOnlyGT] = useState(false),
+    [loading, setLoading] = useState(true),
+    [error, setError] = useState(""),
+    [revision, setRevision] = useState(0);
+  const invalid = !!(
+    filters.date_from &&
+    filters.date_to &&
+    filters.date_from > filters.date_to
+  );
   useEffect(() => {
     let active = true;
-    async function fetchData() {
+    async function load() {
       setLoading(true);
       setError("");
-      if (invalidDates) { setLoading(false); return; }
-      try {
-        const [matrix, categoryList, pipelineList] = await Promise.all([getMatrix(filters), getCategories(), getPipelines()]);
-        if (active) { setRows(matrix); setCategories(categoryList); setPipelines(pipelineList); }
-      } catch (cause) {
-        if (active) setError(cause instanceof Error ? userError(cause.message) : t("Could not load benchmark results."));
-      } finally { if (active) setLoading(false); }
+      if (invalid) {
+        setLoading(false);
+        return;
+      }
+      await Promise.all([
+        getMatrix(filters),
+        getHistory({ ...filters, limit: 21, offset }),
+        getCategories(),
+        getPipelines(),
+      ])
+        .then(([r, h, c, p]) => {
+          if (active) {
+            setRows(r);
+            setCases(h.slice(0, 20));
+            setHasNext(h.length > 20);
+            setCategories(c);
+            setPipelines(p);
+          }
+        })
+        .catch((e) => {
+          if (active) setError(userError(e.message));
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
     }
-    void fetchData();
-    return () => { active = false; };
-  }, [filters, revision, invalidDates]);
-
-  const evaluated = rows.reduce((sum, row) => sum + row.evaluated_runs, 0);
-  const measured = rows.filter((row) => row.cer != null);
-  const best = measured.length ? measured.reduce((a, b) => a.cer! <= b.cer! ? a : b) : null;
-  const timed = rows.filter((row) => row.avg_time_ms != null && row.successful_runs > 0);
-  const timedRuns = timed.reduce((sum, row) => sum + row.successful_runs, 0);
-  const avgTime = timedRuns ? timed.reduce((sum, row) => sum + row.avg_time_ms! * row.successful_runs, 0) / timedRuns : null;
-  const setFilter = (key: keyof QueryFilters, value: string) => setFilters((current) => ({ ...current, [key]: value || undefined }));
-
+    void load();
+    return () => {
+      active = false;
+    };
+  }, [filters, offset, revision, invalid]);
+  const best = rows
+    .filter((r) => r.cer !== null)
+    .sort((a, b) => a.cer! - b.cer!)[0];
+  const fastest = rows
+    .filter((r) => r.avg_time_ms !== null && r.successful_runs > 0)
+    .sort((a, b) => a.avg_time_ms! - b.avg_time_ms!)[0];
+  const visible = cases.filter(
+    (c) =>
+      (!onlyGT || c.ground_truth_raw !== null) &&
+      (!search ||
+        c.document.filename.toLowerCase().includes(search.toLowerCase())),
+  );
+  const selected = pipelines.filter(
+    (p) => !filters.pipeline || p.pipeline_id === filters.pipeline,
+  );
   return (
     <div className="page-stack">
-      <div className="page-heading"><div><p className="eyebrow">{t("MEASURE & COMPARE")}</p><h1>{t("Benchmark matrix")}</h1><p className="muted">{t("A clear view of how your OCR pipelines perform on the same test cases.")}</p></div><button className="button secondary" onClick={() => setRevision((value) => value + 1)} disabled={loading}><RefreshCw size={15} className={loading ? "animate-spin" : ""} /> {t("Refresh")}</button></div>
-
-      <div className="panel filters flex flex-wrap items-end gap-4 p-5">
-        <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-600"><SlidersHorizontal size={16} /> {t("Filters")}</span>
-        <label className="field min-w-44 flex-1">{t("Category")}<select className="select" value={filters.category || ""} onChange={(event) => setFilter("category", event.target.value)}><option value="">{t("All categories")}</option>{categories.map((category) => <option key={category.id} value={category.code}>{categoryLabel(category)}</option>)}</select></label>
-        <label className="field min-w-44 flex-1">Pipeline<select className="select" value={filters.pipeline || ""} onChange={(event) => setFilter("pipeline", event.target.value)}><option value="">{t("All pipelines")}</option>{pipelines.map((pipeline) => <option key={pipeline.pipeline_id} value={pipeline.pipeline_id}>{pipelineLabel(pipeline.pipeline_id, pipeline.name)}</option>)}</select></label>
-        <label className="field">{t("From")}<input className="input" type="date" value={filters.date_from || ""} onChange={(event) => setFilter("date_from", event.target.value)} /></label>
-        <label className="field">{t("To")}<input className="input" type="date" min={filters.date_from} value={filters.date_to || ""} onChange={(event) => setFilter("date_to", event.target.value)} /></label>
-        <label className="field">{t("Document ID")}<input className="input" placeholder={t("Paste a document UUID")} defaultValue={filters.document || ""} key={filters.document || "empty"} onBlur={event => setFilter("document", event.target.value.trim())} /></label>
-        {Object.values(filters).some(Boolean) && <button className="button secondary" onClick={() => setFilters({})}>{t("Clear")}</button>}
-      </div>
-
-      {invalidDates && <div className="error-banner" role="alert">{t("The end date must be on or after the start date.")}</div>}
-      {error && <div className="error-banner" role="alert">{error} <button className="underline" onClick={() => setRevision((value) => value + 1)}>{t("Try again")}</button></div>}
-      {loading ? <div className="panel empty-state min-h-80"><Loader2 className="mx-auto mb-3 animate-spin text-indigo-500" size={26} /><p>{t("Loading benchmark results…")}</p></div> : !error && !invalidDates && <>
-        <div className="metric-grid grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="stat-card"><span className="flex items-center justify-between text-xs font-medium text-slate-500">{t("PIPELINES WITH RESULTS")} <BarChart3 size={16} /></span><strong className="mt-4 block text-3xl font-semibold tracking-tight">{rows.filter((row) => row.tests > 0).length}<span className="ml-2 text-sm font-normal text-slate-400">/ {rows.length}</span></strong><p className="mt-2 text-xs text-slate-500">{t("Within selected filters")}</p></div>
-          <div className="stat-card"><span className="flex items-center justify-between text-xs font-medium text-slate-500">{t("EVALUATED RESULTS")} <CheckCheck size={16} /></span><strong className="mt-4 block text-3xl font-semibold tracking-tight">{evaluated.toLocaleString()}</strong><p className="mt-2 text-xs text-slate-500">{t("Latest runs with ground truth")}</p></div>
-          <div className="stat-card"><span className="flex items-center justify-between text-xs font-medium text-slate-500">{t("LOWEST CHARACTER ERROR")} <ArrowDownRight size={16} /></span><strong className="mt-4 block text-3xl font-semibold tracking-tight text-indigo-600">{percent(best?.cer)}</strong><p className="mt-2 text-xs text-slate-500">{best?.pipeline_name || t("Awaiting evaluated results")}</p></div>
-          <div className="stat-card"><span className="flex items-center justify-between text-xs font-medium text-slate-500">{t("AVERAGE PROCESSING TIME")} <Timer size={16} /></span><strong className="mt-4 block text-3xl font-semibold tracking-tight">{avgTime == null ? "—" : Math.round(avgTime).toLocaleString()}<span className="ml-2 text-sm font-normal text-slate-400">{avgTime == null ? "" : "ms"}</span></strong><p className="mt-2 text-xs text-slate-500">{t("Across successful latest runs")}</p></div>
+      <PageHeader
+        title="เปรียบเทียบ Pipeline"
+        description="ดูผลแต่ละชุดทดสอบควบคู่กับค่าความแม่นยำและเวลาจากชุดข้อมูลเดียวกัน"
+        actions={
+          <button
+            className="button secondary"
+            disabled={loading}
+            onClick={() => setRevision((n) => n + 1)}
+          >
+            <RefreshCw size={16} />
+            รีเฟรช
+          </button>
+        }
+      />
+      <FilterBar
+        count={
+          Object.values(filters).filter(Boolean).length +
+          Number(!!search) +
+          Number(onlyGT)
+        }
+        onClear={() => {
+          setFilters({});
+          setSearch("");
+          setOnlyGT(false);
+          setOffset(0);
+        }}
+      >
+        <DatasetFilters
+          value={filters}
+          categories={categories}
+          pipelines={pipelines}
+          onChange={(k, v) => {
+            setFilters((old) => ({ ...old, [k]: v || undefined }));
+            setOffset(0);
+          }}
+        />
+        <label className="field">
+          ค้นหาเอกสารในหน้านี้
+          <input
+            className="input"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="ชื่อเอกสาร"
+          />
+        </label>
+        <label className="field">
+          Document ID
+          <input
+            className="input"
+            value={filters.document || ""}
+            onChange={(e) => {
+              setFilters((old) => ({
+                ...old,
+                document: e.target.value || undefined,
+              }));
+              setOffset(0);
+            }}
+            placeholder="UUID"
+          />
+        </label>
+      </FilterBar>
+      {invalid && (
+        <p className="error-banner" role="alert">
+          วันที่สิ้นสุดต้องไม่อยู่ก่อนวันเริ่มต้น
+        </p>
+      )}
+      {error && (
+        <div className="error-banner" role="alert">
+          ไม่สามารถโหลดผลเปรียบเทียบได้: {error}{" "}
+          <button
+            className="button small"
+            onClick={() => setRevision((n) => n + 1)}
+          >
+            ลองใหม่
+          </button>
         </div>
-        <section className="panel overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-5"><div><h2 className="section-title">{t("Pipeline comparison")}</h2><p className="mt-1 text-xs text-slate-500">{t("Final OCR text compared with normalized ground truth")}</p></div><span className="badge">{t("CER is the primary metric")}</span></div><MatrixTable rows={rows} /></section>
-        {!rows.some((row) => row.tests > 0) && <div className="panel empty-state py-10"><FlaskConical size={28} className="mx-auto mb-3 text-indigo-400" /><h2 className="font-semibold text-slate-800">{t("Your benchmark starts with a test")}</h2><p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">{t("Upload a document, run the pipelines, and add ground truth to see measured comparisons here.")}</p><Link className="button primary mt-5" href="/">{t("Open testing workspace")}</Link></div>}
-        <div className="rounded-xl border border-indigo-100 bg-indigo-50/60 px-5 py-4 text-xs leading-6 text-indigo-900"><strong>{t("Reading these results.")}</strong> {t("Lower CER and WER are better; higher exact match is better. CER compares Unicode characters and is the primary metric for Thai OCR. WER uses whitespace tokens, which do not represent semantic Thai word boundaries. Error rates can exceed 100% when predictions contain many insertions. Pipelines may have different evaluated sample counts.")}</div>
-      </>}
+      )}
+      {loading ? (
+        <LoadingState label="กำลังโหลดผลเปรียบเทียบ…" />
+      ) : (
+        !invalid &&
+        !error && (
+          <>
+            <div className="stat-grid">
+              <Stat
+                label="ชุดทดสอบในหน้าตารางนี้"
+                value={cases.length}
+                note={`มี Ground Truth ${cases.filter((c) => c.ground_truth_raw !== null).length} ชุด`}
+              />
+              <Stat
+                label="ผลที่ประเมินความแม่นยำแล้ว"
+                value={rows.reduce((n, r) => n + r.evaluated_runs, 0)}
+                note="จำนวนผลจากทุก Pipeline ตามตัวกรอง API"
+              />
+              <Stat
+                label="CER ต่ำที่สุด ↓"
+                value={percent(best?.cer)}
+                note={
+                  best
+                    ? pipelineLabel(best.pipeline_id, best.pipeline_name)
+                    : "ต้องมี Ground Truth"
+                }
+              />
+              <Stat
+                label="Pipeline ที่เร็วที่สุด ↓"
+                value={fastest ? `${Math.round(fastest.avg_time_ms!)} ms` : "—"}
+                note={
+                  fastest
+                    ? pipelineLabel(fastest.pipeline_id, fastest.pipeline_name)
+                    : "ยังไม่มีผลสำเร็จ"
+                }
+              />
+            </div>
+            {cases.length ? (
+              <section className="panel">
+                <div className="panel-header">
+                  <div>
+                    <h2>เปรียบเทียบรายชุดทดสอบ</h2>
+                    <p className="filter-note">
+                      ผลล่าสุดต่อ Pipeline · ช่องที่ไม่มี Ground Truth แสดง —
+                    </p>
+                  </div>
+                  <label className="flex gap-2 text-sm items-center">
+                    <input
+                      type="checkbox"
+                      checked={onlyGT}
+                      onChange={(e) => setOnlyGT(e.target.checked)}
+                    />
+                    เฉพาะชุดที่มี Ground Truth ในหน้านี้
+                  </label>
+                </div>
+                {visible.length ? (
+                  <div
+                    className="table-wrap"
+                    tabIndex={0}
+                    role="region"
+                    aria-label="ตารางข้อมูล เลื่อนแนวนอนเพื่อดูคอลัมน์เพิ่มเติม"
+                  >
+                    <table
+                      className="data-table"
+                      style={{ minWidth: 900 }}
+                      aria-label="เปรียบเทียบรายชุดทดสอบ"
+                    >
+                      <thead>
+                        <tr>
+                          <th scope="col">เอกสาร / หน้า</th>
+                          {selected.map((p) => (
+                            <th scope="col" key={p.pipeline_id}>
+                              {pipelineLabel(p.pipeline_id, p.name)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {visible.map((c) => (
+                          <tr key={c.id}>
+                            <td>
+                              <Link
+                                className="row-title"
+                                href={`/test/${c.id}`}
+                              >
+                                {c.document.filename}
+                              </Link>
+                              <span className="row-meta">
+                                หน้า {c.page_number ?? 1} ·{" "}
+                                {c.ground_truth_raw === null
+                                  ? "รอ Ground Truth"
+                                  : "มี Ground Truth"}
+                              </span>
+                            </td>
+                            {selected.map((p) => {
+                              const r = [...c.runs]
+                                .reverse()
+                                .find((r) => r.pipeline_id === p.pipeline_id);
+                              return (
+                                <td key={p.pipeline_id}>
+                                  {!r ? (
+                                    <span className="muted">ยังไม่ทดสอบ</span>
+                                  ) : r.status === "error" ? (
+                                    <Link
+                                      className="badge error"
+                                      href={`/logs?test_case_id=${c.id}`}
+                                    >
+                                      ผิดพลาด · ดู Log
+                                    </Link>
+                                  ) : (
+                                    <>
+                                      <strong>
+                                        CER {percent(r.metrics?.cer)}
+                                      </strong>
+                                      <span className="row-meta">
+                                        WER {percent(r.metrics?.wer)} · Exact{" "}
+                                        {r.metrics
+                                          ? r.metrics.exact_match
+                                            ? "ใช่"
+                                            : "ไม่ใช่"
+                                          : "—"}
+                                      </span>
+                                      <span className="row-meta">
+                                        {r.processing_time_ms ?? "—"} ms ·
+                                        Confidence {percent(r.confidence)}
+                                      </span>
+                                    </>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="ไม่มีชุดทดสอบตามตัวกรองในหน้านี้"
+                    description="ลองล้างการค้นหา หรือเปลี่ยนหน้าตาราง"
+                  />
+                )}
+                <div className="table-footer">
+                  <span>
+                    หน้า {offset / 20 + 1} · {visible.length} ชุด
+                  </span>
+                  <div>
+                    <button
+                      className="button secondary"
+                      disabled={!offset}
+                      onClick={() => setOffset((n) => Math.max(0, n - 20))}
+                    >
+                      ก่อนหน้า
+                    </button>
+                    <button
+                      className="button secondary"
+                      disabled={!hasNext}
+                      onClick={() => setOffset((n) => n + 20)}
+                    >
+                      ถัดไป
+                    </button>
+                  </div>
+                </div>
+              </section>
+            ) : (
+              <section className="panel">
+                <EmptyState
+                  title="ยังไม่มีผลสำหรับเปรียบเทียบ"
+                  description="รัน OCR และบันทึก Ground Truth เพื่อเริ่มเปรียบเทียบความแม่นยำ"
+                  action={
+                    <Link className="button primary" href="/">
+                      เริ่มทดสอบ OCR
+                    </Link>
+                  }
+                />
+              </section>
+            )}
+            {rows.some((r) => r.tests > 0) && (
+              <section className="panel">
+                <div className="panel-header">
+                  <h2>ภาพรวมตามตัวกรองข้อมูล</h2>
+                  <span className="muted text-xs">
+                    ค่าจาก API · ไม่รวมตัวกรองเฉพาะหน้าตาราง
+                  </span>
+                </div>
+                <MatrixTable rows={rows} />
+              </section>
+            )}
+            <p className="filter-note">
+              CER / WER / เวลา: ต่ำดีกว่า · Exact Match / Confidence: สูงดีกว่า
+              · เปรียบเทียบจำนวนตัวอย่างเสมอ โดยเฉพาะเมื่อ Pipeline
+              มีผลสำเร็จไม่เท่ากัน
+            </p>
+          </>
+        )
+      )}
     </div>
   );
 }
