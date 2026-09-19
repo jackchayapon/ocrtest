@@ -67,6 +67,7 @@ for (const imageFile of [
     await expect(
       page.getByAltText(t("Selected test region crop")),
     ).toBeVisible();
+    await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
     const roiBeforeZoom = await viewer
       .getByText(/^พื้นที่ที่เลือก \(ROI\) \(/)
       .textContent();
@@ -375,6 +376,7 @@ test("ROI move and resize, selectable Auto ROI, and failure recovery", async ({
   expect(resized[3] - resized[1]).toBeGreaterThan(200);
   expect(resized[2]).toBeLessThanOrEqual(1000);
   expect(resized[3]).toBeLessThanOrEqual(1320);
+  await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
   // The test-only upstream rejects layout mode; exercise the actual backend error path.
   await page.getByLabel(t("Auto ROI mode")).selectOption("layout");
   await page
@@ -396,8 +398,28 @@ test("ROI move and resize, selectable Auto ROI, and failure recovery", async ({
   await page.mouse.click(suggestion.x, suggestion.y);
   expect(await readROI()).toEqual([80, 225, 850, 355]);
   await expect(page.getByRole("button", { name: /^พื้นที่ 1/ })).toHaveCount(0);
-  await page.getByLabel("เลือก Hutch Crop").uncheck();
-  await page.getByLabel("เลือก Hutch Full").uncheck();
+  await expect(page.getByTestId("roi-status")).toContainText("ROI ที่แนะนำ");
+  await expect(page.getByRole("button", { name: t("Run selected"), exact: true })).toBeDisabled();
+  const proposedCenter = await point(400, 280);
+  await page.mouse.move(proposedCenter.x, proposedCenter.y);
+  await page.mouse.down();
+  await page.mouse.move(proposedCenter.x + 15, proposedCenter.y + 10, { steps: 8 });
+  await page.mouse.up();
+  const adjusted = await readROI();
+  expect(adjusted[0]).toBeGreaterThan(80);
+  const proposedCorner = await point(adjusted[2], adjusted[3]);
+  await page.mouse.move(proposedCorner.x, proposedCorner.y);
+  await page.mouse.down();
+  await page.mouse.move(proposedCorner.x - 15, proposedCorner.y + 10, { steps: 8 });
+  await page.mouse.up();
+  const finalROI = await readROI();
+  expect(finalROI[2]).toBeLessThan(adjusted[2]);
+  expect(finalROI[0]).toBeGreaterThanOrEqual(0);
+  expect(finalROI[1]).toBeGreaterThanOrEqual(0);
+  expect(finalROI[2]).toBeLessThanOrEqual(1000);
+  expect(finalROI[3]).toBeLessThanOrEqual(1320);
+  await expect(page.getByTestId("roi-status")).toContainText("กำลังแก้ไข ROI");
+  await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
   const pending = page.waitForResponse(
     (response) =>
       response.url().endsWith("/run") && response.request().method() === "POST",
@@ -406,7 +428,15 @@ test("ROI move and resize, selectable Auto ROI, and failure recovery", async ({
     .getByRole("button", { name: t("Run selected"), exact: true })
     .click();
   const result = await (await pending).json();
-  expect(result.runs).toHaveLength(1);
+  expect(result.runs).toHaveLength(3);
+  for (const run of result.runs.slice(0, 2)) {
+    expect(run.roi).toEqual({ x1: finalROI[0], y1: finalROI[1], x2: finalROI[2], y2: finalROI[3] });
+    expect(run.input_width).toBe(finalROI[2] - finalROI[0]);
+  }
+  expect(result.runs[0].input_sha256).toBe(result.runs[1].input_sha256);
+  expect(result.runs[2].input_width).toBe(1000);
+  expect(result.runs[2].input_height).toBe(1320);
+  expect(result.runs[2].roi).toBeNull();
   await expect(page.getByTestId("result-text-mint")).toBeVisible();
   const bbox = result.runs[0].boxes[0].bbox;
   const textPoint = await point(

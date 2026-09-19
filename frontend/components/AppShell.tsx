@@ -18,6 +18,8 @@ const links = [
   { href: "/history", label: "ประวัติ", icon: History },
   { href: "/matrix", label: "เปรียบเทียบ", icon: BarChart3 },
   { href: "/analytics/categories", label: "วิเคราะห์", icon: Layers3 },
+  { href: "/analytics/errors", label: "ข้อผิดพลาด OCR", icon: ScanLine },
+  { href: "/dataset", label: "Dataset", icon: BookOpen },
   { href: "/logs", label: "บันทึกระบบ", icon: BookOpen },
 ];
 export default function AppShell({ children }: { children: React.ReactNode }) {

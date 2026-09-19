@@ -1,4 +1,4 @@
-export type PipelineId = "mint" | "hutch_crop" | "hutch_full";
+export type PipelineId = string;
 export type ROI = { x1: number; y1: number; x2: number; y2: number };
 export type ViewerBox = { id: string; bbox: [number, number, number, number]; polygon?: [number, number][] | null; text: string; confidence: number | null; color: string; pipelineId: string };
 export type Document = { id: string; filename: string; mime_type: string; width: number; height: number; created_at: string; storage_key: string; image_url: string; sha256?: string; document_type: "image" | "pdf"; page_count: number; page_number: number | null; pdf_render_dpi?: number | null };

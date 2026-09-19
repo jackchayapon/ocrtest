@@ -2,11 +2,11 @@ import re
 from hashlib import sha256
 
 from app.core.errors import AppError
-from app.db.models import Document, Metric, TestCase, new_id, now
+from app.db.models import Document, Metric, OCRErrorEvent, TestCase, new_id, now
 from app.repositories.benchmark_repository import BenchmarkRepository
 from app.services.image_service import ImageService
 from app.services.log_service import LogService
-from app.services.metrics_service import calculate_metrics, normalize_text
+from app.services.metrics_service import calculate_metrics, error_breakdown, normalize_text
 from app.services.pdf_service import PdfService
 from app.services.pipeline_manager import PipelineManager
 
@@ -82,7 +82,7 @@ class TestCaseService:
         return self.repository.save(record)
 
     def update(self, case_id, data):
-        record = self.repository.test_case(case_id)
+        record = self.repository.test_case(case_id, for_update=True)
         if "roi" in data.model_fields_set:
             roi = data.roi.model_dump() if data.roi else None
             self.images.validate_roi(
@@ -95,6 +95,8 @@ class TestCaseService:
                     "Create a new test case to change the ROI after OCR runs; historical predictions must keep their original region",
                     409,
                 )
+            if roi != record.roi and record.status == "confirmed":
+                record.status = "tested" if record.runs else "draft"
             record.roi = roi
             self.logs.add("roi_updated", case=record)
         if "category_codes" in data.model_fields_set and data.category_codes is not None:
@@ -107,7 +109,7 @@ class TestCaseService:
         return self.repository.save(record)
 
     def ground_truth(self, case_id, data):
-        record = self.repository.test_case(case_id)
+        record = self.repository.test_case(case_id, for_update=True)
         self._set_ground_truth(record, data.ground_truth_raw, data.confirmed)
         self.logs.add("ground_truth_updated", case=record)
         return self.repository.save(record)
@@ -134,12 +136,15 @@ class TestCaseService:
 
     @staticmethod
     def evaluate(run, ground_truth):
+        run.error_events.clear()
         if run.status != "success" or ground_truth is None:
             run.metric_records.clear()
             return
         existing = {item.text_kind: item for item in run.metric_records}
         for text_kind, text in (("raw", run.raw_text), ("final", run.final_text)):
             values = calculate_metrics(text or "", ground_truth)
+            run.error_events.extend(OCRErrorEvent(test_case_id=run.test_case_id, text_kind=text_kind, **event)
+                                    for event in error_breakdown(text or "", ground_truth))
             if text_kind in existing:
                 for key, value in values.items():
                     setattr(existing[text_kind], key, value)
@@ -156,7 +161,7 @@ class TestCaseService:
         try:
             crop = (
                 self.images.canonical_crop(original, record.roi)
-                if any(config.pipeline_id != "hutch_full" for config in configs)
+                if any(PipelineManager.requires_crop(config.pipeline_id) for config in configs)
                 else None
             )
             runs = await PipelineManager(self.settings).run(configs, original, crop, record.roi)
@@ -164,9 +169,10 @@ class TestCaseService:
             original.close()
         # Re-read ground truth after external requests; do not evaluate against stale user edits.
         self.repository.session.refresh(
-            record, attribute_names=["ground_truth_raw", "ground_truth_normalized", "status"]
+            record, attribute_names=["ground_truth_raw", "ground_truth_normalized", "status"], with_for_update=True
         )
         for run in runs:
+            run.test_case_id = record.id
             self.evaluate(run, record.ground_truth_raw)
             record.runs.append(run)
             self.logs.add("ocr_run_success" if run.status == "success" else "ocr_run_error", case=record, run=run)

@@ -133,6 +133,22 @@ class PipelineRun(Base):
     metric_records: Mapped[list["Metric"]] = relationship(
         lazy="selectin", cascade="all, delete-orphan"
     )
+    error_events: Mapped[list["OCRErrorEvent"]] = relationship(cascade="all, delete-orphan")
+
+
+class OCRErrorEvent(Base):
+    __tablename__ = "ocr_error_events"
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=new_id)
+    pipeline_run_id: Mapped[str] = mapped_column(ForeignKey("pipeline_runs.id", ondelete="CASCADE"), index=True)
+    test_case_id: Mapped[str] = mapped_column(ForeignKey("test_cases.id", ondelete="CASCADE"), index=True)
+    text_kind: Mapped[str] = mapped_column(String(10))
+    error_level: Mapped[str] = mapped_column(String(10))
+    error_type: Mapped[str] = mapped_column(String(20))
+    ground_truth_unit: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ocr_unit: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ground_truth_position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    ocr_position: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
 class Metric(Base):

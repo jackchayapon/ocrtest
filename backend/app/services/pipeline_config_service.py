@@ -1,6 +1,7 @@
 from app.core.errors import AppError
 from app.integrations.model_gateway import ModelGatewayClient
 from app.repositories.benchmark_repository import BenchmarkRepository
+from app.services.pipeline_manager import PipelineManager
 
 
 class PipelineConfigService:
@@ -10,7 +11,10 @@ class PipelineConfigService:
 
     def update(self, pipeline_id, data):
         config = self.repository.config(pipeline_id)
-        expected_engine = "custom" if pipeline_id == "mint" else "paddle"
+        adapter = PipelineManager.adapter_classes.get(pipeline_id)
+        if adapter is None:
+            raise AppError("Register an adapter with a verified API contract before configuring this pipeline", 422)
+        expected_engine = adapter.engine
         values = data.model_dump(exclude_unset=True)
         if (
             values.get("engine") not in (None, expected_engine)
@@ -28,6 +32,8 @@ class PipelineConfigService:
 
     async def test_connection(self, pipeline_id):
         config = self.repository.config(pipeline_id)
+        if pipeline_id not in PipelineManager.adapter_classes:
+            return {"status": "not_configured", "message": "No adapter is registered for this pipeline"}
         if not self.settings.api_key(pipeline_id):
             status, message = "missing_key", "ยังไม่ได้ตั้งค่า API Key"
         elif not self.settings.model_gateway_base_url or not config.endpoint:

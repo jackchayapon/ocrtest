@@ -62,6 +62,7 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   await expect(page.getByAltText(t("Selected test region crop"))).toBeVisible();
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("บริษัท ซีดีจี จำกัด");
   await page.getByRole("button", { name: "ข้อความภาษาไทย", exact: true }).click();
+  await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
   const runResponse = page.waitForResponse(response => response.url().endsWith("/run") && response.request().method() === "POST");
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const result: RunResponse = await (await runResponse).json();

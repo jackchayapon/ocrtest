@@ -96,6 +96,7 @@ def test_live_postgresql_repository_roundtrip(tmp_path, png, gateway):
             "/api/test-cases",
             json={
                 "document_id": document["id"],
+                "roi": {"x1": 10, "y1": 20, "x2": 110, "y2": 80},
                 "ground_truth_raw": "บริษัท ซีดีจี จำกัด",
                 "category_codes": ["thai_text"],
             },
@@ -113,3 +114,10 @@ def test_live_postgresql_repository_roundtrip(tmp_path, png, gateway):
         assert (
             client.get("/api/matrix", params={"document": document["id"]}).json()[0]["tests"] == 1
         )
+        assert client.put(f"/api/test-cases/{case['id']}/ground-truth",
+                          json={"ground_truth_raw": "PG label", "confirmed": True}).status_code == 200
+        analysis = client.get("/api/analytics/errors", params={"test_case_id": case["id"]})
+        assert analysis.status_code == 200 and analysis.json()["total"] > 0
+        samples = client.get("/api/dataset/samples", params={"document": document["id"]})
+        assert samples.status_code == 200 and samples.json()["total"] == 1
+        assert client.post("/api/dataset/export", json={"test_case_ids": [case["id"]]}).status_code == 200

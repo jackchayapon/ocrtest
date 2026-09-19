@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { RefreshCw, Copy } from "lucide-react";
-import { getLogs, type AppLog } from "@/lib/api";
+import { getLogs, getPipelines, type AppLog } from "@/lib/api";
+import type { PipelineConfig } from "@/types";
 import {
   PageHeader,
   FilterBar,
@@ -9,6 +10,7 @@ import {
   EmptyState,
 } from "@/components/ConsoleUI";
 export default function LogsPage() {
+  const [pipelines, setPipelines] = useState<PipelineConfig[]>([]);
   const [filters, setFilters] = useState<Record<string, string>>({}),
     [offset, setOffset] = useState(0),
     [revision, setRevision] = useState(0),
@@ -39,10 +41,11 @@ export default function LogsPage() {
       Object.entries(filters).forEach(([k, v]) => {
         if (v) q.set(k, k.startsWith("date_") ? new Date(v).toISOString() : v);
       });
-      await getLogs(q)
-        .then((d) => {
+      await Promise.all([getLogs(q), getPipelines()])
+        .then(([d, configs]) => {
           if (active) {
             setItems(d.items);
+            setPipelines(configs);
             setTotal(d.total);
           }
         })
@@ -111,8 +114,8 @@ export default function LogsPage() {
             onChange={(e) => filter("pipeline", e.target.value)}
           >
             <option value="">ทุก Pipeline</option>
-            {["mint", "hutch_crop", "hutch_full"].map((v) => (
-              <option key={v}>{v}</option>
+            {pipelines.map((p) => (
+              <option key={p.pipeline_id} value={p.pipeline_id}>{p.name}</option>
             ))}
           </select>
         </label>

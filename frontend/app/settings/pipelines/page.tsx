@@ -165,7 +165,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
           <div className="settings-summary">
             <span>
               Engine{" "}
-              <code>{saved.pipeline_id === "mint" ? "custom" : "paddle"}</code>
+              <code>{saved.engine || "—"}</code>
             </span>
             <span>
               Endpoint <code>{saved.endpoint || "ยังไม่ได้ตั้งค่า"}</code>
@@ -243,7 +243,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
                 {t("Engine")}
                 <input
                   className="input font-mono text-xs"
-                  value={saved.pipeline_id === "mint" ? "custom" : "paddle"}
+                  value={saved.engine || ""}
                   readOnly
                 />
               </label>
@@ -284,7 +284,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
               <span>{t("กรุณาตั้งค่า Gateway URL ก่อนใช้งาน")}</span>
             </p>
           )}
-          {saved.pipeline_id !== "mint" && (
+          {["hutch_crop", "hutch_full"].includes(saved.pipeline_id) && (
             <p className="mt-3 text-xs leading-5 text-slate-500">
               {t(
                 "Hutch request parameters are fixed for this benchmark: unclip ratio 1.7 · detection threshold 0.25 · box threshold 0.6.",
@@ -401,7 +401,7 @@ export default function PipelineSettingsPage() {
     <div className="page-stack">
       <PageHeader
         title="ตั้งค่า Pipeline"
-        description="เปิดใช้งานและตรวจการเชื่อมต่อ OCR ทั้งสาม Pipeline"
+        description="เปิดใช้งานและตรวจการเชื่อมต่อ OCR ของแต่ละ Pipeline"
       />
       <div className="flex items-start gap-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-5">
         <ShieldCheck size={20} className="mt-0.5 shrink-0 text-indigo-500" />

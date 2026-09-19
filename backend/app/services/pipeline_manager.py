@@ -19,14 +19,24 @@ class PipelineManager:
     def __init__(self, settings):
         self.settings = settings
 
+    @classmethod
+    def requires_crop(cls, pipeline_id):
+        adapter = cls.adapter_classes.get(pipeline_id)
+        return adapter is not None and adapter.requires_crop
+
     async def run(self, configs, original_image, cropped_image, roi):
         async def run_one(config):
-            adapter = self.adapter_classes[config.pipeline_id](config, self.settings)
             request_id = f"ocr_{uuid4().hex}"
+            adapter_class = self.adapter_classes.get(config.pipeline_id)
+            if adapter_class is None:
+                return PipelineRun(pipeline_id=config.pipeline_id, pipeline_name=config.name,
+                                   status="error", error_code="ADAPTER_NOT_CONFIGURED",
+                                   error_message="No adapter is registered for this pipeline", boxes=[], request_id=request_id)
+            adapter = adapter_class(config, self.settings)
             try:
                 result = await adapter.run(
                     original_image=original_image,
-                    cropped_image=None if config.pipeline_id == "hutch_full" else cropped_image,
+                    cropped_image=cropped_image if adapter.requires_crop else None,
                     roi=roi,
                     request_id=request_id,
                 )

@@ -20,8 +20,8 @@ class BenchmarkRepository:
             raise AppError("Document not found", 404)
         return record
 
-    def test_case(self, case_id: str) -> TestCase:
-        record = self.session.get(TestCase, case_id)
+    def test_case(self, case_id: str, *, for_update=False) -> TestCase:
+        record = self.session.get(TestCase, case_id, with_for_update=for_update)
         if record is None:
             raise AppError("Test case not found", 404)
         return record
@@ -38,7 +38,7 @@ class BenchmarkRepository:
     def configs(self) -> list[PipelineConfig]:
         return sorted(
             self.session.scalars(select(PipelineConfig)),
-            key=lambda row: ("mint", "hutch_crop", "hutch_full").index(row.pipeline_id),
+            key=lambda row: ({"mint": 0, "hutch_crop": 1, "hutch_full": 2}.get(row.pipeline_id, 3), row.pipeline_id),
         )
 
     def config(self, pipeline_id: str) -> PipelineConfig:

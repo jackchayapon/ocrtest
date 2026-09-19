@@ -1,6 +1,6 @@
 import re
 from datetime import date
-from typing import Literal
+from typing import Annotated, Literal
 from urllib.parse import urlsplit
 from uuid import UUID
 
@@ -44,7 +44,7 @@ class GroundTruthUpdate(InputModel):
 
 
 class RunRequest(InputModel):
-    pipelines: list[Literal["mint", "hutch_crop", "hutch_full"]] = Field(min_length=1, max_length=3)
+    pipelines: list[Annotated[str, Field(min_length=1, max_length=50, pattern=r"^[a-z][a-z0-9_]*$")]] = Field(min_length=1, max_length=100)
 
     @field_validator("pipelines")
     @classmethod
@@ -125,7 +125,7 @@ class PipelineConfigUpdate(InputModel):
 
 class BenchmarkFilters(BaseModel):
     category: str | None = None
-    pipeline: Literal["mint", "hutch_crop", "hutch_full"] | None = None
+    pipeline: str | None = Field(default=None, max_length=50)
     date_from: date | None = None
     date_to: date | None = None
     document: UUID | None = None
@@ -149,3 +149,24 @@ class AutoROIRequest(InputModel):
     page_number: int | None = Field(default=None, ge=1, strict=True)
     auto_roi_mode: Literal["text-line", "layout", "hybrid"] = "text-line"
     expand_text_rois: bool = False
+
+
+class ErrorFilters(BaseModel):
+    pipeline: str | None = Field(default=None, max_length=50)
+    category: str | None = Field(default=None, max_length=50)
+    error_type: Literal["substitution", "deletion", "insertion"] | None = None
+    error_level: Literal["char", "word"] = "char"
+    text_kind: Literal["raw", "final"] = "final"
+    test_case_id: UUID | None = None
+    document: UUID | None = None
+
+
+class DatasetExport(InputModel):
+    test_case_ids: list[UUID] = Field(min_length=1, max_length=200)
+
+    @field_validator("test_case_ids")
+    @classmethod
+    def unique_ids(cls, ids):
+        if len(ids) != len(set(ids)):
+            raise ValueError("Select each sample only once")
+        return ids

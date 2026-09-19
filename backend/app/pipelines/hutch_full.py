@@ -17,6 +17,7 @@ class HutchFullPipelineAdapter(HutchCropPipelineAdapter):
     """Send the full raster without ROI or local cropping."""
 
     crop_stage = "full_image"
+    requires_crop = False
 
     def prepare_input(self, original_image, cropped_image, roi):
         if cropped_image is not None:

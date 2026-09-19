@@ -49,6 +49,7 @@ export default function TestingWorkspace({
   const [document, setDocument] = useState<Document | null>(null);
   const [testCase, setTestCase] = useState<TestCase | null>(null);
   const [roi, setRoi] = useState<ROI | null>(null);
+  const [roiState, setRoiState] = useState<"editing" | "suggested" | "confirmed">("confirmed");
   const [groundTruth, setGroundTruth] = useState("");
   const [gtTouched, setGtTouched] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -66,9 +67,7 @@ export default function TestingWorkspace({
     null,
   );
   const [testMode, setTestMode] = useState("single");
-  const [resultTab, setResultTab] = useState(
-    initialTestCaseId ? "mint" : "all",
-  );
+  const [resultTab, setResultTab] = useState("all");
   const [suggestions, setSuggestions] = useState<AutoROISuggestion[]>([]);
   const [autoMode, setAutoMode] = useState("text-line");
   const [maxUploadMB, setMaxUploadMB] = useState(20);
@@ -85,6 +84,7 @@ export default function TestingWorkspace({
         if (!active) return;
         setMaxUploadMB(uploadConfig.max_upload_mb);
         setPipelines(configs);
+        if (initialTestCaseId) setResultTab(configs[0]?.pipeline_id ?? "all");
         setSelectedPipelines(
           configs.filter((p) => p.enabled).map((p) => p.pipeline_id),
         );
@@ -100,6 +100,7 @@ export default function TestingWorkspace({
           setDocument(saved.document);
           setTestCase(saved);
           setRoi(saved.roi);
+          setRoiState("confirmed");
           setGroundTruth(saved.ground_truth_raw ?? "");
           setGtTouched(saved.ground_truth_raw !== null);
           setCategoryCodes(saved.categories.map((c) => c.code));
@@ -237,10 +238,12 @@ export default function TestingWorkspace({
       window.history.replaceState(null, "", "/");
     }
     setRoi(next);
+    setRoiState(next ? "editing" : "confirmed");
   }
 
   async function ensureCase(): Promise<TestCase> {
     if (!document) throw new Error(t("Upload a document first."));
+    if (roi && roiState !== "confirmed") throw new Error("กรุณายืนยัน ROI ก่อนบันทึกหรือรัน OCR");
     let saved: TestCase;
     if (!testCase) {
       saved = await api.createTestCase({
@@ -318,7 +321,7 @@ export default function TestingWorkspace({
       setSelectedBoxId(null);
       setRegionMode(false);
       setSuggestions([]);
-      setResultTab("mint");
+      setResultTab(pipelines[0]?.pipeline_id ?? "all");
       setInlineReview(true);
       requestAnimationFrame(() =>
         window.document
@@ -638,6 +641,8 @@ export default function TestingWorkspace({
                       suggestions={suggestions}
                       onSelectSuggestion={(s) => {
                         changeRoi(s.roi);
+                        setRoiState("suggested");
+                        setRegionMode(false);
                         setSuggestions([]);
                       }}
                     />
@@ -665,10 +670,17 @@ export default function TestingWorkspace({
                   />
                   <div>
                     <strong>พื้นที่ทดสอบ Mint / Hutch Crop</strong>
+                    <p role="status" data-testid="roi-status">
+                      {roiState === "confirmed" ? "ยืนยัน ROI แล้ว" : roiState === "suggested" ? "ROI ที่แนะนำ · ลากหรือปรับขนาดได้" : "กำลังแก้ไข ROI · ลากหรือปรับขนาดได้"}
+                    </p>
                     <p>
                       {roi.x2 - roi.x1} × {roi.y2 - roi.y1} px · PNG จาก backend
                     </p>
                   </div>
+                  <button className="button secondary" disabled={!!busy || roiState === "confirmed"}
+                    onClick={() => { setRoiState("confirmed"); setRegionMode(false); }}>
+                    ยืนยัน ROI
+                  </button>
                 </div>
               )}
               {testMode !== "batch" && (
@@ -724,6 +736,8 @@ export default function TestingWorkspace({
                           className="button small"
                           onClick={() => {
                             changeRoi(s.roi);
+                            setRoiState("suggested");
+                            setRegionMode(false);
                             setSuggestions([]);
                           }}
                         >
@@ -741,6 +755,7 @@ export default function TestingWorkspace({
                 </section>
               )}
               {!!latestRuns.length && <CropDebugPanel runs={latestRuns} />}
+              {testCase && <Link className="button secondary" href={`/analytics/errors?test_case_id=${testCase.id}`}>วิเคราะห์ข้อผิดพลาดของชุดทดสอบนี้</Link>}
             </div>
             <aside className="inspector">
               {!!latestRuns.length && (
@@ -881,7 +896,7 @@ export default function TestingWorkspace({
                 </button>
                 <button
                   className="button secondary"
-                  disabled={!!busy || !pipelines.some((p) => p.enabled)}
+                  disabled={!!busy || (!!roi && roiState !== "confirmed") || !pipelines.some((p) => p.enabled)}
                   onClick={() =>
                     run(
                       pipelines
@@ -894,7 +909,7 @@ export default function TestingWorkspace({
                 </button>
                 <button
                   className="button primary"
-                  disabled={!!busy || !selectedPipelines.length}
+                  disabled={!!busy || (!!roi && roiState !== "confirmed") || !selectedPipelines.length}
                   onClick={() => run(selectedPipelines)}
                 >
                   {busy === t("Running pipelines")

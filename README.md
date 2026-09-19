@@ -2,6 +2,8 @@
 
 แอปทดสอบและเปรียบเทียบ OCR จากภาพหรือหน้า PDF ผู้ใช้เลือก ROI กรอก Ground Truth ดูกรอบข้อความและผล CER/WER แล้วเปิดประวัติ ตาราง Matrix และผลแยกประเภทข้อมูลได้ ระบบเรียก OCR ภายนอกเท่านั้น ไม่มีการโหลดโมเดลหรือ GPU ในแอป
 
+ฟีเจอร์เพิ่มเติม: [การยืนยัน ROI, วิเคราะห์ข้อผิดพลาด และ Dataset Builder](docs/error-analysis-dataset.md) พร้อม API, migration และรูปแบบ label ที่ส่งออก
+
 ## สถาปัตยกรรมและ 3 Pipeline
 
 Next.js/TypeScript/Tailwind/react-konva → FastAPI → Model Gateway ส่วน FastAPI เก็บข้อมูลผ่าน SQLAlchemy 2 + psycopg 3 ไปยัง PostgreSQL/Neon และเก็บไฟล์ผ่าน StorageService แยกจากฐานข้อมูล

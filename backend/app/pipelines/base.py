@@ -26,6 +26,7 @@ class PipelineResult:
 
 
 class OCRPipelineAdapter(ABC):
+    requires_crop = True
     engine = ""
     detector = ""
     recognizer = "th_PP-OCRv5_mobile_rec"
