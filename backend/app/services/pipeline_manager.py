@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from app.db.models import PipelineRun
 from app.integrations.model_gateway import GatewayError
+from app.pipelines.benchmark import BenchmarkPipelineAdapter
 from app.pipelines.hutch_crop import HutchCropPipelineAdapter
 from app.pipelines.hutch_full import HutchFullPipelineAdapter
 from app.pipelines.mint import MintPipelineAdapter
@@ -14,6 +15,7 @@ class PipelineManager:
         "mint": MintPipelineAdapter,
         "hutch_crop": HutchCropPipelineAdapter,
         "hutch_full": HutchFullPipelineAdapter,
+        "benchmark": BenchmarkPipelineAdapter,
     }
 
     def __init__(self, settings):

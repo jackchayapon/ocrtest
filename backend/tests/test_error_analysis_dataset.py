@@ -198,7 +198,7 @@ def test_future_config_is_iterable_without_invented_adapter(client, case):
     with client.app.state.database.session_factory() as session:
         session.add(PipelineConfig(pipeline_id="future", name="Future", enabled=False))
         session.commit()
-    assert len(client.get("/api/pipelines").json()) == 4
+    assert len(client.get("/api/pipelines").json()) == 5
     response = client.post(
         f"/api/test-cases/{case['id']}/run",
         json={"pipelines": ["mint", "hutch_crop", "hutch_full", "future"]},

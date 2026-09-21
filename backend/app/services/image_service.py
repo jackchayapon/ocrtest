@@ -101,3 +101,25 @@ class ImageService:
             return CanonicalCrop(png, crop.width, crop.height, sha256(png).hexdigest())
         finally:
             crop.close()
+
+    def rectify_quad(self, image: Image.Image, polygon) -> bytes:
+        """Lossless line PNG from a DET quadrilateral ordered TL, TR, BR, BL.
+
+        Used only by the separate Benchmark DET/REC adapter. The canonical ROI
+        supplied to detection is never resized or re-encoded here.
+        """
+        quad = np.asarray(polygon, dtype=np.float32)
+        if (quad.shape != (4, 2) or not np.isfinite(quad).all()
+                or not cv2.isContourConvex(quad) or abs(cv2.contourArea(quad)) < 1
+                or (quad < 0).any() or (quad[:, 0] > image.width).any()
+                or (quad[:, 1] > image.height).any()):
+            raise ValueError("Invalid detection quadrilateral")
+        width = max(1, round(max(np.linalg.norm(quad[1] - quad[0]), np.linalg.norm(quad[2] - quad[3]))))
+        height = max(1, round(max(np.linalg.norm(quad[3] - quad[0]), np.linalg.norm(quad[2] - quad[1]))))
+        if width * height > self.settings.max_image_pixels or max(width, height) > self.settings.max_image_dimension:
+            raise ValueError("Detection crop exceeds image limits")
+        target = np.float32([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]])
+        pixels = cv2.warpPerspective(np.asarray(image), cv2.getPerspectiveTransform(quad, target),
+                                     (width, height), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+        with Image.fromarray(pixels) as crop:
+            return self.encode_png(crop)

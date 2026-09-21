@@ -72,7 +72,7 @@ class PipelineConfigUpdate(InputModel):
     endpoint: str = Field(default="", max_length=500)
     http_method: Literal["POST"] = "POST"
     request_format: Literal["multipart", "json_base64"] = "multipart"
-    file_field_name: Literal["image"] = "image"
+    file_field_name: Literal["image", "images"] = "image"
     enabled: bool = True
     engine: str | None = Field(default=None, max_length=100)
     include_roi: Literal[False] = False
@@ -81,8 +81,8 @@ class PipelineConfigUpdate(InputModel):
     @field_validator("query_params")
     @classmethod
     def validate_query(cls, value):
-        if set(value) - {"engine"}:
-            raise ValueError("Only the non-secret engine query parameter is supported")
+        if set(value) - {"engine", "version"}:
+            raise ValueError("Only non-secret engine/version query parameters are supported")
         return value
 
     @field_validator("base_url")

@@ -66,8 +66,8 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   const runResponse = page.waitForResponse(response => response.url().endsWith("/run") && response.request().method() === "POST");
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const result: RunResponse = await (await runResponse).json();
-  expect(result.runs).toHaveLength(3);
-  expect(result.runs.map(run => run.status)).toEqual(["success", "success", "success"]);
+  expect(result.runs).toHaveLength(4);
+  expect(result.runs.map(run => run.status)).toEqual(["success", "success", "success", "success"]);
   expect(result.runs[2].status).toBe("success");
   expect(result.runs[2].input_width).toBe(selected.width);
   expect(result.runs[2].input_height).toBe(selected.height);

@@ -669,7 +669,7 @@ export default function TestingWorkspace({
                     unoptimized
                   />
                   <div>
-                    <strong>พื้นที่ทดสอบ Mint / Hutch Crop</strong>
+                    <strong>พื้นที่ทดสอบสำหรับ Pipeline แบบ crop</strong>
                     <p role="status" data-testid="roi-status">
                       {roiState === "confirmed" ? "ยืนยัน ROI แล้ว" : roiState === "suggested" ? "ROI ที่แนะนำ · ลากหรือปรับขนาดได้" : "กำลังแก้ไข ROI · ลากหรือปรับขนาดได้"}
                     </p>

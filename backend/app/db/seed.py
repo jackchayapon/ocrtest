@@ -55,6 +55,9 @@ def seed_database(session, settings: Settings):
         ),
     ]
     existing_pipelines = set(session.scalars(select(PipelineConfig.pipeline_id)))
+    configs.append(dict(pipeline_id="benchmark", name="Benchmark", base_url=settings.model_gateway_base_url,
+                        endpoint="/api/v1/text-detection-batches", engine="det_v6_rec_v5",
+                        query_params={"version": "6"}, request_format="multipart", file_field_name="images"))
     session.add_all(
         PipelineConfig(**item) for item in configs if item["pipeline_id"] not in existing_pipelines
     )

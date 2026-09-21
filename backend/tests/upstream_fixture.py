@@ -6,6 +6,14 @@ TEXT = "บริษัท ซีดีจี จำกัด"
 
 
 def response(request):
+    if request.url.path.endswith("text-detection-batches"):
+        return httpx.Response(200, json={"data": {
+            "contract_version": "leaf-inference-v1", "kind": "text_detection_batch", "count": 1,
+            "result": {"results": [{"dt_polys": [[[2, 3], [50, 3], [50, 30], [2, 30]]], "dt_scores": [0.95]}]},
+        }, "meta": {"request_id": "fixture-det", "duration_ms": 100, "service": "test-only-upstream"}})
+    if request.url.path.endswith("text-recognition-batches"):
+        return httpx.Response(200, json={"data": {"results": [{"text": TEXT, "confidence": 0.97}], "count": 1},
+                                        "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
     if request.url.path.endswith("document-layouts"):
         from tests.test_gateway_and_fairness import multipart
 

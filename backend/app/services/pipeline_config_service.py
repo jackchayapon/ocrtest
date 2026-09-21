@@ -16,6 +16,18 @@ class PipelineConfigService:
             raise AppError("Register an adapter with a verified API contract before configuring this pipeline", 422)
         expected_engine = adapter.engine
         values = data.model_dump(exclude_unset=True)
+        if pipeline_id == "benchmark":
+            fixed = dict(endpoint="/api/v1/text-detection-batches", engine=expected_engine,
+                         query_params={"version": "6"}, request_format="multipart", file_field_name="images")
+            if any(key in values and values[key] != value for key, value in fixed.items()):
+                raise AppError("Benchmark uses fixed DET V6 / REC V5 batch endpoints without a model parameter", 422)
+            for key, value in {**values, **fixed}.items():
+                setattr(config, key, value)
+            config.include_roi = False
+            config.last_connection_status = None
+            return self.repository.save(config)
+        if set(values.get("query_params", {})) - {"engine"} or values.get("file_field_name", "image") != "image":
+            raise AppError("This pipeline uses the image field and engine query parameter", 422)
         if (
             values.get("engine") not in (None, expected_engine)
             or values.get("query_params", {}).get("engine", expected_engine) != expected_engine

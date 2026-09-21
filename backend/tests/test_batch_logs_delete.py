@@ -109,7 +109,9 @@ def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeyp
     assert client.get("/api/logs", params={"request_id": run_id}).json()["total"] == 1
     analysis = client.get("/api/analytics/categories?category=blur").json()[0]
     assert analysis["test_cases"] == 3
-    assert all(p["successful_runs"] == 2 and p["failed_runs"] == 1 for p in analysis["pipelines"])
+    assert all(p["successful_runs"] == 2 and p["failed_runs"] == 1
+               for p in analysis["pipelines"] if p["pipeline_id"] != "benchmark")
+    assert next(p for p in analysis["pipelines"] if p["pipeline_id"] == "benchmark")["tests"] == 0
 
 
 @pytest.mark.parametrize("pages", [[0], [4], [True], [1.5], [], ["1"]])

@@ -24,7 +24,7 @@ function editable(config: PipelineConfig) {
     endpoint: config.endpoint || "",
     http_method: config.http_method,
     request_format: config.request_format,
-    file_field_name: "image",
+    file_field_name: config.file_field_name || "image",
     enabled: config.enabled,
     engine: config.engine || "",
     include_roi: false,
@@ -32,6 +32,7 @@ function editable(config: PipelineConfig) {
 }
 
 const DESCRIPTIONS: Record<string, string> = {
+  benchmark: "ใช้ ROI ที่ยืนยันแล้ว → Detection V6 → ภาพบรรทัด → Recognition V5 baseline (ไม่ส่ง model)",
   mint: t(
     "Custom OCR pipeline. Receives the selected crop, or the full image when no region is selected.",
   ),
@@ -191,6 +192,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
                 {t("Request format")}
                 <select
                   className="select"
+                  disabled={saved.pipeline_id === "benchmark"}
                   value={form.request_format}
                   onChange={(event) =>
                     change(
@@ -228,6 +230,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
                   placeholder="/api/v1/ocr-results"
                   autoComplete="off"
                   value={form.endpoint}
+                  readOnly={saved.pipeline_id === "benchmark"}
                   onChange={(event) => change("endpoint", event.target.value)}
                 />
               </label>
@@ -235,7 +238,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
                 {t("Image field")}
                 <input
                   className="input font-mono text-xs"
-                  value="image"
+                  value={form.file_field_name}
                   readOnly
                 />
               </label>

@@ -179,12 +179,26 @@ class ModelGatewayClient:
                 "Gateway is unavailable; check the connection settings", "GATEWAY_UNAVAILABLE"
             ) from None
 
+    def build_batch_request(self, *, pngs, endpoint, version, request_id):
+        """Verified leaf batch contract: repeated multipart `images` parts, in order."""
+        if not self.base_url or not pngs:
+            raise GatewayError("A Gateway URL and image batch are required", "INVALID_PIPELINE_INPUT")
+        return {
+            "method": "POST",
+            "url": self.base_url + endpoint,
+            "params": {"version": str(version)},
+            "headers": self.headers(request_id),
+            "files": [("images", (f"line-{index}.png", png, "image/png"))
+                      for index, png in enumerate(pngs)],
+        }
+
     async def status(self):
         output = {
             "gateway": "unavailable",
             "mint": "unknown",
             "hutch_crop": "unknown",
             "hutch_full": "unknown",
+            "benchmark": "unknown",  # Readiness currently does not report the leaf DET/REC services.
             "auto_roi": "unknown",
             "api_key_configured": bool(self.key),
         }
@@ -201,7 +215,7 @@ class ModelGatewayClient:
                     return {
                         **output,
                         **dict.fromkeys(
-                            ("mint", "hutch_crop", "hutch_full", "auto_roi"), "not_authenticated"
+                            ("mint", "hutch_crop", "hutch_full", "benchmark", "auto_roi"), "not_authenticated"
                         ),
                         "message": "Readiness requires valid Gateway authentication.",
                     }

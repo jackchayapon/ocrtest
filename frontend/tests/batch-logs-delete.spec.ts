@@ -53,7 +53,7 @@ test("selected PDF pages run separately; logs and confirmed deletion preserve do
     const saved = await (
       await request.get(`${backend}/api/test-cases/${id}`)
     ).json();
-    expect(saved.runs).toHaveLength(3);
+    expect(saved.runs).toHaveLength(4);
     expect(saved.ground_truth_raw).toBeNull();
   }
   await page.goto(`/logs?test_case_id=${cases[0]}`);
@@ -62,7 +62,7 @@ test("selected PDF pages run separately; logs and confirmed deletion preserve do
   ).toBeVisible();
   await expect(
     page.getByRole("cell", { name: "ocr_run_success", exact: true }),
-  ).toHaveCount(3);
+  ).toHaveCount(4);
   await page.getByLabel("ระดับ", { exact: true }).selectOption("ERROR");
   await expect(
     page.getByRole("cell", { name: "ocr_run_success", exact: true }),

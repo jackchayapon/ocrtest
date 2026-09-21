@@ -4,7 +4,7 @@
 
 ฟีเจอร์เพิ่มเติม: [การยืนยัน ROI, วิเคราะห์ข้อผิดพลาด และ Dataset Builder](docs/error-analysis-dataset.md) พร้อม API, migration และรูปแบบ label ที่ส่งออก
 
-## สถาปัตยกรรมและ 3 Pipeline
+## สถาปัตยกรรมและ Pipeline
 
 Next.js/TypeScript/Tailwind/react-konva → FastAPI → Model Gateway ส่วน FastAPI เก็บข้อมูลผ่าน SQLAlchemy 2 + psycopg 3 ไปยัง PostgreSQL/Neon และเก็บไฟล์ผ่าน StorageService แยกจากฐานข้อมูล
 
@@ -13,10 +13,13 @@ Next.js/TypeScript/Tailwind/react-konva → FastAPI → Model Gateway ส่ว�
 | Mint | App Crop → `/api/v1/ocr-results?engine=custom` → PP-OCRv5_server_det → ตัดกรอบข้อความในบริการภายนอก → th_PP-OCRv5_mobile_rec |
 | Hutch Crop | App Crop → `/api/v1/ocr-results?engine=paddle` → PP-OCRv6_medium_det + th_PP-OCRv5_mobile_rec |
 | Hutch Full | ภาพเต็ม/หน้า PDF เต็ม → Paddle `engine=paddle` โดยไม่ใช้ ROI และไม่ crop |
+| Benchmark | App Crop → DET batch V6 → perspective line crops → REC batch V5 (ไม่มี `model`) |
+
+รายละเอียด contract ที่ทดสอบจริงและการจับคู่ผล: [Benchmark pipeline](docs/benchmark-pipeline.md)
 
 Mint/Hutch Crop ใช้ PNG ชุดเดียวกัน ทั้งสอง Hutch ใช้ Paddle endpoint เดียวกัน พร้อม `text_det_unclip_ratio=1.7`, `text_det_thresh=0.25`, `text_det_box_thresh=0.6` เจ้าของ Pipeline ยืนยันว่า Hutch Full ส่งภาพเต็มเท่านั้น ไม่มี ROI
 
-Auto ROI ใช้ `/api/v1/document-layouts` เพื่อเสนอกรอบให้ผู้ใช้เลือกเท่านั้น ไม่ใช่ Pipeline ที่สี่ ไม่มีโหมดสร้าง OCR จำลองในผลิตภัณฑ์ เมื่อไม่มี API Key จะคืนข้อผิดพลาดชัดเจน
+Auto ROI ใช้ `/api/v1/document-layouts` เพื่อเสนอกรอบให้ผู้ใช้เลือกเท่านั้น ไม่ใช่ OCR Pipeline ไม่มีโหมดสร้าง OCR จำลองในผลิตภัณฑ์ เมื่อไม่มี API Key จะคืนข้อผิดพลาดชัดเจน
 
 ## สิ่งที่ต้องติดตั้ง
 
@@ -36,7 +39,7 @@ cd ..
 docker compose -p ocr-benchmark up -d postgres
 ```
 
-ตั้ง `DATABASE_URL` ใน `.env` เป็น Neon connection string โดยคง `sslmode=require` หรือปล่อยว่างเพื่อใช้ PostgreSQL local ที่ Compose เตรียมให้ ห้ามใช้ฐาน production เป็น `TEST_DATABASE_URL` กรอก Gateway key จริงใน `MODEL_GATEWAY_API_KEY` เฉพาะใน `.env` ส่วนตัว ทั้ง 3 Pipeline และ Auto ROI ใช้ key ตัวนี้ร่วมกัน แนะนำรูปแบบ `MODEL_GATEWAY_API_KEY=your_real_gateway_key` ไม่เว้นวรรครอบ `=` และไม่จำเป็นต้องใส่เครื่องหมายคำพูดสำหรับ token ทั่วไป คง key ใน `.env.example` ว่างไว้ ดู [ตัวอย่างและกติกาเครื่องหมายคำพูด](docs/deployment.md#environment)
+ตั้ง `DATABASE_URL` ใน `.env` เป็น Neon connection string โดยคง `sslmode=require` หรือปล่อยว่างเพื่อใช้ PostgreSQL local ที่ Compose เตรียมให้ ห้ามใช้ฐาน production เป็น `TEST_DATABASE_URL` กรอก Gateway key จริงใน `MODEL_GATEWAY_API_KEY` เฉพาะใน `.env` ส่วนตัว ทุก Pipeline และ Auto ROI ใช้ key ตัวนี้ร่วมกัน แนะนำรูปแบบ `MODEL_GATEWAY_API_KEY=your_real_gateway_key` ไม่เว้นวรรครอบ `=` และไม่จำเป็นต้องใส่เครื่องหมายคำพูดสำหรับ token ทั่วไป คง key ใน `.env.example` ว่างไว้ ดู [ตัวอย่างและกติกาเครื่องหมายคำพูด](docs/deployment.md#environment)
 
 เปิด backend:
 

@@ -1,0 +1,92 @@
+{
+  "data": {
+    "results": [
+      {
+        "text": "บริษัทซีดีจีจำกัด",
+        "confidence": 0.9976938962936401,
+        "segments": [
+          {
+            "text": "บริษัทซีดีจีจำกัด",
+            "confidence": 0.9976938962936401,
+            "rec_score": 0.9976938962936401
+          }
+        ],
+        "raw_segments": [
+          {
+            "rec_text": "บริษัทซีดีจีจำกัด",
+            "rec_score": 0.9976938962936401
+          }
+        ],
+        "predictions": [
+          {
+            "rec_text": "บริษัทซีดีจีจำกัด",
+            "rec_score": 0.9976938962936401
+          }
+        ],
+        "preprocessing": "recognition_only",
+        "engine": "paddle_thai_ocr",
+        "model": "th_PP-OCRv5_mobile_rec"
+      },
+      {
+        "text": "OCR LAB",
+        "confidence": 0.9984607696533203,
+        "segments": [
+          {
+            "text": "OCR LAB",
+            "confidence": 0.9984607696533203,
+            "rec_score": 0.9984607696533203
+          }
+        ],
+        "raw_segments": [
+          {
+            "rec_text": "OCR LAB",
+            "rec_score": 0.9984607696533203
+          }
+        ],
+        "predictions": [
+          {
+            "rec_text": "OCR LAB",
+            "rec_score": 0.9984607696533203
+          }
+        ],
+        "preprocessing": "recognition_only",
+        "engine": "paddle_thai_ocr",
+        "model": "th_PP-OCRv5_mobile_rec"
+      },
+      {
+        "text": "OCR-DEMO-001",
+        "confidence": 0.9996982216835022,
+        "segments": [
+          {
+            "text": "OCR-DEMO-001",
+            "confidence": 0.9996982216835022,
+            "rec_score": 0.9996982216835022
+          }
+        ],
+        "raw_segments": [
+          {
+            "rec_text": "OCR-DEMO-001",
+            "rec_score": 0.9996982216835022
+          }
+        ],
+        "predictions": [
+          {
+            "rec_text": "OCR-DEMO-001",
+            "rec_score": 0.9996982216835022
+          }
+        ],
+        "preprocessing": "recognition_only",
+        "engine": "paddle_thai_ocr",
+        "model": "th_PP-OCRv5_mobile_rec"
+      }
+    ],
+    "count": 3
+  },
+  "meta": {
+    "request_id": "benchmark-rec-contract-ordered",
+    "api_version": "v1",
+    "service": "model-api-gateway",
+    "duration_ms": 338.56,
+    "model": "pipeline-router-v1"
+  }
+}
