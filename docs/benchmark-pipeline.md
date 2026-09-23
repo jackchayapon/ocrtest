@@ -38,7 +38,7 @@ Both envelopes have `meta.request_id`, `api_version`, `service`, `model`, and `d
 
 ## Composition and persistence
 
-- TestCaseService prepares the same canonical PNG for Mint, Hutch Crop and Benchmark. Hutch Full continues to receive the complete selected image/PDF page and ignores ROI.
+- TestCaseService prepares the same canonical PNG for Mint, Hutch Crop and Benchmark. Hutch Full uses the complete selected image/PDF page for Auto ROI or no ROI; for explicit Manual ROI it creates the canonical crop inside its adapter. Benchmark DET/REC requests are unchanged; see [Field GT and ROI rules](fields-roi-dataset.md).
 - Benchmark keeps DET's output order (which is not necessarily reading order). It rectifies each quadrilateral using OpenCV perspective transform, cubic interpolation and replicated borders, then encodes a lossless PNG in memory. Width/height are rounded maximum opposing-edge lengths; no orientation classification or text correction is added.
 - REC requests contain at most eight line crops per request. This is an application batching choice, not a claim about the Gateway maximum. Empty detections return empty text without a REC call. Invalid geometry, count mismatches or malformed text fail the run rather than silently pairing text with the wrong region. At most 1,000 regions are accepted to bound work.
 - Texts are joined with LF in detection order. Raw/final text are identical at this stage. Existing PipelineManager normalization, metrics and error-event processing are reused unchanged. Confidence is the mean of available valid REC confidence values; missing confidence remains null.

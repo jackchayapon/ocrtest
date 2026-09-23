@@ -40,7 +40,7 @@ const DESCRIPTIONS: Record<string, string> = {
     "Crop input strategy. Receives an image cropped to the selected test region.",
   ),
   hutch_full: t(
-    "ส่งภาพเต็มหรือหน้า PDF เต็มไปยัง Paddle โดยไม่ใช้ ROI และไม่ครอบภาพในแอป",
+    "Auto ROI: ส่งภาพเต็มหรือหน้า PDF เต็ม · Manual ROI: ครอบตามกรอบที่ยืนยันแล้วภายใน adapter ก่อนส่ง Paddle",
   ),
 };
 
@@ -276,7 +276,7 @@ function PipelineCard({ pipeline }: { pipeline: PipelineConfig }) {
               </span>
               <span className="mt-1 block text-[10px]">
                 {t(
-                  "Mint และ Hutch Crop ส่ง PNG ที่ครอบแล้ว ส่วน Hutch Full ส่งภาพเต็มโดยไม่ใช้ ROI",
+                  "Mint / Hutch Crop / Benchmark ใช้ ROI crop; Hutch Full ใช้ภาพเต็มเมื่อ Auto ROI และใช้ crop เมื่อ Manual ROI",
                 )}
               </span>
             </div>

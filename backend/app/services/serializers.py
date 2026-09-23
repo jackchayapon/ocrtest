@@ -1,5 +1,17 @@
 from datetime import timezone
 
+from app.services.field_service import field_summary
+
+
+def field_json(field):
+    return {"id": field.id, "pipeline_run_id": field.pipeline_run_id,
+            "field_index": field.field_index, "geometry": field.geometry,
+            "ocr_text": field.ocr_text, "confidence": field.confidence,
+            "ground_truth_raw": field.ground_truth_raw,
+            "ground_truth_normalized": field.ground_truth_normalized,
+            "confirmed_at": timestamp(field.confirmed_at) if field.confirmed_at else None,
+            "evaluation": field.evaluation}
+
 
 def timestamp(value):
     return (
@@ -87,6 +99,8 @@ def run_json(record):
         "created_at": timestamp(record.created_at),
         "metrics": metrics.get("final"),
         "raw_metrics": metrics.get("raw"),
+        "fields": [field_json(field) for field in record.fields],
+        "field_summary": field_summary(record.fields),
     }
 
 
@@ -101,6 +115,7 @@ def test_case_json(record):
         ),
         "page_number": record.page_number,
         "roi": record.roi,
+        "roi_source": record.roi_source,
         "ground_truth_raw": record.ground_truth_raw,
         "ground_truth_normalized": record.ground_truth_normalized,
         "status": record.status,

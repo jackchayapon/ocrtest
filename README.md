@@ -12,12 +12,14 @@ Next.js/TypeScript/Tailwind/react-konva → FastAPI → Model Gateway ส่ว�
 | --- | --- |
 | Mint | App Crop → `/api/v1/ocr-results?engine=custom` → PP-OCRv5_server_det → ตัดกรอบข้อความในบริการภายนอก → th_PP-OCRv5_mobile_rec |
 | Hutch Crop | App Crop → `/api/v1/ocr-results?engine=paddle` → PP-OCRv6_medium_det + th_PP-OCRv5_mobile_rec |
-| Hutch Full | ภาพเต็ม/หน้า PDF เต็ม → Paddle `engine=paddle` โดยไม่ใช้ ROI และไม่ crop |
+| Hutch Full | Auto ROI/ไม่มี ROI → ภาพเต็ม; Manual ROI → crop ภายใน adapter → Paddle `engine=paddle` |
 | Benchmark | App Crop → DET batch V6 → perspective line crops → REC batch V5 (ไม่มี `model`) |
 
 รายละเอียด contract ที่ทดสอบจริงและการจับคู่ผล: [Benchmark pipeline](docs/benchmark-pipeline.md)
 
-Mint/Hutch Crop ใช้ PNG ชุดเดียวกัน ทั้งสอง Hutch ใช้ Paddle endpoint เดียวกัน พร้อม `text_det_unclip_ratio=1.7`, `text_det_thresh=0.25`, `text_det_box_thresh=0.6` เจ้าของ Pipeline ยืนยันว่า Hutch Full ส่งภาพเต็มเท่านั้น ไม่มี ROI
+Mint/Hutch Crop ใช้ PNG ชุดเดียวกัน ทั้งสอง Hutch ใช้ Paddle endpoint เดียวกัน พร้อม `text_det_unclip_ratio=1.7`, `text_det_thresh=0.25`, `text_det_box_thresh=0.6` Hutch Full ใช้ `roi_source` ชัดเจน: `auto`/`none` ส่งภาพเต็ม, `manual` crop ภายใน adapter ด้วย ImageService เดียวกัน
+
+Ground Truth เริ่มในโหมดราย Field จากกรอบ OCR ของแต่ละ PipelineRun; ตรวจเพื่อ preview แล้วกดยืนยันเพื่อบันทึก โหมดทั้งเอกสาร/ROI ยังใช้ได้ ข้อมูลย้อนหลังไม่ถูกจับคู่ข้าม Pipeline ดู [Field GT, ROI และ Dataset](docs/fields-roi-dataset.md) สำหรับ schema, API, สูตร metrics และข้อจำกัด storage
 
 Auto ROI ใช้ `/api/v1/document-layouts` เพื่อเสนอกรอบให้ผู้ใช้เลือกเท่านั้น ไม่ใช่ OCR Pipeline ไม่มีโหมดสร้าง OCR จำลองในผลิตภัณฑ์ เมื่อไม่มี API Key จะคืนข้อผิดพลาดชัดเจน
 

@@ -4,7 +4,7 @@ import PdfBatchPanel from "@/components/PdfBatchPanel";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, FileImage, Loader2, Sparkles } from "lucide-react";
 import * as api from "@/lib/api";
 import type {
@@ -14,11 +14,13 @@ import type {
   PipelineConfig,
   PipelineRun,
   ROI,
+  ROISource,
   TestCase,
   ViewerBox,
 } from "@/types";
 import DocumentUploader from "@/components/DocumentUploader";
 import GroundTruthEditor from "@/components/GroundTruthEditor";
+import FieldGroundTruth from "@/components/FieldGroundTruth";
 import CategorySelector from "@/components/CategorySelector";
 import PipelineSelector, {
   PIPELINE_COLORS,
@@ -49,6 +51,11 @@ export default function TestingWorkspace({
   const [document, setDocument] = useState<Document | null>(null);
   const [testCase, setTestCase] = useState<TestCase | null>(null);
   const [roi, setRoi] = useState<ROI | null>(null);
+  const [roiSource, setRoiSource] = useState<ROISource>("none");
+  const [activeSuggestion, setActiveSuggestion] = useState<string | null>(null);
+  const [manualRoi, setManualRoi] = useState<ROI | null>(null);
+  const [gtMode, setGtMode] = useState<"fields" | "whole">("fields");
+  const pageRegions = useRef<Record<string, { suggestions: AutoROISuggestion[]; manual: ROI | null }>>({});
   const [roiState, setRoiState] = useState<"editing" | "suggested" | "confirmed">("confirmed");
   const [groundTruth, setGroundTruth] = useState("");
   const [gtTouched, setGtTouched] = useState(false);
@@ -100,6 +107,7 @@ export default function TestingWorkspace({
           setDocument(saved.document);
           setTestCase(saved);
           setRoi(saved.roi);
+          setRoiSource(saved.roi_source ?? "none");
           setRoiState("confirmed");
           setGroundTruth(saved.ground_truth_raw ?? "");
           setGtTouched(saved.ground_truth_raw !== null);
@@ -165,6 +173,8 @@ export default function TestingWorkspace({
     setDocument(null);
     setTestCase(null);
     setRoi(null);
+    setRoiSource("none"); setActiveSuggestion(null); setManualRoi(null); pageRegions.current = {};
+    setGtMode("fields");
     setGroundTruth("");
     setGtTouched(false);
     setCategoryCodes([]);
@@ -205,13 +215,16 @@ export default function TestingWorkspace({
     void act(t("Loading page"), async () => {
       if (!document || page === document.page_number) return;
       const next = await api.getDocumentPage(document.id, page);
+      pageRegions.current[`${document.id}:${document.page_number ?? 0}`] = { suggestions, manual: manualRoi };
+      const remembered = pageRegions.current[`${document.id}:${page}`];
       setInlineReview(false);
       setDocument(next);
       setRoi(null);
+      setRoiSource("none"); setActiveSuggestion(null); setManualRoi(remembered?.manual ?? null);
       setTestCase(null);
       setRuns([]);
       setSelectedBoxId(null);
-      setSuggestions([]);
+      setSuggestions(remembered?.suggestions ?? []);
       setGroundTruth("");
       setGtTouched(false);
       if (testMode === "single") setCategoryCodes([]);
@@ -224,8 +237,8 @@ export default function TestingWorkspace({
       );
     });
 
-  function changeRoi(next: ROI | null) {
-    if (busy || JSON.stringify(roi) === JSON.stringify(next)) return;
+  function changeRoi(next: ROI | null, source: ROISource = roiSource, suggestionId = activeSuggestion) {
+    if (busy || (JSON.stringify(roi) === JSON.stringify(next) && source === roiSource && suggestionId === activeSuggestion)) return;
     if (testCase) {
       setTestCase(null);
       setRuns([]);
@@ -238,6 +251,10 @@ export default function TestingWorkspace({
       window.history.replaceState(null, "", "/");
     }
     setRoi(next);
+    setRoiSource(next ? source : "none");
+    setActiveSuggestion(next && source === "auto" ? suggestionId : null);
+    if (next && source === "manual") setManualRoi(next);
+    if (next && source === "auto" && suggestionId) setSuggestions(old => old.map(s => s.id === suggestionId ? { ...s, roi: next } : s));
     setRoiState(next ? "editing" : "confirmed");
   }
 
@@ -250,6 +267,7 @@ export default function TestingWorkspace({
         document_id: document.id,
         page_number: document.page_number,
         roi,
+        roi_source: roiSource,
         ground_truth_raw: gtTouched ? groundTruth : null,
         category_codes: categoryCodes,
       });
@@ -315,6 +333,7 @@ export default function TestingWorkspace({
       setDocument(saved.document);
       setTestCase(saved);
       setRoi(null);
+      setRoiSource("none"); setActiveSuggestion(null);
       setRuns(saved.runs);
       setGroundTruth(saved.ground_truth_raw ?? "");
       setGtTouched(saved.ground_truth_raw !== null);
@@ -336,6 +355,7 @@ export default function TestingWorkspace({
     setTestCase(null);
     setRuns([]);
     setRoi(null);
+    setRoiSource("none"); setActiveSuggestion(null);
     setGroundTruth("");
     setGtTouched(false);
     setSelectedBoxId(null);
@@ -630,6 +650,9 @@ export default function TestingWorkspace({
                       roi={testMode === "batch" ? null : roi}
                       allowRoi={testMode !== "batch"}
                       onRoiChange={changeRoi}
+                      onManualRoi={next => changeRoi(next, "manual", null)}
+                      activeSuggestionId={activeSuggestion}
+                      roiSource={roiSource}
                       boxes={boxes.filter(
                         (b) =>
                           resultTab === "all" || b.pipelineId === resultTab,
@@ -640,10 +663,9 @@ export default function TestingWorkspace({
                       onRegionModeChange={setRegionMode}
                       suggestions={suggestions}
                       onSelectSuggestion={(s) => {
-                        changeRoi(s.roi);
+                        changeRoi(s.roi, "auto", s.id);
                         setRoiState("suggested");
                         setRegionMode(false);
-                        setSuggestions([]);
                       }}
                     />
                   </div>
@@ -655,7 +677,7 @@ export default function TestingWorkspace({
                           ? messages.region(roi.x2 - roi.x1, roi.y2 - roi.y1)
                           : "เต็มหน้า · ยังไม่เลือก ROI"}
                     </span>
-                    <span>Hutch Full ใช้ภาพเต็มเสมอ</span>
+                    <span data-testid="hutch-input-rule">Hutch Full: {roiSource === "manual" && roi ? "Manual ROI crop" : "ภาพเต็ม (Auto ROI / ไม่มี ROI)"}</span>
                   </div>
                 </section>
               </div>
@@ -734,11 +756,11 @@ export default function TestingWorkspace({
                         <button
                           key={s.id}
                           className="button small"
+                          aria-pressed={activeSuggestion === s.id}
                           onClick={() => {
-                            changeRoi(s.roi);
+                            changeRoi(s.roi, "auto", s.id);
                             setRoiState("suggested");
                             setRegionMode(false);
-                            setSuggestions([]);
                           }}
                         >
                           พื้นที่ {i + 1}
@@ -752,6 +774,7 @@ export default function TestingWorkspace({
                       </button>
                     </div>
                   )}
+                  {manualRoi && <button className="button small mt-2" aria-pressed={roiSource === "manual"} onClick={() => { changeRoi(manualRoi, "manual", null); setRegionMode(false); }}>ใช้ Manual ROI ล่าสุด</button>}
                 </section>
               )}
               {!!latestRuns.length && <CropDebugPanel runs={latestRuns} />}
@@ -815,7 +838,12 @@ export default function TestingWorkspace({
                 </div>
               )}
               {testMode === "single" || detailMode || inlineReview ? (
-                <GroundTruthEditor
+                <>
+                <div className="segmented my-3" role="group" aria-label="Ground Truth Mode">
+                  <button aria-pressed={gtMode === "fields"} onClick={() => setGtMode("fields")}>ราย Field</button>
+                  <button aria-pressed={gtMode === "whole"} onClick={() => setGtMode("whole")}>ทั้งเอกสาร / ROI</button>
+                </div>
+                {gtMode === "fields" ? <FieldGroundTruth caseId={testCase?.id} runs={latestRuns.filter(r => resultTab === "all" || r.pipeline_id === resultTab)} selectedBoxId={selectedBoxId} onSelectBox={setSelectedBoxId} disabled={!!busy} onSaved={async () => { if (testCase) { const saved = await api.getTestCase(testCase.id); setTestCase(saved); setRuns(saved.runs); } }} /> : <GroundTruthEditor
                   value={groundTruth}
                   onChange={(value) => {
                     setGroundTruth(value);
@@ -827,7 +855,8 @@ export default function TestingWorkspace({
                   canSave={true}
                   status={testCase?.status}
                   dirty={dirtyGroundTruth}
-                />
+                />}
+                </>
               ) : (
                 <section className="panel panel-body">
                   <h2>ข้อความอ้างอิงรายหน้า</h2>

@@ -28,12 +28,14 @@ class TestCaseCreate(InputModel):
     document_id: UUID
     page_number: int | None = Field(default=None, ge=1, strict=True)
     roi: ROI | None = None
+    roi_source: Literal["auto", "manual", "none"] = "none"
     ground_truth_raw: str | None = Field(default=None, max_length=100000)
     category_codes: list[str] = Field(default_factory=list, max_length=30)
 
 
 class TestCaseUpdate(InputModel):
     roi: ROI | None = None
+    roi_source: Literal["auto", "manual", "none"] = "none"
     ground_truth_raw: str | None = Field(default=None, max_length=100000)
     category_codes: list[str] | None = Field(default=None, max_length=30)
 
@@ -41,6 +43,10 @@ class TestCaseUpdate(InputModel):
 class GroundTruthUpdate(InputModel):
     ground_truth_raw: str = Field(max_length=100000)
     confirmed: bool = False
+
+
+class FieldCheck(InputModel):
+    ground_truth_raw: str = Field(max_length=100000)
 
 
 class RunRequest(InputModel):
@@ -139,6 +145,7 @@ class BenchmarkFilters(BaseModel):
 
 class ROIUpdate(InputModel):
     roi: ROI | None
+    roi_source: Literal["auto", "manual", "none"] = "none"
 
 
 class CategoriesUpdate(InputModel):

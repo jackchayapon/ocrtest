@@ -13,6 +13,8 @@ interface TestRegionLayerProps {
   scale: number;
   interactive: boolean;
   drawing?: boolean;
+  label?: string;
+  onClick?: () => void;
   onChange: (roi: ROI) => void;
 }
 
@@ -25,6 +27,8 @@ export default function TestRegionLayer({
   scale,
   interactive,
   drawing = false,
+  label,
+  onClick,
   onChange,
 }: TestRegionLayerProps) {
   const shapeRef = useRef<Konva.Rect>(null);
@@ -92,11 +96,13 @@ export default function TestRegionLayer({
           commitShape();
         }}
         onTransformEnd={commitShape}
+        onClick={onClick}
+        onTap={onClick}
       />
       <Text
         x={roi.x1 + 7 / scale}
         y={roi.y1 + 7 / scale}
-        text={t("TEST REGION")}
+        text={label || t("TEST REGION")}
         fontFamily="Tahoma, sans-serif"
         fontSize={10 / scale}
         fontStyle="bold"

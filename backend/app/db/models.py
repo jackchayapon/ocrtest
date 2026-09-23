@@ -73,6 +73,8 @@ class TestCase(Base):
     page_width: Mapped[int | None] = mapped_column(Integer, nullable=True)
     page_height: Mapped[int | None] = mapped_column(Integer, nullable=True)
     roi: Mapped[dict | None] = mapped_column(JSON_TYPE, nullable=True)
+    # Legacy records keep the old full-page Hutch Full behavior; source is never guessed.
+    roi_source: Mapped[str] = mapped_column(String(10), default="none", server_default="none")
     ground_truth_raw: Mapped[str | None] = mapped_column(Text, nullable=True)
     ground_truth_normalized: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="draft")
@@ -134,6 +136,26 @@ class PipelineRun(Base):
         lazy="selectin", cascade="all, delete-orphan"
     )
     error_events: Mapped[list["OCRErrorEvent"]] = relationship(cascade="all, delete-orphan")
+    fields: Mapped[list["OCRField"]] = relationship(
+        lazy="selectin", cascade="all, delete-orphan", order_by="OCRField.field_index"
+    )
+
+
+class OCRField(Base):
+    __tablename__ = "ocr_fields"
+    __table_args__ = (UniqueConstraint("pipeline_run_id", "field_index", name="uq_ocr_fields_run_index"),)
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=new_id)
+    pipeline_run_id: Mapped[str] = mapped_column(ForeignKey("pipeline_runs.id", ondelete="CASCADE"), index=True)
+    field_index: Mapped[int] = mapped_column(Integer)
+    geometry: Mapped[dict] = mapped_column(JSON_TYPE)
+    ocr_text: Mapped[str] = mapped_column(Text)
+    confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ground_truth_raw: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ground_truth_normalized: Mapped[str | None] = mapped_column(Text, nullable=True)
+    evaluation: Mapped[dict | None] = mapped_column(JSON_TYPE, nullable=True)
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
 
 
 class OCRErrorEvent(Base):

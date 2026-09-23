@@ -109,9 +109,9 @@ class OCRPipelineAdapter(ABC):
             input_width=crop.width,
             input_height=crop.height,
             input_sha256=crop.sha256,
-            crop_width=crop.width if self.crop_stage == "app_crop" else None,
-            crop_height=crop.height if self.crop_stage == "app_crop" else None,
-            crop_sha256=crop.sha256 if self.crop_stage == "app_crop" else None,
+            crop_width=crop.width if self.crop_stage in {"app_crop", "manual_roi"} else None,
+            crop_height=crop.height if self.crop_stage in {"app_crop", "manual_roi"} else None,
+            crop_sha256=crop.sha256 if self.crop_stage in {"app_crop", "manual_roi"} else None,
             input_byte_size=len(crop.png),
             input_format="image/png",
         )

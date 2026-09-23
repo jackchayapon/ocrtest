@@ -4,6 +4,7 @@ from hashlib import sha256
 from app.core.errors import AppError
 from app.db.models import Document, Metric, OCRErrorEvent, TestCase, new_id, now
 from app.repositories.benchmark_repository import BenchmarkRepository
+from app.services.field_service import FieldService
 from app.services.image_service import ImageService
 from app.services.log_service import LogService
 from app.services.metrics_service import calculate_metrics, error_breakdown, normalize_text
@@ -61,6 +62,8 @@ class TestCaseService:
         _, width, height = self.page_image(document, page_number)
         roi = data.roi.model_dump() if data.roi else None
         self.images.validate_roi(roi, width, height)
+        if not roi and data.roi_source != "none":
+            raise AppError("ROI source requires a selected ROI", 422)
         record = TestCase(
             id=new_id(),
             document=document,
@@ -68,6 +71,7 @@ class TestCaseService:
             page_width=width if page_number else None,
             page_height=height if page_number else None,
             roi=roi,
+            roi_source=data.roi_source,
             ground_truth_raw=data.ground_truth_raw,
             ground_truth_normalized=normalize_text(data.ground_truth_raw)
             if data.ground_truth_raw is not None
@@ -83,14 +87,17 @@ class TestCaseService:
 
     def update(self, case_id, data):
         record = self.repository.test_case(case_id, for_update=True)
-        if "roi" in data.model_fields_set:
-            roi = data.roi.model_dump() if data.roi else None
+        if {"roi", "roi_source"} & data.model_fields_set:
+            roi = (data.roi.model_dump() if data.roi else None) if "roi" in data.model_fields_set else record.roi
+            source = data.roi_source if "roi_source" in data.model_fields_set else (record.roi_source if roi else "none")
+            if not roi and source != "none":
+                raise AppError("ROI source requires a selected ROI", 422)
             self.images.validate_roi(
                 roi,
                 record.page_width or record.document.width,
                 record.page_height or record.document.height,
             )
-            if record.runs and roi != record.roi:
+            if record.runs and (roi != record.roi or source != record.roi_source):
                 raise AppError(
                     "Create a new test case to change the ROI after OCR runs; historical predictions must keep their original region",
                     409,
@@ -98,6 +105,7 @@ class TestCaseService:
             if roi != record.roi and record.status == "confirmed":
                 record.status = "tested" if record.runs else "draft"
             record.roi = roi
+            record.roi_source = source
             self.logs.add("roi_updated", case=record)
         if "category_codes" in data.model_fields_set and data.category_codes is not None:
             record.categories = self.repository.categories(data.category_codes)
@@ -164,7 +172,7 @@ class TestCaseService:
                 if any(PipelineManager.requires_crop(config.pipeline_id) for config in configs)
                 else None
             )
-            runs = await PipelineManager(self.settings).run(configs, original, crop, record.roi)
+            runs = await PipelineManager(self.settings).run(configs, original, crop, record.roi, record.roi_source)
         finally:
             original.close()
         # Re-read ground truth after external requests; do not evaluate against stale user edits.
@@ -173,6 +181,7 @@ class TestCaseService:
         )
         for run in runs:
             run.test_case_id = record.id
+            FieldService.generate(run)
             self.evaluate(run, record.ground_truth_raw)
             record.runs.append(run)
             self.logs.add("ocr_run_success" if run.status == "success" else "ocr_run_error", case=record, run=run)

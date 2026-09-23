@@ -26,7 +26,7 @@ class PipelineManager:
         adapter = cls.adapter_classes.get(pipeline_id)
         return adapter is not None and adapter.requires_crop
 
-    async def run(self, configs, original_image, cropped_image, roi):
+    async def run(self, configs, original_image, cropped_image, roi, roi_source="none"):
         async def run_one(config):
             request_id = f"ocr_{uuid4().hex}"
             adapter_class = self.adapter_classes.get(config.pipeline_id)
@@ -41,6 +41,7 @@ class PipelineManager:
                     cropped_image=cropped_image if adapter.requires_crop else None,
                     roi=roi,
                     request_id=request_id,
+                    **({"roi_source": roi_source} if config.pipeline_id == "hutch_full" else {}),
                 )
                 return PipelineRun(
                     pipeline_id=result.pipeline_id,

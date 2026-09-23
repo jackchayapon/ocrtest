@@ -3,17 +3,19 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response
 
-from app.api.dependencies import CaseServiceDep, RepoDep
+from app.api.dependencies import CaseServiceDep, RepoDep, SessionDep
 from app.schemas.contracts import (
     BenchmarkFilters,
     CategoriesUpdate,
+    FieldCheck,
     GroundTruthUpdate,
     ROIUpdate,
     RunRequest,
     TestCaseCreate,
     TestCaseUpdate,
 )
-from app.services.serializers import run_json, test_case_json
+from app.services.field_service import FieldService
+from app.services.serializers import field_json, run_json, test_case_json
 
 router = APIRouter(prefix="/test-cases")
 
@@ -50,7 +52,22 @@ def save_ground_truth(case_id: UUID, data: GroundTruthUpdate, service: CaseServi
 
 @router.put("/{case_id}/roi")
 def update_roi(case_id: UUID, data: ROIUpdate, service: CaseServiceDep):
-    return test_case_json(service.update(str(case_id), TestCaseUpdate(roi=data.roi)))
+    return test_case_json(service.update(str(case_id), TestCaseUpdate(roi=data.roi, roi_source=data.roi_source)))
+
+
+@router.get("/{case_id}/runs/{run_id}/fields")
+def fields(case_id: UUID, run_id: UUID, session: SessionDep):
+    return [field_json(field) for field in FieldService(session).list_fields(str(case_id), str(run_id))]
+
+
+@router.post("/{case_id}/runs/{run_id}/fields/{field_id}/check")
+def check_field(case_id: UUID, run_id: UUID, field_id: UUID, data: FieldCheck, session: SessionDep):
+    return FieldService(session).check(str(case_id), str(run_id), str(field_id), data.ground_truth_raw)
+
+
+@router.put("/{case_id}/runs/{run_id}/fields/{field_id}/ground-truth")
+def field_ground_truth(case_id: UUID, run_id: UUID, field_id: UUID, data: GroundTruthUpdate, session: SessionDep):
+    return field_json(FieldService(session).update(str(case_id), str(run_id), str(field_id), data))
 
 
 @router.put("/{case_id}/categories")

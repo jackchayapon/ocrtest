@@ -14,7 +14,7 @@ class FullImage:
 
 
 class HutchFullPipelineAdapter(HutchCropPipelineAdapter):
-    """Send the full raster without ROI or local cropping."""
+    """AUTO/legacy/no ROI: full page. Explicit MANUAL ROI: crop inside this adapter."""
 
     crop_stage = "full_image"
     requires_crop = False
@@ -27,6 +27,10 @@ class HutchFullPipelineAdapter(HutchCropPipelineAdapter):
             )
         if original_image is None:
             raise GatewayError("Hutch Full requires the original image", "INVALID_PIPELINE_INPUT")
+        if self.crop_stage == "manual_roi":
+            if roi is None:
+                raise GatewayError("Manual ROI requires coordinates", "INVALID_PIPELINE_INPUT")
+            return self.images.canonical_crop(original_image, roi)
         png = self.images.encode_png(original_image)
         return FullImage(
             png, original_image.width, original_image.height, sha256(png).hexdigest(),
@@ -39,9 +43,9 @@ class HutchFullPipelineAdapter(HutchCropPipelineAdapter):
             request_id=request_id, request_format=self.config.request_format,
         )
 
-    async def run(self, *, original_image=None, cropped_image=None, roi=None, request_id=None):
-        # Shared case ROI belongs to Mint/Crop only; exclude it from inference and geometry.
+    async def run(self, *, original_image=None, cropped_image=None, roi=None, request_id=None, roi_source="none"):
+        self.crop_stage = "manual_roi" if roi_source == "manual" else "full_image"
         return await super().run(
             original_image=original_image, cropped_image=cropped_image,
-            roi=None, request_id=request_id,
+            roi=roi if roi_source == "manual" else None, request_id=request_id,
         )

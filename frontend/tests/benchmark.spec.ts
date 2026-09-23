@@ -16,6 +16,7 @@ test("Benchmark appears dynamically and flows through ROI, saved metrics, errors
     await page.getByLabel(`เลือก ${label}`, { exact: true }).uncheck();
   }
   await page.getByLabel("เลือก Benchmark", { exact: true }).check();
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("ภาษาไทย");
   const pending = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
   await page.getByRole("button", { name: t("Run selected"), exact: true }).click();

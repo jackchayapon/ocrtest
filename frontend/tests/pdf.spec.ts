@@ -25,6 +25,7 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   await expect(page.getByTestId("document-viewer")).toBeVisible();
   await expect(page.getByTestId("document-viewer").getByText(t("Loading document…"), { exact: true })).toBeHidden();
   await expect(page.getByTestId("pdf-page-indicator")).toHaveText("หน้า 1 จาก 2");
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("ข้อความที่ยังไม่บันทึกของหน้าแรก");
   await page.getByRole("button", { name: t("Draw test region"), exact: true }).click();
   const firstCanvas = page.getByTestId("document-viewer").locator(".konvajs-content");
@@ -60,6 +61,7 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   await page.mouse.move(x + 800 * scale, y + 850 * scale, { steps: 10 });
   await page.mouse.up();
   await expect(page.getByAltText(t("Selected test region crop"))).toBeVisible();
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("บริษัท ซีดีจี จำกัด");
   await page.getByRole("button", { name: "ข้อความภาษาไทย", exact: true }).click();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
@@ -69,8 +71,8 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   expect(result.runs).toHaveLength(4);
   expect(result.runs.map(run => run.status)).toEqual(["success", "success", "success", "success"]);
   expect(result.runs[2].status).toBe("success");
-  expect(result.runs[2].input_width).toBe(selected.width);
-  expect(result.runs[2].input_height).toBe(selected.height);
+  expect(result.runs[2].input_width).toBe(result.runs[0].input_width);
+  expect(result.runs[2].input_height).toBe(result.runs[0].input_height);
   expect(result.runs.slice(0, 2).every(run => run.metrics?.cer != null && run.metrics?.wer != null)).toBeTruthy();
   expect(new Set(result.runs.slice(0, 2).map(run => run.crop_sha256)).size).toBe(1);
   await page.getByRole("button", { name: t("Confirm ground truth"), exact: true }).click();
@@ -82,6 +84,7 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   await row.locator("a").first().click();
   await expect(page.getByRole("heading", { name: t("Test case detail"), exact: true })).toBeVisible();
   await expect(page.getByLabel(t("Select PDF page"))).toHaveValue("2");
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await expect(page.getByLabel(t("What should the document say?"), { exact: true })).toHaveValue("บริษัท ซีดีจี จำกัด");
   await expect(page.getByTestId("result-text-mint")).toBeVisible();
   await page.getByTestId("technical-details").locator("summary").first().click();
@@ -91,6 +94,7 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   await expect(page.getByTestId("pdf-page-indicator")).toHaveText("หน้า 1 จาก 2");
   await expect(page.getByTestId("result-text-mint")).toHaveCount(0);
   await expect(page.getByAltText(t("Selected test region crop"))).toHaveCount(0);
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await expect(page.getByLabel(t("What should the document say?"), { exact: true })).toHaveValue("");
   const saved = await (await request.get(`${backend}/api/test-cases/${result.test_case_id}`)).json();
   expect(saved.page_number).toBe(2);

@@ -35,6 +35,7 @@ test("confirmed source crop dataset export and persisted error analysis drilldow
     data: { pipelines: ["mint", "hutch_crop", "hutch_full"] },
   });
   await page.goto(`/test/${saved.id}`);
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await page
     .getByLabel(t("What should the document say?"), { exact: true })
     .fill("Confirmed Thai ก\nLabel");
@@ -84,6 +85,7 @@ test("confirmed source crop dataset export and persisted error analysis drilldow
   expect(file.suggestedFilename()).toBe("dataset.zip");
   expect(await file.failure()).toBeNull();
   await row.getByRole("link").click();
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await expect(
     page.getByLabel(t("What should the document say?"), { exact: true }),
   ).toHaveValue("Confirmed Thai ก\nLabel");

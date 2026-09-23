@@ -3,7 +3,7 @@
 1. อัปโหลด PNG/JPG/รูปแบบภาพที่รองรับหรือ PDF เลือกหน้า PDF ก่อนสร้างชุดทดสอบ
 2. ซูม เลื่อนภาพ และวาด/ย้าย/ปรับขนาด ROI พิกัดเก็บเทียบภาพต้นฉบับ ไม่ใช่พิกัดหน้าจอ
 3. อาจใช้ Auto Detect แล้วเลือกหนึ่งกรอบเพื่อปรับต่อเอง หากบริการไม่พร้อมยังวาด ROI ได้
-4. กรอก Ground Truth และประเภทข้อมูล เลือก Pipeline แล้วรัน ผลแต่ละรายการบันทึกอัตโนมัติ แม้อีกรายการล้มเหลว
+4. เลือก Pipeline แล้วรัน ผลแต่ละรายการบันทึกอัตโนมัติ แม้อีกรายการล้มเหลว Ground Truth เริ่มที่โหมดราย Field จากกรอบ OCR: กรอก → ตรวจ (preview) → ยืนยัน หรือเลือกโหมดทั้งเอกสาร/ROI เดิม
 5. ดูข้อความ กรอบ ความมั่นใจ CER/WER/Exact Match และเวลา ยืนยัน Ground Truth ได้โดยไม่เขียนทับ prediction
 6. เปิด History → Test Detail เพื่อตรวจผลซ้ำ แล้วใช้ Matrix/Category Analytics เปรียบเทียบผลล่าสุดต่อ case/pipeline
 
@@ -16,7 +16,9 @@ flowchart TD
   Select --> Crop[ImageService สร้าง canonical PNG crop]
   Crop --> Mint[Mint: engine=custom]
   Crop --> Hutch[Hutch Crop: engine=paddle]
-  Page --> Full[Hutch Full: ภาพเต็ม ไม่ใช้ ROI]
+  Page --> Full[Hutch Full: Auto ROI/none ใช้ภาพเต็ม]
+  Select --> Manual[Hutch Full: Manual ROI crop ภายใน adapter]
+  Manual --> Paddle
   Full --> Paddle[Paddle: engine=paddle]
   Mint --> Save[บันทึกผลและ metrics]
   Hutch --> Save
@@ -25,10 +27,10 @@ flowchart TD
 
 Mint ภายนอกใช้ DET V5 แล้วตัด text regions ก่อน Thai REC; Hutch Crop ใช้ DET V6 + Thai REC ผ่าน Paddle ค่า detection ส่งชัดเจน 1.7 / 0.25 / 0.6
 
-Hutch Full ส่งภาพเต็มหรือหน้า PDF ที่เลือกเป็น PNG ไปยัง Paddle โดยไม่ใช้ ROI และไม่ crop ในแอป ตามคำยืนยันล่าสุดจากเจ้าของ Pipeline ไม่มีขั้นตอนรอ ROI contract
+Hutch Full ดู `roi_source`: `auto` และ `none` ส่งภาพเต็ม/หน้า PDF เต็ม; `manual` crop ภายใน adapter ก่อนส่ง Paddle ไม่ส่งพิกัด ROI ให้ Gateway การขยับ/resize Auto ROI ยังคง source=auto; การวาดใหม่เปลี่ยนเป็น manual โดยไม่ลบ suggestions
 
 ## การอ่านข้อมูล debug
 
-`SAME INPUT`/`DIFFERENT INPUT` เปรียบเทียบ crop SHA ของ Mint กับ Hutch Crop เท่านั้น ทั้งคู่ต้องรับ PNG bytes เดียวกัน Hutch Full เก็บ `input_sha256`/ขนาดภาพเต็ม โดย `crop_sha256` เป็น null และ `crop_stage=full_image` ค่านี้หมายถึงไม่มีการ crop และไม่ใช้ ROI
+`SAME INPUT`/`DIFFERENT INPUT` เปรียบเทียบ crop SHA ของผลที่ใช้ crop รวม Benchmark และ Hutch Full แบบ manual (`crop_stage=manual_roi`) เมื่อใช้ Auto ROI/none Hutch Full เก็บ `input_sha256`/ขนาดภาพเต็ม โดย `crop_sha256` เป็น null และ `crop_stage=full_image`
 
-Hutch Full ใช้ภาพเต็มต่างจาก crop จึงต้องพิจารณาขอบเขตข้อความและ Ground Truth ก่อนเทียบความแม่นยำ ห้ามสรุปว่าความต่างเกิดจาก inference อย่างเดียว
+เมื่อ Hutch Full ใช้ภาพเต็มต่างจาก crop ต้องพิจารณาขอบเขตข้อความและ GT ก่อนเทียบความแม่นยำ ข้อมูลเก่าที่ไม่ระบุ source ไม่ถูกเดาว่า manual และคงพฤติกรรมภาพเต็ม อ่านรายละเอียด [Field GT/ROI/Dataset](fields-roi-dataset.md)

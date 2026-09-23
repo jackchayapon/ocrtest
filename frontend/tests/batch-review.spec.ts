@@ -51,7 +51,9 @@ test("batch selection is independent of preview; selected page results and GT st
   await rail.getByRole("button", { name: "ดูผลหน้า 2", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByTestId("result-text-mint")).toBeVisible();
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await expect(page.locator("#ground-truth")).toHaveValue("");
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await page.locator("#ground-truth").fill("ข้อความอ้างอิงเฉพาะหน้า 2");
   await page
     .getByRole("button", { name: "บันทึกข้อความที่ถูกต้อง", exact: true })
@@ -68,6 +70,7 @@ test("batch selection is independent of preview; selected page results and GT st
   await rail.getByRole("button", { name: "พรีวิวหน้า 1", exact: true }).click();
   await expect(page.locator("#ground-truth")).toHaveCount(0);
   await rail.getByRole("button", { name: "ดูผลหน้า 2", exact: true }).click();
+  await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await expect(page.locator("#ground-truth")).toHaveValue(
     "ข้อความอ้างอิงเฉพาะหน้า 2",
   );

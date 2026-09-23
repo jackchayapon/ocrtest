@@ -57,13 +57,13 @@ def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeyp
     state = {"active": 0, "max": 0, "order": []}
     original_run = PipelineManager.run
 
-    async def observed(self, configs, original, crop, roi):
+    async def observed(self, configs, original, crop, roi, roi_source="none"):
         state["active"] += 1
         state["max"] = max(state["max"], state["active"])
         state["order"].append(("start", original.width))
         await asyncio.sleep(0.01)
         try:
-            return await original_run(self, configs, original, crop, roi)
+            return await original_run(self, configs, original, crop, roi, roi_source)
         finally:
             state["order"].append(("end", original.width))
             state["active"] -= 1

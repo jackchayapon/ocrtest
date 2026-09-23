@@ -30,6 +30,7 @@ class DatasetService:
                     updated_at=c.updated_at,
                     source_sha256=c.document.sha256,
                     categories=[tag.code for tag in c.categories],
+                    source_available=self.cases.storage.exists(c.document.storage_key),
                 )
                 for c in records
             ],
@@ -37,6 +38,9 @@ class DatasetService:
 
     def export(self, ids):
         records = self.repository.selected(ids)
+        for case in records:
+            if not self.cases.storage.exists(case.document.storage_key):
+                raise self.missing_source(case.id)
         output = SpooledTemporaryFile(max_size=16 * 1024 * 1024, mode="w+b")
 
         # Generated names only, fixed ZIP metadata, sorted case IDs. Nothing persists in StorageService.
@@ -50,7 +54,12 @@ class DatasetService:
             labels, byte_count = [], 0
             with ZipFile(output, "w") as archive:
                 for index, case in enumerate(records, 1):
-                    source, _, _ = self.cases.page_image(case.document, case.page_number)
+                    try:
+                        source, _, _ = self.cases.page_image(case.document, case.page_number)
+                    except AppError as exc:
+                        if exc.status_code == 404:
+                            raise self.missing_source(case.id) from None
+                        raise
                     with self.cases.images.open(source) as image:
                         crop = self.cases.images.canonical_crop(image, case.roi)
                     byte_count += len(crop.png)
@@ -65,3 +74,10 @@ class DatasetService:
         except Exception:
             output.close()
             raise
+
+    @staticmethod
+    def missing_source(case_id):
+        return AppError(
+            f"ไม่พบไฟล์ต้นฉบับของตัวอย่าง {case_id} ใน storage จึงส่งออกไม่ได้ "
+            "กรุณาคืนไฟล์จาก backup หรืออัปโหลดต้นฉบับและสร้างชุดทดสอบใหม่ที่ยืนยัน GT แล้ว", 409
+        )

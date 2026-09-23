@@ -20,7 +20,8 @@ def response(request):
         if multipart(request).get("auto_roi_mode") == b"layout":
             return httpx.Response(503, json={"error": {"code": "SERVICE_UNAVAILABLE"}})
         return httpx.Response(200, json={"data": {"regions": [
-            {"bbox": [80, 225, 850, 355], "score": 0.8, "source": "test-only-upstream"}
+            {"bbox": [80, 225, 850, 355], "score": 0.8, "source": "test-only-upstream"},
+            {"bbox": [400, 400, 850, 470], "score": 0.9, "source": "test-only-upstream"}
         ]}, "meta": {"request_id": "fixture-layout"}})
     if request.url.path.endswith(("health", "readiness")):
         return httpx.Response(200, json={"data": {"services": [
@@ -29,7 +30,8 @@ def response(request):
     polygon = [[2, 3], [50, 3], [50, 30], [2, 30]]
     if request.url.params.get("engine") == "custom":
         data = {"text": TEXT, "confidence": 0.94, "lines": [
-            {"text": TEXT, "polygon": polygon, "rec_score": 0.94, "det_score": 0.95}
+            {"text": TEXT, "polygon": polygon, "rec_score": 0.94, "det_score": 0.95},
+            {"text": "ABCD", "polygon": [[60, 3], [95, 3], [95, 30], [60, 30]], "rec_score": 0.93, "det_score": 0.95}
         ]}
     else:
         data = {"predictions": [{"rec_texts": [TEXT], "rec_scores": [0.97],

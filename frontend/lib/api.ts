@@ -73,13 +73,15 @@ export const updateTestCase = (id: string, input: Partial<TestCaseInput>) => req
 export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed = false) => request<TestCase>(`/test-cases/${id}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });
 export const getResults = (id: string) => request<RunResponse>(`/test-cases/${id}/results`);
+export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
+export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const getHistory = (filters?: QueryFilters) => request<TestCase[]>(`/history${query(filters)}`);
 export const getMatrix = (filters?: QueryFilters) => request<MatrixRow[]>(`/matrix${query(filters)}`);
 export const getCategoryAnalytics = (filters?: QueryFilters) => request<CategoryAnalytics[]>(`/analytics/categories${query(filters)}`);
 export type ErrorGroup = { pipeline_id: string; error_type: string; ground_truth_unit: string | null; ocr_unit: string | null; count: number; test_case_count: number; cases: { id: string; document_id: string; filename: string; page_number: number | null; categories: string[] }[] };
 export const getErrorAnalysis = (params: URLSearchParams) => request<{ total: number; items: ErrorGroup[] }>(`/analytics/errors?${params}`);
 export const recomputeErrors = (id: string) => request<{ recomputed_runs: number }>(`/test-cases/${id}/errors/recompute`, { method: "POST" });
-export type DatasetSample = { id: string; document_id: string; filename: string; page_number: number | null; roi: import("@/types").ROI; ground_truth_raw: string; updated_at: string; source_sha256: string | null; categories: string[] };
+export type DatasetSample = { id: string; document_id: string; filename: string; page_number: number | null; roi: import("@/types").ROI; ground_truth_raw: string; updated_at: string; source_sha256: string | null; categories: string[]; source_available?: boolean };
 export const getDatasetSamples = (params: URLSearchParams) => request<{ total: number; items: DatasetSample[] }>(`/dataset/samples?${params}`);
 export async function exportDataset(test_case_ids: string[]) {
   const response = await fetch(`${API_BASE_URL}/api/dataset/export`, { method: "POST", cache: "no-store", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ test_case_ids }) });

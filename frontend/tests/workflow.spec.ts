@@ -78,6 +78,7 @@ for (const imageFile of [
     await page
       .getByRole("button", { name: t("Fit document to view"), exact: true })
       .click();
+    await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
     await page
       .getByLabel(t("What should the document say?"))
       .fill("บริษัท ซีดีจี จำกัด");
@@ -113,7 +114,7 @@ for (const imageFile of [
       result.runs.find(
         (run: { pipeline_id: string }) => run.pipeline_id === "hutch_full",
       ).crop_stage,
-    ).toBe("full_image");
+    ).toBe("manual_roi");
     await expect(page.getByTestId("result-text-mint")).toHaveText(
       "บริษัท ซีดีจี จำกัด",
     );
@@ -140,6 +141,7 @@ for (const imageFile of [
       page.getByText(t("Selected text"), { exact: true }),
     ).toBeVisible();
     const prediction = await page.getByTestId("result-text-mint").textContent();
+    await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
     await page
       .getByLabel(t("What should the document say?"))
       .fill("บริษัท ซีดีจี จำกัด!");
@@ -158,6 +160,7 @@ for (const imageFile of [
     await expect(
       page.getByRole("heading", { name: t("Test case detail"), exact: true }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
     await expect(
       page.getByLabel(t("What should the document say?")),
     ).toHaveValue("บริษัท ซีดีจี จำกัด!");
@@ -193,9 +196,9 @@ for (const imageFile of [
     for (const run of persisted.runs) {
       if (run.pipeline_id === "hutch_full") {
         expect(run.status).toBe("success");
-        expect(run.crop_sha256).toBeNull();
-        expect(run.input_width).toBe(1000);
-        expect(run.input_height).toBe(1320);
+        expect(run.crop_sha256).toBe(persisted.runs[0].crop_sha256);
+        expect(run.input_width).toBe(persisted.runs[0].input_width);
+        expect(run.input_height).toBe(persisted.runs[0].input_height);
         expect(run.metrics).not.toBeNull();
         continue;
       }
@@ -398,7 +401,8 @@ test("ROI move and resize, selectable Auto ROI, and failure recovery", async ({
   const suggestion = await point(400, 280);
   await page.mouse.click(suggestion.x, suggestion.y);
   expect(await readROI()).toEqual([80, 225, 850, 355]);
-  await expect(page.getByRole("button", { name: /^พื้นที่ 1/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^พื้นที่ 1/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^พื้นที่ 2/ })).toBeVisible();
   await expect(page.getByTestId("roi-status")).toContainText("ROI ที่แนะนำ");
   await expect(page.getByRole("button", { name: t("Run selected"), exact: true })).toBeDisabled();
   const proposedCenter = await point(400, 280);

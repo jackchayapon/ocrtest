@@ -168,7 +168,6 @@ export default function DatasetPage() {
       {loading ? (
         <LoadingState label="กำลังโหลดตัวอย่าง…" />
       ) : (
-        !error &&
         (data.items.length ? (
           <section className="panel">
             <div className="panel-header">
@@ -179,7 +178,7 @@ export default function DatasetPage() {
                 onClick={() =>
                   setSelected((old) =>
                     Array.from(
-                      new Set([...old, ...data.items.map((s) => s.id)]),
+                      new Set([...old, ...data.items.filter(s => s.source_available !== false).map((s) => s.id)]),
                     ).slice(0, 200),
                   )
                 }
@@ -207,7 +206,7 @@ export default function DatasetPage() {
                           aria-label={`เลือก ${sample.id}`}
                           checked={selected.includes(sample.id)}
                           disabled={
-                            exporting ||
+                            exporting || sample.source_available === false ||
                             (!selected.includes(sample.id) &&
                               selected.length >= 200)
                           }
@@ -221,7 +220,7 @@ export default function DatasetPage() {
                         />
                       </td>
                       <td>
-                        <Image
+                        {sample.source_available === false ? <span className="text-red-700">ไฟล์ต้นฉบับไม่อยู่ใน storage · ต้องคืนไฟล์หรืออัปโหลดใหม่</span> : <Image
                           src={api.cropUrl(
                             sample.document_id,
                             sample.roi,
@@ -232,7 +231,7 @@ export default function DatasetPage() {
                           height={70}
                           unoptimized
                           style={{ objectFit: "contain", maxHeight: 70 }}
-                        />
+                        />}
                       </td>
                       <td>
                         <Link className="mini-link" href={`/test/${sample.id}`}>
@@ -284,7 +283,7 @@ export default function DatasetPage() {
               </button>
             </div>
           </section>
-        ) : (
+        ) : error ? null : (
           <EmptyState
             title="ยังไม่มีตัวอย่างที่พร้อมส่งออก"
             description="บันทึก ROI และยืนยัน Ground Truth ในชุดทดสอบก่อน ตัวอย่างจะแสดงที่นี่"

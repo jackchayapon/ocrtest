@@ -5,6 +5,15 @@ from app.core.errors import AppError
 
 
 class StorageService(ABC):
+    def exists(self, key: str) -> bool:
+        try:
+            self.read(key)
+            return True
+        except AppError as exc:
+            if exc.status_code == 404:
+                return False
+            raise
+
     @abstractmethod
     def put(self, key: str, data: bytes) -> None: ...
 
@@ -43,6 +52,9 @@ class LocalStorageService(StorageService):
             return self._path(key).read_bytes()
         except FileNotFoundError:
             raise AppError("Stored image is unavailable", 404) from None
+
+    def exists(self, key):
+        return self._path(key).is_file()
 
     def delete(self, key):
         self._path(key).unlink(missing_ok=True)

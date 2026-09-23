@@ -190,7 +190,7 @@ def test_dataset_invalid_ids_missing_roi_and_missing_source(client, case, docume
     confirm(client, case, "label")
     client.app.state.storage.delete(document["storage_key"])
     assert (
-        client.post("/api/dataset/export", json={"test_case_ids": [case["id"]]}).status_code == 404
+        client.post("/api/dataset/export", json={"test_case_ids": [case["id"]]}).status_code == 409
     )
 
 

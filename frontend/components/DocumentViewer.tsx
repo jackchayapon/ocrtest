@@ -27,6 +27,9 @@ export interface DocumentViewerProps {
   height: number;
   roi: ROI | null;
   onRoiChange: (roi: ROI | null) => void;
+  onManualRoi?: (roi: ROI) => void;
+  activeSuggestionId?: string | null;
+  roiSource?: "auto" | "manual" | "none";
   boxes: ViewerBox[];
   selectedBoxId: string | null;
   onSelectBox: (id: string | null) => void;
@@ -50,6 +53,9 @@ export default function DocumentViewer({
   height,
   roi,
   onRoiChange,
+  onManualRoi,
+  activeSuggestionId,
+  roiSource,
   boxes,
   selectedBoxId,
   onSelectBox,
@@ -273,7 +279,7 @@ export default function DocumentViewer({
       finalRoi.x2 > finalRoi.x1 &&
       finalRoi.y2 > finalRoi.y1
     ) {
-      onRoiChange(finalRoi);
+      (onManualRoi ?? onRoiChange)(finalRoi);
       onRegionModeChange(false);
       setPanMode(false);
     }
@@ -555,6 +561,15 @@ export default function DocumentViewer({
                   width={width}
                   height={height}
                 />
+                {!!suggestions.length && onSelectSuggestion && (
+                  <AutoROIOverlay
+                    suggestions={suggestions}
+                    activeId={activeSuggestionId}
+                    onSelect={onSelectSuggestion}
+                    scale={view.scale}
+                    interactive={!regionMode && !panMode}
+                  />
+                )}
                 {currentRoi && (
                   <TestRegionLayer
                     roi={currentRoi}
@@ -562,9 +577,16 @@ export default function DocumentViewer({
                     imageHeight={height}
                     scale={view.scale}
                     interactive={
-                      allowRoi && !regionMode && !panMode && !suggestions.length
+                      allowRoi && !regionMode && !panMode
                     }
                     drawing={Boolean(draftRoi)}
+                    label={draftRoi || roiSource === "manual" ? "Manual ROI" : roiSource === "auto" ? "Auto ROI" : undefined}
+                    onClick={() => {
+                      // A click can select an overlapping suggestion; dragging still edits the active ROI.
+                      const point = getOriginalPoint();
+                      const candidate = point && suggestions.find(s => s.id !== activeSuggestionId && point.x >= s.roi.x1 && point.x <= s.roi.x2 && point.y >= s.roi.y1 && point.y <= s.roi.y2);
+                      if (candidate) onSelectSuggestion?.(candidate);
+                    }}
                     onChange={onRoiChange}
                   />
                 )}
@@ -577,14 +599,7 @@ export default function DocumentViewer({
                     interactive={!regionMode && !panMode}
                   />
                 )}
-                {!!suggestions.length && onSelectSuggestion && (
-                  <AutoROIOverlay
-                    suggestions={suggestions}
-                    onSelect={onSelectSuggestion}
-                    scale={view.scale}
-                    interactive={!regionMode && !panMode}
-                  />
-                )}
+
               </Group>
             )}
           </Layer>

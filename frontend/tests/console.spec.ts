@@ -60,6 +60,7 @@ for (const [width, height] of [
         await expect(
           page.getByTestId("document-viewer").locator("canvas").first(),
         ).toBeVisible();
+        await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
         await expect(page.locator("#ground-truth")).toHaveValue(
           "บริษัท ซีดีจี จำกัด",
         );
