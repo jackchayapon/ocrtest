@@ -1,0 +1,35 @@
+{
+  "data": {
+    "contract_version": "leaf-inference-v1",
+    "kind": "text_recognition_batch",
+    "result": {
+      "results": [
+        {
+          "rec_text": "0CR TEST 12345 ",
+          "rec_score": 0.969254195690155
+        }
+      ]
+    },
+    "results": [
+      {
+        "rec_text": "0CR TEST 12345 ",
+        "rec_score": 0.969254195690155
+      }
+    ],
+    "count": 1,
+    "model_selection": {
+      "kind": "recognition",
+      "version": "v6",
+      "variant": "thai_ft_v2",
+      "model_name": "PP-OCRv6_medium_rec",
+      "local_weights": true
+    }
+  },
+  "meta": {
+    "request_id": "thai-response-inspection",
+    "api_version": "v1",
+    "service": "model-api-gateway",
+    "duration_ms": 64.98,
+    "model": "pipeline-router-v1"
+  }
+}

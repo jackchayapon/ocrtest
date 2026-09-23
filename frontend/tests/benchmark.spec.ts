@@ -12,7 +12,7 @@ test("Benchmark appears dynamically and flows through ROI, saved metrics, errors
   await page.getByRole("button", { name: t("Auto Detect"), exact: true }).click();
   await page.getByRole("button", { name: /^พื้นที่ 1$/ }).click();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  for (const label of [t("Mint Custom"), "Hutch Crop", "Hutch Full"]) {
+  for (const label of [t("Mint Custom"), "Hutch Crop", "Hutch Full", "Thai FT v2"]) {
     await page.getByLabel(`เลือก ${label}`, { exact: true }).uncheck();
   }
   await page.getByLabel("เลือก Benchmark", { exact: true }).check();

@@ -126,8 +126,8 @@ def test_matrix_latest_runs_filters_and_categories(client, case, document):
     rows = client.get(
         "/api/matrix", params={"category": "thai_text", "document": document["id"]}
     ).json()
-    assert len(rows) == 4
-    assert all(row["tests"] == (0 if row["pipeline_id"] == "benchmark" else 1) for row in rows)
+    assert {r["pipeline_id"] for r in rows} == {p["pipeline_id"] for p in client.get("/api/pipelines").json()}
+    assert all(row["tests"] == (0 if row["pipeline_id"] in {"benchmark", "thai_ft_v2"} else 1) for row in rows)
     assert rows[0]["cer"] == 0
     assert rows[0]["avg_gateway_time_ms"] == 123.4
     assert all(

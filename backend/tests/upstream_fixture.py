@@ -12,6 +12,12 @@ def response(request):
             "result": {"results": [{"dt_polys": [[[2, 3], [50, 3], [50, 30], [2, 30]]], "dt_scores": [0.95]}]},
         }, "meta": {"request_id": "fixture-det", "duration_ms": 100, "service": "test-only-upstream"}})
     if request.url.path.endswith("text-recognition-batches"):
+        if request.url.params.get("model") == "thai_ft_v2":
+            return httpx.Response(200, json={"data": {
+                "contract_version": "leaf-inference-v1", "kind": "text_recognition_batch",
+                "results": [{"rec_text": TEXT, "rec_score": 0.97}], "count": 1,
+                "model_selection": {"version": "v6", "variant": "thai_ft_v2", "model_name": "PP-OCRv6_medium_rec"},
+            }, "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
         return httpx.Response(200, json={"data": {"results": [{"text": TEXT, "confidence": 0.97}], "count": 1},
                                         "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
     if request.url.path.endswith("document-layouts"):

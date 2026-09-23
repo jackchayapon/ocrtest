@@ -19,6 +19,23 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
     engine = "det_v6_rec_v5"  # Internal display/config identifier; never sent as a query.
     detector = "PP-OCRv6_medium_det"
     recognition_batch_size = 8
+    recognition_version = 5
+    model_variant = None
+
+    def batch_request(self, **kwargs):
+        request = self.gateway.build_batch_request(**kwargs)
+        if self.model_variant is not None:
+            request["params"]["model"] = self.model_variant
+        return request
+
+    def selected_model(self, response, fallback):
+        # Baseline Benchmark retains its established model configuration.
+        if self.model_variant is None:
+            return fallback
+        data = response.get("data", {})
+        selection = data.get("model_selection", {}) if isinstance(data, dict) else {}
+        name = selection.get("model_name") if isinstance(selection, dict) else None
+        return name[:255] if isinstance(name, str) and name else fallback
 
     def parse_response(self, data, *, offset, crop_size):
         return MintResultNormalizer().normalize(data, offset=offset, crop_size=crop_size)
@@ -49,7 +66,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         if not self.config.enabled:
             raise GatewayError("Pipeline is disabled", "PIPELINE_DISABLED")
         detection = await self.gateway.send(
-            self.gateway.build_batch_request(
+            self.batch_request(
                 pngs=[crop.png],
                 endpoint=DETECTION_ENDPOINT,
                 version=6,
@@ -89,10 +106,10 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                 except (ValueError, TypeError, OverflowError):
                     raise invalid("Detection returned an invalid quadrilateral") from None
                 recognition = await self.gateway.send(
-                    self.gateway.build_batch_request(
+                    self.batch_request(
                         pngs=pngs,
                         endpoint=RECOGNITION_ENDPOINT,
-                        version=5,
+                        version=self.recognition_version,
                         request_id=f"{request_id}_rec_{len(recognition_batches)}",
                     )
                 )
@@ -104,6 +121,12 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                     or recognized.get("count") != len(batch)
                 ):
                     raise invalid("Recognition result count does not match line crops")
+                # Verified leaf envelope now uses rec_text/rec_score. Keep the
+                # earlier text/confidence response supported without altering raw data.
+                leaf_recognition = (
+                    recognized.get("contract_version") == "leaf-inference-v1"
+                    and recognized.get("kind") == "text_recognition_batch"
+                )
                 for index, item in enumerate(items):
                     if not isinstance(item, dict):
                         raise invalid("Invalid recognition result")
@@ -111,8 +134,8 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                         dict(
                             polygon=batch[index],
                             det_score=scores[start + index],
-                            text=bounded_text(item.get("text")),
-                            rec_score=item.get("confidence"),
+                            text=bounded_text(item.get("rec_text" if leaf_recognition else "text")),
+                            rec_score=item.get("rec_score" if leaf_recognition else "confidence"),
                         )
                     )
                 recognition_batches.append(recognition)
@@ -129,8 +152,9 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                 "text": text,
                 "lines": lines,
                 "confidence": average(line["rec_score"] for line in lines),
-                "det_model": self.detector,
-                "rec_model": self.recognizer,
+                "det_model": self.selected_model(detection, self.detector),
+                "rec_model": self.selected_model(recognition_batches[0], self.recognizer)
+                if recognition_batches else self.recognizer,
             },
             "meta": meta,
             "detection": detection,
@@ -139,9 +163,11 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                 "ordering": "detection_order",
                 "line_count": len(lines),
                 "recognition_endpoint": RECOGNITION_ENDPOINT,
-                "recognition_version": "5",
+                "recognition_version": str(self.recognition_version),
             },
         }
+        if self.model_variant is not None:
+            payload["composition"].update(detection_version="6", model=self.model_variant)
         return self.normalize_result(
             payload, crop, roi, round((time.perf_counter() - started) * 1000)
         )

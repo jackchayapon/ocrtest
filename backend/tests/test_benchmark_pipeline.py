@@ -233,7 +233,7 @@ def test_additive_seed_and_fixed_benchmark_settings(client, settings):
         seed_database(session, settings)
         seed_database(session, settings)
         rows = list(session.scalars(select(PipelineConfig)))
-        assert len(rows) == 4 and mint.name == "Preserved" and mint.enabled is False
+        assert len(rows) == 5 and mint.name == "Preserved" and mint.enabled is False
     assert client.put("/api/pipelines/benchmark", json={"enabled": False}).status_code == 200
     assert client.put("/api/pipelines/benchmark", json={"enabled": True}).status_code == 200
     for payload in (

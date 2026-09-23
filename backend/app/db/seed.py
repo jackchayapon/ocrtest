@@ -61,4 +61,11 @@ def seed_database(session, settings: Settings):
     session.add_all(
         PipelineConfig(**item) for item in configs if item["pipeline_id"] not in existing_pipelines
     )
+    if "thai_ft_v2" not in existing_pipelines:
+        session.add(PipelineConfig(
+            pipeline_id="thai_ft_v2", name="Thai FT v2", base_url=settings.model_gateway_base_url,
+            endpoint="/api/v1/text-detection-batches", engine="det_v6_rec_v6_thai_ft_v2",
+            query_params={"version": "6", "model": "thai_ft_v2"},
+            request_format="multipart", file_field_name="images",
+        ))
     session.commit()

@@ -1,15 +1,16 @@
 import { expect, test } from "@playwright/test";
 import path from "node:path";
 import { t } from "../lib/i18n/th";
-import type { Document, RunResponse } from "../types";
+import type { Document, PipelineConfig, RunResponse } from "../types";
 
 const backend = process.env.E2E_API_URL || "http://127.0.0.1:8000";
 
-test("Thai multi-page PDF: choose page two, ROI, three upstream results including full image, save and reopen", async ({ page, request }) => {
+test("Thai multi-page PDF: choose page two, ROI, all configured pipelines, save and reopen", async ({ page, request }) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  for (const id of ["mint", "hutch_crop", "hutch_full"]) {
-    expect((await request.put(`${backend}/api/pipelines/${id}`, { data: { enabled: true } })).ok()).toBeTruthy();
+  const configs: PipelineConfig[] = await (await request.get(`${backend}/api/pipelines`)).json();
+  for (const config of configs) {
+    expect((await request.put(`${backend}/api/pipelines/${config.pipeline_id}`, { data: { enabled: true } })).ok()).toBeTruthy();
   }
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "th");
@@ -68,13 +69,15 @@ test("Thai multi-page PDF: choose page two, ROI, three upstream results includin
   const runResponse = page.waitForResponse(response => response.url().endsWith("/run") && response.request().method() === "POST");
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const result: RunResponse = await (await runResponse).json();
-  expect(result.runs).toHaveLength(4);
-  expect(result.runs.map(run => run.status)).toEqual(["success", "success", "success", "success"]);
-  expect(result.runs[2].status).toBe("success");
-  expect(result.runs[2].input_width).toBe(result.runs[0].input_width);
-  expect(result.runs[2].input_height).toBe(result.runs[0].input_height);
-  expect(result.runs.slice(0, 2).every(run => run.metrics?.cer != null && run.metrics?.wer != null)).toBeTruthy();
-  expect(new Set(result.runs.slice(0, 2).map(run => run.crop_sha256)).size).toBe(1);
+  expect(result.runs.map(run => run.pipeline_id).sort()).toEqual(configs.map(config => config.pipeline_id).sort());
+  expect(result.runs.every(run => run.status === "success")).toBeTruthy();
+  const mint = result.runs.find(run => run.pipeline_id === "mint")!;
+  const full = result.runs.find(run => run.pipeline_id === "hutch_full")!;
+  expect(full.crop_stage).toBe("manual_roi");
+  expect(full.input_width).toBe(mint.input_width);
+  expect(full.input_height).toBe(mint.input_height);
+  expect(result.runs.every(run => run.metrics?.cer != null && run.metrics?.wer != null)).toBeTruthy();
+  expect(new Set(result.runs.map(run => run.crop_sha256)).size).toBe(1);
   await page.getByRole("button", { name: t("Confirm ground truth"), exact: true }).click();
   await expect(page.getByText(t("CONFIRMED"), { exact: true })).toBeVisible();
   await page.goto("/history");

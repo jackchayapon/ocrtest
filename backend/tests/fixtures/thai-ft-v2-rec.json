@@ -1,0 +1,73 @@
+{
+  "data": {
+    "results": [
+      {
+        "text": "QCR TEST 67890",
+        "confidence": 0.9488368034362793,
+        "segments": [
+          {
+            "text": "QCR TEST 67890",
+            "confidence": 0.9488368034362793,
+            "rec_score": 0.9488368034362793
+          }
+        ],
+        "raw_segments": [
+          {
+            "rec_text": "QCR TEST 67890",
+            "rec_score": 0.9488368034362793
+          }
+        ],
+        "predictions": [
+          {
+            "rec_text": "QCR TEST 67890",
+            "rec_score": 0.9488368034362793
+          }
+        ],
+        "preprocessing": "recognition_only",
+        "engine": "paddle_thai_ocr",
+        "model": "th_PP-OCRv5_mobile_rec"
+      },
+      {
+        "text": "2ววว2222222 12345",
+        "confidence": 0.7894875407218933,
+        "segments": [
+          {
+            "text": "2ววว2222222 12345",
+            "confidence": 0.7894875407218933,
+            "rec_score": 0.7894875407218933
+          }
+        ],
+        "raw_segments": [
+          {
+            "rec_text": "2ววว2222222 12345",
+            "rec_score": 0.7894875407218933
+          }
+        ],
+        "predictions": [
+          {
+            "rec_text": "2ววว2222222 12345",
+            "rec_score": 0.7894875407218933
+          }
+        ],
+        "preprocessing": "recognition_only",
+        "engine": "paddle_thai_ocr",
+        "model": "th_PP-OCRv5_mobile_rec"
+      }
+    ],
+    "count": 2,
+    "model_selection": {
+      "kind": "recognition",
+      "version": "v6",
+      "variant": "thai_ft_v2",
+      "model_name": "PP-OCRv6_medium_rec",
+      "local_weights": true
+    }
+  },
+  "meta": {
+    "request_id": "thai_ft_contract_d18aaaffb4894ee69d55c26cf49ee0b0",
+    "api_version": "v1",
+    "service": "model-api-gateway",
+    "duration_ms": 687.94,
+    "model": "pipeline-router-v1"
+  }
+}

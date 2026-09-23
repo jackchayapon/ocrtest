@@ -1,5 +1,7 @@
 # OCR Testing & Benchmark App
 
+Pipeline เพิ่มเติม: [Thai FT v2 — DET V6 + REC V6](docs/thai-ft-v2.md) ใช้ `model=thai_ft_v2` ทั้งสองขั้นตอน ส่วน Benchmark เดิมคง DET V6 / REC V5 โดยไม่ส่ง `model`
+
 แอปทดสอบและเปรียบเทียบ OCR จากภาพหรือหน้า PDF ผู้ใช้เลือก ROI กรอก Ground Truth ดูกรอบข้อความและผล CER/WER แล้วเปิดประวัติ ตาราง Matrix และผลแยกประเภทข้อมูลได้ ระบบเรียก OCR ภายนอกเท่านั้น ไม่มีการโหลดโมเดลหรือ GPU ในแอป
 
 ฟีเจอร์เพิ่มเติม: [การยืนยัน ROI, วิเคราะห์ข้อผิดพลาด และ Dataset Builder](docs/error-analysis-dataset.md) พร้อม API, migration และรูปแบบ label ที่ส่งออก
@@ -14,6 +16,7 @@ Next.js/TypeScript/Tailwind/react-konva → FastAPI → Model Gateway ส่ว�
 | Hutch Crop | App Crop → `/api/v1/ocr-results?engine=paddle` → PP-OCRv6_medium_det + th_PP-OCRv5_mobile_rec |
 | Hutch Full | Auto ROI/ไม่มี ROI → ภาพเต็ม; Manual ROI → crop ภายใน adapter → Paddle `engine=paddle` |
 | Benchmark | App Crop → DET batch V6 → perspective line crops → REC batch V5 (ไม่มี `model`) |
+| Thai FT v2 | App Crop → DET batch V6 → perspective line crops → REC batch V6 (`model=thai_ft_v2` ทั้งสองขั้นตอน) |
 
 รายละเอียด contract ที่ทดสอบจริงและการจับคู่ผล: [Benchmark pipeline](docs/benchmark-pipeline.md)
 

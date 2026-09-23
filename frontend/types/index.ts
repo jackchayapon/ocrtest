@@ -52,4 +52,4 @@ export type TestCaseInput = { document_id: string; roi: ROI | null; roi_source?:
 export type RunResponse = { test_case_id: string; runs: PipelineRun[] };
 export type AutoROISuggestion = { id: string; roi: ROI; score: number | null; source: string };
 export type AutoROIResponse = { regions: AutoROISuggestion[]; request_id?: string | null };
-export type GatewayStatus = { gateway: string; mint: string; hutch_crop: string; hutch_full: string; benchmark: string; auto_roi: string; api_key_configured: boolean; message?: string };
+export type GatewayStatus = { gateway: string; mint: string; hutch_crop: string; hutch_full: string; benchmark: string; thai_ft_v2: string; auto_roi: string; api_key_configured: boolean; message?: string };

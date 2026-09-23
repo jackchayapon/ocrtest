@@ -7,6 +7,7 @@ from app.pipelines.benchmark import BenchmarkPipelineAdapter
 from app.pipelines.hutch_crop import HutchCropPipelineAdapter
 from app.pipelines.hutch_full import HutchFullPipelineAdapter
 from app.pipelines.mint import MintPipelineAdapter
+from app.pipelines.thai_ft_v2 import ThaiFTV2PipelineAdapter
 from app.services.metrics_service import normalize_text
 
 
@@ -16,6 +17,7 @@ class PipelineManager:
         "hutch_crop": HutchCropPipelineAdapter,
         "hutch_full": HutchFullPipelineAdapter,
         "benchmark": BenchmarkPipelineAdapter,
+        "thai_ft_v2": ThaiFTV2PipelineAdapter,
     }
 
     def __init__(self, settings):

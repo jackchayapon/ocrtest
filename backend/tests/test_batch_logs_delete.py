@@ -110,7 +110,7 @@ def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeyp
     analysis = client.get("/api/analytics/categories?category=blur").json()[0]
     assert analysis["test_cases"] == 3
     assert all(p["successful_runs"] == 2 and p["failed_runs"] == 1
-               for p in analysis["pipelines"] if p["pipeline_id"] != "benchmark")
+               for p in analysis["pipelines"] if p["pipeline_id"] not in {"benchmark", "thai_ft_v2"})
     assert next(p for p in analysis["pipelines"] if p["pipeline_id"] == "benchmark")["tests"] == 0
 
 
