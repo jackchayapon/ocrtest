@@ -15,8 +15,8 @@ require confirmation again. Saved historical ROIs are treated as confirmed.
 Coordinates stay in the original image/PDF page pixel grid. Bounds, pan and zoom
 use the existing viewer transforms. There is no additional browser crop.
 
-Mint and Hutch Crop share the canonical backend crop of the final ROI. Hutch Full
-continues to ignore ROI and sends the full image/selected PDF page. Without an ROI,
+Mint, Hutch Crop, Benchmark and Thai FT v2 share the final canonical ROI crop.
+Hutch Full sends the full page for Auto/none, and crops inside the adapter for explicit Manual ROI. Without an ROI,
 the existing full-page benchmark remains available. An explicit saved ROI is
 required for Dataset eligibility (including an explicit whole-page rectangle).
 Changing a saved ROI before OCR invalidates Ground Truth confirmation. After OCR,
@@ -63,7 +63,8 @@ confirmed again. Empty but explicitly confirmed GT is a valid empty label.
 - `GET /api/dataset/samples`: `category`, `document`, `limit`, `offset`.
 - `POST /api/dataset/export`: `{"test_case_ids":["<UUID>"]}`. Up to 200 unique
   cases and 512 MiB of encoded images per export. Errors reject the whole export;
-  missing files/cases return 404 and ineligible selections return 422.
+  missing cases return 404, unavailable source files return 409 with recovery advice,
+  and ineligible selections return 422. Unavailable sources remain visible but unselectable.
 
 ```text
 dataset/
@@ -91,10 +92,10 @@ ZIP paths and the API accepts UUIDs only.
 ## Future pipelines
 
 Run/filter schemas, config ordering, logs and new views accept iterable pipeline
-IDs. The registered adapter declares `requires_crop` and its engine; no fourth
-adapter or invented inference contract is provided. Unknown configured pipelines
+IDs. Registered adapters declare `requires_crop` and their engine. Five verified
+adapters exist: Mint, Hutch Crop, Hutch Full, Benchmark and Thai FT v2. Unknown configured pipelines
 return an isolated `ADAPTER_NOT_CONFIGURED` result and never make HTTP calls.
 Once a verified contract exists, register an adapter in PipelineManager, add its
 config and implement its connection/auth handling where required; the existing
 run/GT/metric/error-event path can then be reused. Gateway-specific status/model
-names and the current three adapters remain intentionally explicit.
+names and the five current adapters remain intentionally explicit.

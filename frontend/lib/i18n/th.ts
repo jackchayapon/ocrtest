@@ -13,7 +13,7 @@ export const th: Record<string, string> = {
   "One document. Multiple pipelines. See how they measure up.": "อัปโหลดเอกสาร เลือกหน้าหรือพื้นที่ที่ต้องการทดสอบ และเปรียบเทียบผล OCR ของแต่ละ Pipeline",
   "WORKSPACE": "พื้นที่ทำงาน", "Workspace": "พื้นที่ทำงาน", "MANAGE": "การตั้งค่า", "Main navigation": "เมนูหลัก",
   "WORKSPACE SETTINGS": "การตั้งค่าการทดสอบ", "EXPERIMENT WORKSPACE": "พื้นที่ทดสอบ", "SAVED EXPERIMENT": "การทดสอบที่บันทึกไว้", "BENCHMARK WORKSPACE": "ทดสอบเปรียบเทียบ OCR", "YOUR RESEARCH LOG": "รายการที่บันทึกไว้", "MEASURE & COMPARE": "วัดผลและเปรียบเทียบ", "LOOK CLOSER": "วิเคราะห์ผลเชิงลึก",
-  "TESTING & BENCHMARK": "ทดสอบและเปรียบเทียบ", "OCR Testing App": "แอปทดสอบ OCR", "Built for better OCR": "ช่วยเลือก OCR ที่เหมาะกับงาน", "One test case. Three pipelines.": "ทดสอบข้อมูลเดียวกันด้วยหลาย Pipeline", "A clearer comparison.": "เห็นผลเปรียบเทียบชัดเจน", "Explore benchmarks": "ดูตารางเปรียบเทียบ", "Measure. Compare. Improve.": "ทดสอบ เปรียบเทียบ พัฒนา",
+  "TESTING & BENCHMARK": "ทดสอบและเปรียบเทียบ", "OCR Testing App": "แอปทดสอบ OCR", "Built for better OCR": "ช่วยเลือก OCR ที่เหมาะกับงาน", "A clearer comparison.": "เห็นผลเปรียบเทียบชัดเจน", "Explore benchmarks": "ดูตารางเปรียบเทียบ", "Measure. Compare. Improve.": "ทดสอบ เปรียบเทียบ พัฒนา",
   "Upload document": "อัปโหลดเอกสาร", "Upload document file": "เลือกไฟล์เอกสาร", "Choose a document": "เลือกไฟล์จากเครื่อง", "Supported: PDF, PNG, JPG, JPEG": "รองรับ PDF, PNG และ JPG (JPEG)",
   "A new perspective on your OCR": "เริ่มทดสอบ OCR ของคุณ", "Drop a document here, select a region, and compare your recognition pipelines.": "ลากไฟล์มาวางที่นี่ หรือเลือกไฟล์จากเครื่อง จากนั้นเลือกพื้นที่ที่ต้องการทดสอบ",
   "Or try the sample document": "ลองใช้เอกสารตัวอย่าง", "NO DOCUMENT": "ยังไม่มีเอกสาร", "Document preview": "เอกสาร", "Document uploaded. Draw a test region or run the full page.": "อัปโหลดเอกสารสำเร็จ เลือกพื้นที่ที่ต้องการทดสอบ หรือทดสอบทั้งหน้า",
@@ -83,7 +83,7 @@ export const pipelineLabel = (id: string, fallback: string) => id === "mint" && 
 export const pipelineDescription: Record<string, string> = {
   mint: "ครอบภาพตาม ROI แล้วส่งเข้า Custom OCR ของมิ้น",
   hutch_crop: "ครอบภาพก่อน แล้วส่งภาพเข้า Official PaddleOCR",
-  hutch_full: "เตรียมภาพเต็มพร้อม ROI โดยไม่ครอบภาพในแอป รอยืนยันรูปแบบส่ง ROI จากผู้ให้บริการ Hutch",
+  hutch_full: "Auto ROI ใช้ภาพเต็มของหน้าที่เลือก; Manual ROI ครอบพื้นที่ภายใน adapter ก่อนส่ง Paddle",
 };
 export const metricHelp: Record<string, string> = {
   "CER ↓": "อัตราความผิดพลาดระดับตัวอักษร (CER) ค่ายิ่งต่ำยิ่งดี",

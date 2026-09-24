@@ -4,7 +4,7 @@
 
 เรียก FastAPI ของแอป เช่น `http://localhost:8000` ไม่เรียก Gateway จาก frontend และไม่ส่ง Gateway key ให้ browser OpenAPI อยู่ที่ `/docs` และ `/openapi.json`; response dictionaries บางส่วนอธิบายเพิ่มเติมด้านล่าง
 
-ID เอกสาร/case เป็น UUID ส่วน Pipeline ID มีเพียง `mint`, `hutch_crop`, `hutch_full` การสร้างเอกสาร/case คืน 201 การทำงานปกติอื่นคืน 200 JSON request ไม่รับ field ที่ไม่รู้จัก Sensitive responses ใช้ no-store ไม่มีระบบ login ใน MVP ให้ใช้ภายใต้ขอบเขตการเข้าถึงที่เชื่อถือได้
+ID เอกสาร/case เป็น UUID ส่วน Pipeline ID ที่ลงทะเบียนคือ `mint`, `hutch_crop`, `hutch_full`, `benchmark`, `thai_ft_v2` การสร้างเอกสาร/case คืน 201 การทำงานปกติอื่นคืน 200 JSON request ไม่รับ field ที่ไม่รู้จัก Sensitive responses ใช้ no-store ไม่มีระบบ login ใน MVP ให้ใช้ภายใต้ขอบเขตการเข้าถึงที่เชื่อถือได้
 
 ## รายการเส้นทาง
 
@@ -33,6 +33,16 @@ ID เอกสาร/case เป็น UUID ส่วน Pipeline ID มีเ�
 | GET / PUT | `/api/pipelines/{pipeline_id}` | อ่าน/แก้ configuration |
 | POST | `/api/pipelines/{pipeline_id}/test-connection` | readiness หรือสถานะ contract/key ไม่ใช่ inference |
 | GET | `/api/integrations/model-gateway/status` | gateway/pipeline availability และ key presence |
+| GET | `/api/test-cases/{id}/runs/{run_id}/fields` | run-specific OCR fields และ GT |
+| POST | `/api/test-cases/{id}/runs/{run_id}/fields/{field_id}/check` | preview เปรียบเทียบ ไม่บันทึก |
+| PUT | `/api/test-cases/{id}/runs/{run_id}/fields/{field_id}/ground-truth` | draft/confirmed Field GT |
+| GET | `/api/analytics/errors` | whole-GT error aggregates |
+| POST | `/api/test-cases/{id}/errors/recompute` | แทนที่ metrics/events โดยไม่เรียก OCR |
+| GET | `/api/dataset/samples` | confirmed whole-GT + ROI พร้อม source_available |
+| POST | `/api/dataset/export` | ZIP ภาพต้นฉบับ crop + confirmed GT |
+| POST | `/api/documents/{id}/run-pages` | ประมวลผล PDF ทีละหน้าแบบ NDJSON |
+| DELETE | `/api/test-cases/{id}` | ลบ case/dependents โดยคง original/logs |
+| GET | `/api/logs` | paginated activity logs ที่ไม่เก็บ OCR/GT/secrets |
 
 ## Request ที่ใช้บ่อย
 
@@ -43,6 +53,7 @@ ID เอกสาร/case เป็น UUID ส่วน Pipeline ID มีเ�
   "document_id": "00000000-0000-4000-8000-000000000001",
   "page_number": 2,
   "roi": {"x1": 10, "y1": 20, "x2": 200, "y2": 100},
+  "roi_source": "manual",
   "ground_truth_raw": "บริษัท ซีดีจี จำกัด",
   "category_codes": ["thai_text", "stamp"]
 }
@@ -50,7 +61,7 @@ ID เอกสาร/case เป็น UUID ส่วน Pipeline ID มีเ�
 
 ภาพธรรมดาไม่ส่ง page_number; PDF นับหน้าจาก 1, default 1 ROI เป็น integer pixel ของภาพต้นฉบับ/selected raster ขอบขวาล่าง exclusive, null ใช้ภาพเต็ม หลังมี run เปลี่ยน ROI จะได้ 409 ให้สร้าง case ใหม่ GT แก้ได้โดยไม่เปลี่ยน OCR prediction
 
-รัน: `{"pipelines":["mint","hutch_crop","hutch_full"]}` รับ 1–3 IDs ไม่ซ้ำ คืน `{"test_case_id":"...","runs":[...]}` แม้บาง pipeline error ก็ยังคืน HTTP 200 และผลอื่นไม่ถูกยกเลิก ต้องตรวจ status ทุกรายการ การเรียกซ้ำเพิ่ม run ใหม่
+รัน: `{"pipelines":["mint","hutch_crop","hutch_full"]}` รับ IDs ไม่ซ้ำตาม configuration (schema จำกัด 100 รายการ; ปัจจุบันลงทะเบียน 5) คืน `{"test_case_id":"...","runs":[...]}` แม้บาง pipeline error ก็ยังคืน HTTP 200 และผลอื่นไม่ถูกยกเลิก ต้องตรวจ status ทุกรายการ การเรียกซ้ำเพิ่ม run ใหม่
 
 แก้ GT: `{"ground_truth_raw":"ข้อความที่ถูกต้อง","confirmed":true}`; category: `{"category_codes":["thai_text"]}`; Auto ROI: `{"page_number":2,"auto_roi_mode":"text-line","expand_text_rois":false}` mode ของ Auto ROI เลือก text-line/layout/hybrid ซึ่งเป็นรูปแบบ detection ไม่ใช่ตัวเลือกสร้างผล OCR
 
@@ -60,9 +71,14 @@ Pipeline settings รับ name, base_url, endpoint, enabled, POST, request_for
 
 ## Response หลัก
 
+Field GT routes/payloads/ownership อธิบายใน [fields-roi-dataset.md](fields-roi-dataset.md).
+Run เพิ่ม `fields` และ `field_summary` แยกจาก whole-GT metrics; Dataset ใช้ confirmed whole-GT เท่านั้น.
+Benchmark/Thai FT v2 protocol settings เป็น invariants ของ adapters ไม่ใช่ generic engine routing;
+ดู [Benchmark](benchmark-pipeline.md) และ [Thai FT v2](thai-ft-v2.md).
+
 Document มี id/filename/mime_type/storage_key/sha256/width/height/document_type/page_count/pdf_render_dpi/page_number/image_url/created_at; image_url เป็น path เทียบ backend
 
-TestCase มี document_id, document, page_number, roi, ground_truth_raw/normalized, status draft/tested/confirmed, categories, runs, created_at/updated_at
+TestCase มี document_id, document, page_number, roi, roi_source, ground_truth_raw/normalized, status draft/tested/confirmed, categories, runs, created_at/updated_at
 
 | Run fields | ความหมาย |
 | --- | --- |
@@ -72,16 +88,16 @@ TestCase มี document_id, document, page_number, roi, ground_truth_raw/normal
 | confidence, boxes | ค่าจริงที่ upstream มี ไม่มีค่าจะเป็น null/ไม่มี geometry |
 | original_width/height, roi | ขนาดภาพต้นฉบับ/selected page และ ROI |
 | input_width/height/sha256, input_byte_size/format | ภาพที่ adapter เตรียม; ไม่รับประกันว่าส่งสำเร็จ |
-| crop_width/height/sha256, crop_stage | Mint/Crop ใช้ app_crop; Full crop fields null และ full_image |
+| crop_width/height/sha256, crop_stage | crop-based adapters ใช้ app_crop; Hutch Full manual ใช้ manual_roi; Auto/none ใช้ full_image และ crop fields null |
 | processing_time_ms, gateway_duration_ms | เวลาภายใน adapter และเวลาที่ Gateway รายงานแยกกัน |
 | request_id, gateway_request_id | ID ของเราและ upstream ไม่สร้าง upstream ID ให้ local error |
 | detector_model, recognizer_model, gateway_service/model, model_info | tracing ของโมเดลและบริการ |
 | raw_response | envelope หลัง redact ข้อมูลลับและภาพฝัง ไม่ใช่ unrestricted dump |
 | error_code/message | ข้อผิดพลาดปลอดภัย เช่น MISSING_GATEWAY_KEY หรือ GATEWAY_UNAVAILABLE |
 
-Box มี bbox/polygon ในพิกัดเอกสาร, crop_bbox/crop_polygon ในพิกัด crop, text, det_confidence/rec_confidence/confidence สำหรับ Mint/Crop offset ด้วย ROI origin ส่วน geometry contract ของ Hutch Full ต้องยืนยันจากบริการก่อนใช้งานจริง
+Box มี bbox/polygon ในพิกัดเอกสาร, crop_bbox/crop_polygon ในพิกัด crop, text, det_confidence/rec_confidence/confidence crop-based adapters รวม Hutch Full manual offset ด้วย ROI origin; Hutch Full full-image ไม่มี offset
 
-Matrix มี tests/successful_runs/failed_runs/evaluated_runs, cer/wer/exact_match_rate, avg_time_ms/avg_gateway_time_ms/avg_confidence ค่าความแม่นยำเป็น ratio ไม่ใช่เปอร์เซ็นต์ เลือก latest run ต่อ case/pipeline ตัด archived และ Full semantics เก่าออก Category analytics คืน code/display_name/test_cases/pipelines
+Matrix มี tests/successful_runs/failed_runs/evaluated_runs, cer/wer/exact_match_rate, avg_time_ms/avg_gateway_time_ms/avg_confidence ค่าความแม่นยำเป็น ratio ไม่ใช่เปอร์เซ็นต์ เลือก latest run ต่อ case/pipeline ตัด archived และ Hutch Full ที่ไม่ใช่ full_image ออก รวม manual_roi ปัจจุบัน (ข้อจำกัดเดิม) Category analytics คืน code/display_name/test_cases/pipelines
 
 ## ตัวอย่าง PowerShell
 

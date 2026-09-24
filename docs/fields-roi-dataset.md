@@ -38,7 +38,7 @@ Auto Detect remains explicit. Suggestions remain visible when selecting, moving,
 
 ROI origin is explicit and never inferred from dimensions. Moving/resizing an Auto suggestion retains `auto`; drawing a new region sets `manual`. Original source/page coordinates and backend canonical lossless PNG encoding remain authoritative.
 
-| Active source | Mint / Hutch Crop / Benchmark | Hutch Full |
+| Active source | Mint / Hutch Crop / Benchmark / Thai FT v2 | Hutch Full |
 |---|---|---|
 | auto | final selected ROI crop | full selected page/image |
 | manual | final manual crop | same canonical crop, created inside adapter |
@@ -65,7 +65,9 @@ dataset/
 
 Missing production originals require restoring files from a backup, or re-uploading and confirming new samples. Persistent storage/mount verification is an operator task; no deployment configuration was changed. No new environment variable is required.
 
-## Final local validation (2026-09-22)
+## Historical local validation (2026-09-22)
+
+This section records the Field GT release before Thai FT v2; current release checks are tracked in [release-audit.md](release-audit.md).
 
 - Complete backend suite with explicit local `TEST_DATABASE_URL`: **126 passed**, including PostgreSQL; Ruff passed. Two existing Starlette/httpx/AnyIO deprecation warnings remain.
 - Frontend `npm run typecheck`, `npm run lint`, `npm run build`: passed.

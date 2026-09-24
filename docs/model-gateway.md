@@ -10,7 +10,9 @@ Base URL ที่ได้รับ: `http://107.129.186.30:62051` เรีย
 | --- | --- |
 | Mint | POST `/api/v1/ocr-results?engine=custom`, multipart `image` เป็น PNG crop |
 | Hutch Crop | POST `/api/v1/ocr-results?engine=paddle`, multipart `image` เป็น PNG crop |
-| Hutch Full | POST `/api/v1/ocr-results?engine=paddle`, multipart `image` เป็น PNG ภาพเต็ม ไม่มี ROI |
+| Hutch Full | POST `/api/v1/ocr-results?engine=paddle`, multipart `image`: Auto/none ใช้ภาพเต็ม; Manual ใช้ crop ภายใน adapter |
+| Benchmark | DET `/api/v1/text-detection-batches?version=6` → REC `/api/v1/text-recognition-batches?version=5`; multipart `images`; ไม่มี model/engine |
+| Thai FT v2 | DET `/api/v1/text-detection-batches?version=6&model=thai_ft_v2` → REC `/api/v1/text-recognition-batches?version=6&model=thai_ft_v2` |
 | Auto ROI | POST `/api/v1/document-layouts`, `image` เป็นภาพเต็มของหน้าที่เลือก, `auto_roi_mode=text-line`, `expand_text_rois=false` |
 | Health | GET `/health` หรือ `/api/v1/health` ไม่ต้อง auth |
 | Readiness | GET `/api/v1/readiness` ต้อง auth เมื่อปลายทางเปิดใช้ ไม่มี alias `/readiness` ที่ยืนยันจาก source |
@@ -21,7 +23,7 @@ Base URL ที่ได้รับ: `http://107.129.186.30:62051` เรีย
 
 ไฟล์อ้างอิง `services/ocr_pipeline_paddle/main.py` เรียก `parse_image_request(request)` แล้วอ่านเพียงสาม detection fields ก่อน `model().predict(image.path, ...)` ไม่พบการอ่าน ROI หรือ crop ตาม ROI ที่เลือก `shared/api.py` เก็บ arbitrary multipart/JSON fields ได้ แต่ไม่ได้แปลว่า Paddle ใช้ field นั้น ส่วน Gateway เพียง forward image/fields ไป pipeline
 
-Hutch Full ส่งภาพเต็มหรือหน้า PDF ที่เลือกเป็น PNG ไปยัง Paddle โดยไม่ใช้ ROI และไม่ crop ในแอป ตามคำยืนยันล่าสุดจากเจ้าของ Pipeline ไม่มีขั้นตอนรอ ROI contract
+Hutch Full ดู `roi_source`: Auto/none ส่งภาพเต็มหรือหน้า PDF เต็ม; Manual สร้าง canonical PNG crop ภายใน adapter แล้วส่ง Paddle ไม่มี ROI wire contract ที่ต้องรอ และไม่ส่งพิกัดแทนภาพ ดู [ROI/Field GT](fields-roi-dataset.md)
 
 ## รูปแบบตอบกลับและ tracing
 
@@ -47,6 +49,8 @@ Reference Compose map host 8080 → container 8000; nginx ฟัง 80/443 → 1
 
 ## สถานะภายนอก
 
-ผลตรวจล่าสุด: health และ Bearer readiness HTTP 200 ใช้ key จาก private environment ทดสอบ OCR จริงด้วยภาพสังเคราะห์สำเร็จครบ Mint/Hutch Crop/Hutch Full ไม่บันทึก key ในเอกสาร
+ผลตรวจย้อนหลังของ integrated OCR อยู่ใน [validation](validation.md); live contract ของ batch endpoints อยู่ใน [Benchmark](benchmark-pipeline.md) และ [Thai FT v2](thai-ft-v2.md) ไม่ถือเป็นหลักฐานว่า deployment ใหม่ผ่านแล้ว และไม่บันทึก key ในเอกสาร
+
+Thai FT v2 เลือก `model_selection.version=v6`, `variant=thai_ft_v2`; `results[*].model` อาจเป็นชื่อ V5 เก่าที่เจ้าของโมเดลยืนยันว่า stale metadata ต้องเก็บตามจริงและไม่ใช้ routing. Readiness ยังไม่ยืนยันสถานะแยกรุ่น DET/REC จึงต้องทดสอบ inference เพื่อยืนยัน
 
 ทุก OCR Pipeline และ Auto ROI ใช้ MODEL_GATEWAY_API_KEY ตัวเดียว ไม่รองรับ secret fallback ราย Pipeline API ส่งเพียง api_key_configured boolean และไม่ส่งค่า/ส่วนของ key ออกไป

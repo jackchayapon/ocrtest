@@ -36,7 +36,6 @@ function query(filters?: QueryFilters): string {
   return params.size ? `?${params}` : "";
 }
 
-export const getHealth = () => request<Record<string, unknown>>("/health");
 export const getUploadConfig = () => request<{ max_upload_mb: number; pdf_render_dpi: number }>("/upload-config");
 export const getDocumentPage = (id: string, page_number: number) => request<Document>(`/documents/${id}?page_number=${page_number}`);
 export const getGatewayStatus = () => request<import("@/types").GatewayStatus>("/integrations/model-gateway/status");
@@ -72,7 +71,6 @@ export async function runPages(id: string, pages: number[], pipelines: string[],
 export const updateTestCase = (id: string, input: Partial<TestCaseInput>) => request<TestCase>(`/test-cases/${id}`, { method: "PUT", body: JSON.stringify(input) });
 export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed = false) => request<TestCase>(`/test-cases/${id}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });
-export const getResults = (id: string) => request<RunResponse>(`/test-cases/${id}/results`);
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const getHistory = (filters?: QueryFilters) => request<TestCase[]>(`/history${query(filters)}`);

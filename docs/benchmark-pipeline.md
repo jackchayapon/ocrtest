@@ -1,6 +1,6 @@
 # Benchmark: DET V6 → baseline REC V5
 
-Pipeline ID `benchmark`, display name `Benchmark`. Added alongside Mint, Hutch Crop and Hutch Full; their adapters and endpoints are unchanged. No fine-tuned model or additional pipeline is registered.
+Pipeline ID `benchmark`, display name `Benchmark`. Baseline DET V6 / REC V5 remains unchanged alongside Mint, Hutch Crop, Hutch Full and the separate [Thai FT v2](thai-ft-v2.md) adapter. Benchmark never sends a model variant or engine query.
 
 ## Verified Gateway contract (2026-09-21)
 
@@ -37,6 +37,8 @@ No `model`, `engine`, or fine-tune parameter is sent. `data.results[]` contains 
 Both envelopes have `meta.request_id`, `api_version`, `service`, `model`, and `duration_ms`. Sanitized synthetic fixtures are in `backend/tests/fixtures/benchmark-{detection-v6,recognition-v5}.json`.
 
 ## Composition and persistence
+
+The newer verified recognition leaf envelope has `contract_version=leaf-inference-v1`, `kind=text_recognition_batch`, and `data.results[*].rec_text/rec_score`. The adapter also supports the earlier `text/confidence` shape. Exact result counts and input ordering are required in both; raw envelopes remain unchanged apart from security redaction.
 
 - TestCaseService prepares the same canonical PNG for Mint, Hutch Crop and Benchmark. Hutch Full uses the complete selected image/PDF page for Auto ROI or no ROI; for explicit Manual ROI it creates the canonical crop inside its adapter. Benchmark DET/REC requests are unchanged; see [Field GT and ROI rules](fields-roi-dataset.md).
 - Benchmark keeps DET's output order (which is not necessarily reading order). It rectifies each quadrilateral using OpenCV perspective transform, cubic interpolation and replicated borders, then encodes a lossless PNG in memory. Width/height are rounded maximum opposing-edge lengths; no orientation classification or text correction is added.

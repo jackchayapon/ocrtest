@@ -16,6 +16,10 @@ flowchart TD
   Select --> Crop[ImageService สร้าง canonical PNG crop]
   Crop --> Mint[Mint: engine=custom]
   Crop --> Hutch[Hutch Crop: engine=paddle]
+  Crop --> Benchmark[Benchmark: DET V6 / REC V5, no model]
+  Crop --> Thai[Thai FT v2: DET V6 / REC V6, model=thai_ft_v2]
+  Benchmark --> Save
+  Thai --> Save
   Page --> Full[Hutch Full: Auto ROI/none ใช้ภาพเต็ม]
   Select --> Manual[Hutch Full: Manual ROI crop ภายใน adapter]
   Manual --> Paddle
@@ -31,6 +35,6 @@ Hutch Full ดู `roi_source`: `auto` และ `none` ส่งภาพเต
 
 ## การอ่านข้อมูล debug
 
-`SAME INPUT`/`DIFFERENT INPUT` เปรียบเทียบ crop SHA ของผลที่ใช้ crop รวม Benchmark และ Hutch Full แบบ manual (`crop_stage=manual_roi`) เมื่อใช้ Auto ROI/none Hutch Full เก็บ `input_sha256`/ขนาดภาพเต็ม โดย `crop_sha256` เป็น null และ `crop_stage=full_image`
+`SAME INPUT`/`DIFFERENT INPUT` เปรียบเทียบ crop SHA ของผลที่ใช้ crop รวม Benchmark, Thai FT v2 และ Hutch Full แบบ manual (`crop_stage=manual_roi`) เมื่อใช้ Auto ROI/none Hutch Full เก็บ `input_sha256`/ขนาดภาพเต็ม โดย `crop_sha256` เป็น null และ `crop_stage=full_image`
 
 เมื่อ Hutch Full ใช้ภาพเต็มต่างจาก crop ต้องพิจารณาขอบเขตข้อความและ GT ก่อนเทียบความแม่นยำ ข้อมูลเก่าที่ไม่ระบุ source ไม่ถูกเดาว่า manual และคงพฤติกรรมภาพเต็ม อ่านรายละเอียด [Field GT/ROI/Dataset](fields-roi-dataset.md)

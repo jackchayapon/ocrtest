@@ -1,5 +1,30 @@
 # การพัฒนาและ deployment
 
+## Release order and configuration evidence
+
+Before pushing main, inspect Railway/Vercel Git linkage, branch, root directory,
+watch paths and auto-deploy settings in the authenticated platforms. Roots described
+below are setup guidance, not evidence of current dashboard configuration.
+GitHub status checks for existing remote commit `c9c685e` report successful Railway
+and Vercel deployments, but do not prove current watch paths or auto-deploy settings.
+
+Release sequence: complete local validation → separate cleanup commit → verify
+Neon connectivity/revision and backup/PITR availability → normal additive Alembic
+upgrade to 0007 if needed → verify schema/existing data → normal push → verify
+both deployed SHAs/health → synthetic production smoke. Never reset production,
+change historical migrations or push before required schema compatibility.
+
+Migration 0007 only adds `test_cases.roi_source` (non-null, default `none`) and
+`ocr_fields` with its FK/unique constraint/index. It does not infer historical ROI
+origins or rewrite predictions/GT. Plan for normal PostgreSQL DDL locking; verify
+backup/PITR and avoid competing migration processes. If already at head, inspect
+schema rather than applying an unnecessary migration. Backup verification is a
+separate platform check; a successful database query does not prove recoverability.
+
+On deployment failure inspect logs first (including OOM/restarts), stop the release,
+and identify whether the cause is code, schema, storage, environment or Gateway.
+Do not blindly change memory/settings or trigger duplicate deployments.
+
 ## Production: Vercel frontend และ backend ที่มี storage ถาวร
 
 Repository: https://github.com/jackchayapon/ocrtest, branch `main` ใช้ Vercel project เดิมถ้ามี ตั้ง Root Directory เป็น `frontend`, Framework เป็น Next.js และใช้ lockfile กับ `npm ci` / `npm run build` ไม่ deploy repository root เป็น FastAPI project
@@ -30,7 +55,7 @@ CORS_ORIGINS=<ACTUAL_FRONTEND_PRODUCTION_HTTPS_ORIGIN>
 
 เมื่อได้ frontend URL จริงแล้วเพิ่ม origin นั้นใน CORS_ORIGINS ของ backend ไม่ใช้ wildcard แทนโดเมนที่ยังไม่ทราบ ก่อนประกาศ production พร้อมใช้ ตรวจ frontend `/` และ `/settings/pipelines`, backend `/api/health`, database/storage และ boolean key status โดยไม่พิมพ์ secrets
 
-ยังไม่มี production backend URL หรือการยืนยัน rotated production credentials ใน workspace จึงเตรียม deployment ได้ แต่ยังไม่ควรเผยแพร่ frontend ที่ชี้ localhost หรืออ้างว่าทดสอบ production แล้ว
+Production frontend: https://ocrtest-sandy.vercel.app; backend health: https://ocrtest-production-095b.up.railway.app/api/health. ตรวจ deployment SHA และ health ใหม่ทุก release; URL เหล่านี้ไม่ใช่หลักฐานว่า release ล่าสุดสำเร็จแล้ว
 
 ## สิ่งที่ deploy
 
@@ -44,7 +69,7 @@ Pillow/OpenCV/NumPy ใช้จัดการภาพ, pypdfium2 ใช้ PD
 
 Gateway response มีขีดจำกัดแยกจาก upload: `MODEL_GATEWAY_MAX_RESPONSE_MB=64` (1–256 MB) นับ bytes ขณะ stream ก่อน parse JSON ค่า default คือ 64 MiB; เมื่อเกินคืน RESPONSE_TOO_LARGE ข้อความระบุผลตอบกลับ Gateway ไม่ใช่ขนาดภาพที่อัปโหลด ตัวแปรนี้เป็น backend-only
 
-Migration ล่าสุดของงานหลายหน้า/กิจกรรมคือ `0005_app_logs` เพิ่มตารางอย่างเดียว ไม่แก้หรือลบข้อมูล benchmark เดิม ตรวจบน PostgreSQL local ด้วย `alembic upgrade head` และ `alembic check` ก่อนนำไปใช้กับฐานจริง รอบนี้ไม่ deploy และไม่ migrate Neon
+Head ปัจจุบันคือ `0007_fields_roi_source`: เพิ่ม roi_source และ ocr_fields ต่อจาก 0006_ocr_error_events. ก่อน push ที่ trigger backend deployment ให้ตรวจ backup/PITR, migrate Neon ก่อน แล้วตรวจ revision/schema/data โดยไม่ reset/drop/truncate
 
 Batch ทำงานในคำขอ NDJSON ที่เปิดค้าง ไม่ใช้ distributed queue: ใช้ FastAPI หนึ่ง worker/หนึ่ง instance ตามการรันปัจจุบันเพื่อให้ lock รวม batch, single-run, Auto ROI และ delete มีผลร่วมกัน แต่ละหน้า await pipelines และ commit ผลก่อนหน้าถัดไป ห้ามเพิ่ม worker/replica โดยไม่เพิ่มการประสาน lock ระหว่าง process ไม่ปิดแท็บระหว่างรัน; หากการเชื่อมต่อขาดให้ตรวจ History/Logs ก่อนลองใหม่ ผลที่ commit แล้วจะยังอยู่
 
@@ -86,7 +111,7 @@ Compose bind 3000/8000/5432 เฉพาะ loopback รหัส `ocr_local_dev
 
 ## Migration และ storage
 
-Startup เรียก Alembic upgrade head และ seed เฉพาะ records ที่ขาด Head ปัจจุบัน `0004_real_inputs` migration ไม่ลบเอกสาร/case/prediction/metrics แต่ archive ผลสังเคราะห์เก่าออกจาก product responses/analytics รายละเอียดและการ downgrade อยู่ใน architecture
+Startup เรียก Alembic upgrade head และ seed เฉพาะ records ที่ขาด Head ปัจจุบัน `0007_fields_roi_source`; migration 0004 ไม่ลบเอกสาร/case/prediction/metrics แต่ archive ผลสังเคราะห์เก่าออกจาก product responses/analytics รายละเอียดและการ downgrade อยู่ใน architecture
 
 ```powershell
 cd backend
@@ -102,4 +127,4 @@ cd backend
 
 รัน `scripts/check.ps1` สำหรับ pytest/Ruff/typecheck/lint/build และเพิ่ม `-Browser` เมื่อกำหนด TEST_DATABASE_URL เป็นฐาน local *_test แล้ว สคริปต์ e2e ใช้ port 8100/3100 และ production Next build พร้อม test-only HTTP interception; ไม่ส่งข้อมูลทดสอบเข้า Neon
 
-ตรวจ health, upload/storage และหน้า browser หลัง build ใช้ MODEL_GATEWAY_API_KEY จาก runtime เท่านั้น Hutch Full ส่งภาพเต็มโดยไม่ใช้ ROI ดูผลจริงล่าสุดใน validation.md
+ตรวจ health, upload/storage และหน้า browser หลัง build ใช้ MODEL_GATEWAY_API_KEY จาก runtime เท่านั้น Hutch Full Auto/none ส่งภาพเต็ม; Manual crop ภายใน adapter ดูผลจริงล่าสุดใน validation.md

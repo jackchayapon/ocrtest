@@ -10,7 +10,7 @@ ModelGatewayClient นับ response bytes ขณะ stream ก่อน parse 
 
 ในหน้า workspace หลังอัปโหลด PDF มีช่องช่วงหน้า เช่น `1, 3, 5-8`, checkbox, เลือกทุกหน้า, ล้างหน้า และจำนวนหน้าที่เลือก ไม่ render thumbnails/full-page rasters ทั้งไฟล์พร้อมกัน พรีวิวเดิมโหลดเฉพาะหน้าที่ผู้ใช้เลือกดู
 
-ปุ่ม “ประมวลผลหน้าที่เลือก” ใช้ Pipeline และประเภทข้อมูลที่เลือกใน workspace กับ **test case ใหม่ทุกหน้า** โดยตั้ง full-page ROI ให้ Mint/Hutch Crop และ Ground Truth เริ่มเป็น null; ไม่เปลี่ยน ROI/GT ของ test case เดิม Hutch Full รับภาพเต็มโดยไม่มี ROI เช่นเดิม
+ปุ่ม “ประมวลผลหน้าที่เลือก” ใช้ Pipeline และประเภทข้อมูลที่เลือกใน workspace กับ **test case ใหม่ทุกหน้า** โดยตั้ง full-page ROI ให้ crop-based adapters ทั้งสี่ และ Ground Truth เริ่มเป็น null; ไม่เปลี่ยน ROI/GT ของ test case เดิม Hutch Full รับภาพเต็มโดยไม่มี ROI เช่นเดิม
 
 ```http
 POST /api/documents/{document_id}/run-pages
@@ -25,7 +25,7 @@ Content-Type: application/json
 
 ตอบกลับ `application/x-ndjson` ทีละ event: batch_started → page_started → page_success/page_error → … → batch_finished มี page, status และ test_case_id ของหน้าที่บันทึกแล้ว UI แสดง รอดำเนินการ/กำลังประมวลผล/สำเร็จ/ผิดพลาด และลิงก์เปิดผลรายหน้า
 
-Backend await ทั้งหมดของหน้าปัจจุบันและ commit ก่อนเริ่มหน้าถัดไป ไม่มี gather ข้ามหน้า ภายในหนึ่งหน้ายังคง concurrency ของสาม Pipeline เดิม ใช้ lock ร่วมกับการรันเดี่ยว, Auto ROI และการลบภายใน FastAPI หนึ่ง worker ตาม runtime ปัจจุบัน ไม่รองรับการเพิ่มหลาย worker/replica โดยไม่มี distributed coordination
+Backend await ทั้งหมดของหน้าปัจจุบันและ commit ก่อนเริ่มหน้าถัดไป ไม่มี gather ข้ามหน้า ภายในหนึ่งหน้ายังคง concurrency ของ pipelines ที่เลือกจาก configuration ใช้ lock ร่วมกับการรันเดี่ยว, Auto ROI และการลบภายใน FastAPI หนึ่ง worker ตาม runtime ปัจจุบัน ไม่รองรับการเพิ่มหลาย worker/replica โดยไม่มี distributed coordination
 
 เมื่อ Pipeline ของหน้าหนึ่งผิดพลาด เก็บ partial results แล้วไปหน้าถัดไป ข้อผิดพลาดระดับหน้าไม่ลบผลก่อนหน้า ปุ่มลองหน้าที่ผิดพลาดใหม่สร้าง test cases ใหม่เพื่อเก็บประวัติเดิม หากปิดแท็บ/การเชื่อมต่อขาด อาจหยุด batch ที่ยังไม่เริ่ม ให้ตรวจ History/Logs ก่อนลองใหม่ ไม่มี background queue หรือ resume job อัตโนมัติ
 

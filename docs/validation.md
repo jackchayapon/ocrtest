@@ -1,5 +1,13 @@
 # ผลตรวจสอบ OCR Testing & Benchmark
 
+## Current release preparation
+
+Current implementation has five pipelines and migration head `0007_fields_roi_source`.
+See [release audit](release-audit.md), [Field GT/ROI](fields-roi-dataset.md), and [Thai FT v2 validation](thai-ft-v2.md).
+The dated sections below are historical evidence, including superseded pipeline counts,
+Hutch Full semantics and migration heads. They are retained for traceability and are
+not a claim that the pending production release has passed.
+
 ## Controlled local live review - 2026-09-13
 
 - No application code changes in this review. Existing 79 passing backend tests and 11/11 Playwright suite results from 2026-09-11 remain applicable. Ruff, frontend typecheck and lint were checked again and passed; the existing production build served this browser smoke.
