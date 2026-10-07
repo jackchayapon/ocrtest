@@ -243,12 +243,30 @@ for(const width of [1440,1024,768,390])test(`Accuracy Speed axes, grid, identity
  await page.route("**/api/analytics/comparison*",r=>r.fulfill({json:d}));await page.setViewportSize({width,height:1100});await page.goto("/matrix");
  await page.getByText("Advanced evaluation details",{exact:true}).click();await page.locator("summary").filter({hasText:"ความแม่นยำ × ความเร็ว"}).click();
  const chart=page.getByLabel("ความแม่นยำ × ความเร็ว",{exact:true});await expect(chart.getByTestId("chart-axes")).toBeVisible();await expect(chart.getByTestId("chart-grid")).toHaveCount(10);
- await expect(chart.getByTestId("chart-marker")).toHaveCount(2);await expect(chart.getByTestId("pareto-frontier")).toBeVisible();
+  await expect(chart.getByTestId("chart-marker")).toHaveCount(2);await expect(chart.getByTestId("pareto-frontier")).toBeVisible();
+  await expect(chart.getByTestId("distribution-guide")).toHaveCount(0);
  for(const n of names.slice(0,2))await expect(chart.locator(".comparison-speed-legend")).toContainText(n);
  await expect(chart.getByTestId("chart-marker").first()).toHaveAttribute("aria-label",/CER.*วินาที.*เอกสาร/);await chart.getByTestId("chart-marker").first().focus();await expect(chart.getByRole("status")).toContainText(names[0]);
  await expect(chart).toContainText("CER เฉลี่ย (%)");await expect(chart).toContainText("เวลาเฉลี่ยต่อชุดทดสอบ (วินาที)");
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
  fs.mkdirSync("../.runtime/comparison-ux",{recursive:true});await chart.screenshot({path:`../.runtime/comparison-ux/chart-${width}.png`});
+});
+
+for(const scenario of ["invalid","single","one-pareto"] as const)test(`chart visible guide fallback: ${scenario}`,async({page})=>{
+ await fixtures(page);const d=decision();d.overall.scatter.pareto_valid=scenario==="one-pareto";
+ d.overall.scatter.points=d.overall.cells.map((c,i)=>({...c,cer:i?.061:.037,time_seconds:i?.9:1.2,filled:true,pareto:i===0,cohort_mode:"common"}));
+ if(scenario==="single")d.overall.scatter.points=d.overall.scatter.points.slice(0,1);
+ await page.route("**/api/analytics/comparison*",r=>r.fulfill({json:d}));await page.setViewportSize({width:390,height:1100});await page.goto("/matrix");
+ await page.getByText("Advanced evaluation details",{exact:true}).click();await page.locator("summary").filter({hasText:"ความแม่นยำ × ความเร็ว"}).click();
+ const chart=page.getByLabel("ความแม่นยำ × ความเร็ว",{exact:true});await expect(chart.getByTestId("pareto-frontier")).toHaveCount(0);
+ if(scenario==="single"){
+  await expect(chart.getByTestId("distribution-guide")).toHaveCount(0);await expect(chart.getByTestId("distribution-guide-legend")).toHaveCount(0);
+ }else{
+  const guide=chart.getByTestId("distribution-guide");await expect(guide).toBeVisible();await expect(guide).toHaveAttribute("stroke","#94a3b8");await expect(guide).toHaveAttribute("vector-effect","non-scaling-stroke");
+  await expect(chart.getByTestId("distribution-guide-legend")).toHaveText("เส้นช่วยอ่านกราฟ (ไม่ใช่ Pareto)");await expect(chart.getByText("แนว Pareto",{exact:true})).toHaveCount(0);
+  const xs=(await guide.getAttribute("points"))!.split(" ").map(p=>Number(p.split(",")[0]));expect(xs).toEqual([...xs].sort((a,b)=>a-b));expect(xs).toHaveLength(2);
+  fs.mkdirSync("../.runtime/comparison-ux",{recursive:true});await chart.screenshot({path:`../.runtime/comparison-ux/guide-${scenario}-390.png`});
+ }
 });
 
 test("chart keeps incomplete pipelines in legend without inventing points or Pareto",async({page})=>{

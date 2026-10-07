@@ -24,6 +24,9 @@ export default function AccuracySpeedChart({decision}:{decision:Decision}) {
   const xt=ticks(Math.max(0.1,...points.map(p=>p.time_seconds!))*1.1), yt=ticks(Math.max(0.1,...points.map(p=>p.cer!*100))*1.1);
   const x=(n:number)=>75+n/xt[4]*440,y=(n:number)=>315-n*100/yt[4]*255;
   const frontier=points.filter(p=>p.active&&p.pareto).sort((a,b)=>a.time_seconds!-b.time_seconds!);
+  const showPareto=s.pareto_valid&&frontier.length>=2;
+  // A single Pareto point cannot form a visible line. The fallback is only a visual guide.
+  const guide=points.length>=2&&!showPareto?[...points].sort((a,b)=>a.time_seconds!-b.time_seconds!):[];
   const selected=all.find(p=>p.pipeline_id===focused);
   const description=(p:typeof all[number])=>`${p.pipeline_name} · CER ${percent(p.cer)} · ${p.time_seconds===null?"—":number(p.time_seconds)} วินาที · ${p.documents} เอกสารที่ประเมิน`;
   return <section className="comparison-speed" aria-label="ความแม่นยำ × ความเร็ว">
@@ -37,7 +40,8 @@ export default function AccuracySpeedChart({decision}:{decision:Decision}) {
           {yt.map(t=><g key={`y${t}`}><line data-testid="chart-grid" x1="75" y1={y(t/100)} x2="515" y2={y(t/100)} stroke="#e5edf5"/><text x="62" y={y(t/100)+5} textAnchor="end" fontSize="20" fill="#64748b">{number(t)}</text></g>)}
           <path data-testid="chart-axes" d="M75 60 V315 H515" fill="none" stroke="#94a3b8" strokeWidth="1.5"/>
           <text transform="translate(20 185) rotate(-90)" textAnchor="middle" fontSize="20" fill="#334155">CER เฉลี่ย (%)</text>
-          {s.pareto_valid&&frontier.length>0&&<polyline data-testid="pareto-frontier" points={frontier.map(p=>`${x(p.time_seconds!)},${y(p.cer!)}`).join(" ")} fill="none" stroke="#0667e8" strokeWidth="3" strokeDasharray="7 5"/>}
+          {showPareto&&<polyline data-testid="pareto-frontier" points={frontier.map(p=>`${x(p.time_seconds!)},${y(p.cer!)}`).join(" ")} fill="none" stroke="#0667e8" strokeWidth="3" strokeDasharray="7 5" vectorEffect="non-scaling-stroke"/>}
+          {guide.length>0&&<polyline data-testid="distribution-guide" aria-label="เส้นช่วยอ่านกราฟ (ไม่ใช่ Pareto)" points={guide.map(p=>`${x(p.time_seconds!)},${y(p.cer!)}`).join(" ")} fill="none" stroke="#94a3b8" strokeWidth="2.5" vectorEffect="non-scaling-stroke"/>}
           {points.map(p=>{const index=all.findIndex(a=>a.pipeline_id===p.pipeline_id)+1;return <g key={p.pipeline_id} tabIndex={0} role="img" aria-label={description(p)} onFocus={()=>setFocused(p.pipeline_id)} onBlur={()=>setFocused(null)} onMouseEnter={()=>setFocused(p.pipeline_id)} onMouseLeave={()=>setFocused(null)} data-testid="chart-marker">
             <title>{description(p)}</title><circle cx={x(p.time_seconds!)} cy={y(p.cer!)} r="14" fill={p.filled?pipelineColor(p.pipeline_id):"white"} stroke={pipelineColor(p.pipeline_id)} strokeWidth="3"/>
             <text x={x(p.time_seconds!)} y={y(p.cer!)+5} textAnchor="middle" fontSize="15" fontWeight="700" fill={p.filled?"white":pipelineColor(p.pipeline_id)}>{index}</text>
@@ -49,7 +53,8 @@ export default function AccuracySpeedChart({decision}:{decision:Decision}) {
       </div>
       <div><h3>Pipeline ทั้งหมด ({all.length} รายการ)</h3><ol className="comparison-speed-legend">{all.map((p,i)=><li key={p.pipeline_id}>
         <span className="comparison-speed-number" style={{background:pipelineColor(p.pipeline_id)}}>{i+1}</span><div><strong>{p.pipeline_name}</strong><span>CER {percent(p.cer)} · {p.time_seconds===null?"—":number(p.time_seconds)} sec</span><small>{p.documents} เอกสาร · {p.cohort_mode==="common"?"เอกสารร่วมกัน":"เอกสารของ Pipeline นี้"}{!p.active?" · เก็บถาวร":""}{!points.includes(p)?" · ข้อมูลยังไม่ครบ":""}</small></div>
-      </li>)}</ol>{s.pareto_valid&&frontier.length>0&&<p className="comparison-speed-pareto"><span/> แนว Pareto</p>}
+      </li>)}</ol>{showPareto&&<p className="comparison-speed-pareto"><span/> แนว Pareto</p>}
+      {guide.length>0&&<p className="comparison-speed-pareto" data-testid="distribution-guide-legend"><span style={{borderTop:"2.5px solid #94a3b8"}}/> เส้นช่วยอ่านกราฟ (ไม่ใช่ Pareto)</p>}
       <p className="filter-note">จุดโปร่ง: หลักฐานยังไม่ครบ · เวลาของ Global workflow รวมเวลา Field</p></div>
     </div>
   </section>;
