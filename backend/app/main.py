@@ -22,7 +22,9 @@ from app.api.routes import (
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.db.database import Database
+from app.db.diagnostics import ReadStats, current_stats, install_diagnostics, log_stats
 from app.db.seed import seed_database
+from app.services.config_cache import ConfigCache, install_invalidation
 from app.services.storage_service import LocalStorageService
 
 
@@ -30,6 +32,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
     database = Database(settings)
     storage = LocalStorageService(settings.storage_path)
+    config_cache = ConfigCache()
+    install_invalidation(database.session_factory, config_cache)
+    if settings.db_diagnostics:
+        install_diagnostics(database.engine)
 
     @asynccontextmanager
     async def lifespan(app):
@@ -45,6 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         database.engine.dispose()
 
     app = FastAPI(title="OCR Testing & Benchmark App", version="1.0.0", lifespan=lifespan)
+    app.state.config_cache = config_cache
     app.state.database = database
     app.state.settings = settings
     app.state.storage = storage
@@ -62,7 +69,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.middleware("http")
     async def private_responses(request: Request, call_next):
-        response = await call_next(request)
+        stats = ReadStats() if settings.db_diagnostics else None
+        token = current_stats.set(stats) if stats else None
+        try:
+            response = await call_next(request)
+        finally:
+            if token is not None:
+                current_stats.reset(token)
+        if stats is not None:
+            route = request.scope.get("route")
+            log_stats(getattr(route, "path", "unmatched"), response.status_code, stats)
         response.headers["Cache-Control"] = "private, no-store"
         response.headers["X-Content-Type-Options"] = "nosniff"
         return response

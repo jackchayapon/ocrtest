@@ -41,6 +41,7 @@ export default function HistoryPage() {
   );
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
       setError("");
@@ -49,8 +50,8 @@ export default function HistoryPage() {
         return;
       }
       await Promise.all([
-        getHistory({ ...filters, limit: 21, offset }),
-        getAnalyticsPipelines(),
+        getHistory({ ...filters, limit: 21, offset }, controller.signal),
+        getAnalyticsPipelines(controller.signal),
       ])
         .then(([h, p]) => {
           if (active) {
@@ -70,6 +71,7 @@ export default function HistoryPage() {
     void load();
     return () => {
       active = false;
+      controller.abort();
     };
   }, [filters, offset, revision, invalid]);
   function filter(k: keyof QueryFilters, v: string) {

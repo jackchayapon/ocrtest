@@ -34,7 +34,7 @@ class MatrixService:
 
     def configs(self):
         if self._configs is None:
-            self._configs = self.repository.configs()
+            self._configs = self.repository.configs(summary=True)
         return self._configs
 
     @staticmethod
@@ -161,6 +161,16 @@ class MatrixService:
         return {**self.summarize(self.repository.cases(filters, analytics=True), filters.pipeline),
                 "scope": filters.model_dump(mode="json")}
 
+    def dashboard(self, filters, include_archived=False):
+        """One request-owned cohort; never cache sensitive derived results across requests."""
+        cases = self.repository.cases(filters, analytics=True)
+        return {
+            **self.summarize(cases, filters.pipeline),
+            "scope": filters.model_dump(mode="json"),
+            "matrix": self.aggregate(cases, filters.pipeline),
+            "comparison": self.decision(filters, include_archived, cases=cases),
+        }
+
     def options(self):
         # Historical options are snapshots, never recreated executable configs.
         current = {c.pipeline_id: dict(pipeline_id=c.pipeline_id, pipeline_name=c.name, retired=False)
@@ -197,12 +207,13 @@ class MatrixService:
     def categories(self, filters):
         return self.groups(filters, "category")
 
-    def decision(self, filters, include_archived=False):
+    def decision(self, filters, include_archived=False, *, cases=None):
         """Preload once, reuse eligibility, then compute entirely in memory."""
         from time import perf_counter
 
         start = perf_counter()
-        cases = self.repository.cases(filters, analytics=True)
+        if cases is None:
+            cases = self.repository.cases(filters, analytics=True)
         enabled = {c.pipeline_id for c in self.configs() if c.enabled}
         identities = [dict(**i, active=i["pipeline_id"] in enabled)
                       for i in self.identities(cases)

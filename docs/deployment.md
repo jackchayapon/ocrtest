@@ -44,3 +44,11 @@ On a serious error stop further release actions, inspect non-sensitive logs and 
 ## Operational limits
 
 Run one backend worker/instance until cross-process job locks are implemented. Long PDF batches use an active NDJSON connection; after disconnect check History before retrying. Logs omit OCR/GT and secrets but need an operator retention policy. Production access control is supplied by the deployment/network; this app has no login layer.
+
+## Network-transfer PR #5 approval gates
+
+For this release, use the [specific readiness/rollback checklist](neon-release-readiness.md).
+GitHub auto-deploy evidence is recorded there. Preview build success does not
+prove isolated backend/database/storage. Complete isolated staging verification
+and obtain final user approval before production merge/deployment; keep PR #5
+Draft while gates remain blocked. This PR requires no new migration.

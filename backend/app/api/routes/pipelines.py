@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Request, Response
 from uuid import UUID
 
+from fastapi import APIRouter, Request, Response
+
 from app.api.dependencies import RepoDep, SessionDep
+from app.repositories.benchmark_repository import BenchmarkRepository
 from app.schemas.contracts import PipelineConfigUpdate
+from app.schemas.dynamic_pipelines import DynamicPipelineInput, OCRModelInput
+from app.services.config_cache import catalog
+from app.services.dynamic_pipeline_service import DynamicPipelineService, model_json
 from app.services.pipeline_config_service import PipelineConfigService
 from app.services.serializers import config_json
-from app.schemas.dynamic_pipelines import DynamicPipelineInput, OCRModelInput
-from app.services.dynamic_pipeline_service import DynamicPipelineService, model_json
 
 router = APIRouter(prefix="/pipelines")
 
@@ -21,8 +24,8 @@ def delete_pipeline(pipeline_id: str, repository: RepoDep, session: SessionDep):
 
 
 @router.get("/models")
-def models(session: SessionDep):
-    return [model_json(model) for model in DynamicPipelineService(session).models()]
+def models(request: Request, fresh: bool = False):
+    return catalog(request, "models", lambda s: [model_json(m) for m in DynamicPipelineService(s).models()], fresh=fresh)
 
 
 @router.post("/models", status_code=201)
@@ -46,8 +49,9 @@ def update_definition(pipeline_id: str, data: DynamicPipelineInput, request: Req
 
 
 @router.get("")
-def pipelines(request: Request, repository: RepoDep):
-    return [config_json(config, request.app.state.settings) for config in repository.configs()]
+def pipelines(request: Request, fresh: bool = False):
+    return catalog(request, "pipelines", lambda s: [config_json(c, request.app.state.settings)
+        for c in BenchmarkRepository(s).configs()], fresh=fresh)
 
 
 @router.get("/{pipeline_id}")

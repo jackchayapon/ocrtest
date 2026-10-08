@@ -1,12 +1,13 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.dependencies import SessionDep
 from app.core.errors import AppError
 from app.db.models import DocumentType
+from app.services.config_cache import catalog
 from app.services.document_type_service import create_type, type_json
 
 router = APIRouter(prefix="/document-types")
@@ -17,8 +18,10 @@ class CreateType(BaseModel):
 
 
 @router.get("")
-def list_types(session: SessionDep):
-    return [type_json(r) for r in session.scalars(select(DocumentType).where(DocumentType.active.is_(True)).order_by(DocumentType.system.desc(), DocumentType.name))]
+def list_types(request: Request, fresh: bool = False):
+    return catalog(request, "document-types", lambda s: [type_json(r) for r in s.scalars(
+        select(DocumentType).where(DocumentType.active.is_(True)).order_by(DocumentType.system.desc(), DocumentType.name)
+    )], fresh=fresh)
 
 
 @router.post("", status_code=201)

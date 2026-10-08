@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { RefreshCw } from "lucide-react";
-import { getAnalyticsSummary, getHistory, getComparison, getMatrix, getPipelines } from "@/lib/api";
+import { getAnalyticsDashboard, getHistory, getComparison, getMatrix, getPipelines } from "@/lib/api";
 import { useComparisonDisplay } from "@/lib/analytics-scope";
 import {BestCerBadge, testMinimumCer, latestTestRun, isMinimumCer} from "@/components/BestCer";
 import {currentComparisonNames} from "@/lib/comparison-identity";
@@ -42,18 +42,22 @@ export default function MatrixPage() {
   },[]);
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
       setError("");
 
       await Promise.all([
-        getHistory({ limit: 21, offset }),
-        getAnalyticsSummary({}),
-        getComparison({}, false),
+        getHistory({ limit: 21, offset }, controller.signal),
+        getAnalyticsDashboard({}, controller.signal),
         getPipelines(),
-        getMatrix({}),
       ])
-        .then(([h, s, d, config, m]) => {
+        .then(async ([h, s, config]) => {
+          if (!active) return;
+          // Older servers ignore dashboard=true. Keep rolling-version compatibility.
+          const [d, m] = s.comparison && s.matrix
+            ? [s.comparison, s.matrix]
+            : await Promise.all([getComparison({}, false, controller.signal), getMatrix({}, controller.signal)]);
           if (active) {
             setCases(h.slice(0, 20));
             setHasNext(h.length > 20);
@@ -74,6 +78,7 @@ export default function MatrixPage() {
     void load();
     return () => {
       active = false;
+      controller.abort();
     };
   }, [offset, revision]);
   const visible = cases;

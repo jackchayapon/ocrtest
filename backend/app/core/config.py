@@ -12,6 +12,7 @@ class Settings(BaseSettings):
         env_file=(BACKEND_ROOT.parent / ".env", BACKEND_ROOT / ".env"),
         extra="ignore",
     )
+    db_diagnostics: bool = False
     database_url: SecretStr = SecretStr("")
     storage_mode: Literal["local"] = "local"
     storage_path: Path = BACKEND_ROOT / "storage" / "uploads"
