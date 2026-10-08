@@ -21,9 +21,10 @@ def history(
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     view: Literal["full", "summary"] = "full",
+    latest: bool = False,
 ):
     return [test_case_json(record, summary=view == "summary") for record in
-            repository.cases(filters, limit, offset, runs_only=True, summary=view == "summary")]
+            repository.cases(filters, limit, offset, runs_only=True, summary=view == "summary", latest=latest and view == "summary")]
 
 
 @router.get("/categories")
@@ -42,8 +43,10 @@ def category_analytics(session: SessionDep, filters: Annotated[BenchmarkFilters,
 
 
 @router.get("/analytics/summary")
-def analytics_summary(session: SessionDep, filters: Annotated[BenchmarkFilters, Depends()]):
-    return MatrixService(session).summary(filters)
+def analytics_summary(session: SessionDep, filters: Annotated[BenchmarkFilters, Depends()],
+                      dashboard: bool = False, include_archived: bool = False):
+    service = MatrixService(session)
+    return service.dashboard(filters, include_archived) if dashboard else service.summary(filters)
 
 
 @router.get("/analytics/pipelines")

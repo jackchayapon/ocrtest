@@ -93,9 +93,11 @@ export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed 
 export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
-export const getHistory = (filters?: QueryFilters, signal?: AbortSignal) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary`, { signal });
+export const getHistory = (filters?: QueryFilters, signal?: AbortSignal) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary&latest=true`, { signal });
 export const getMatrix = (filters?: QueryFilters, signal?: AbortSignal) => request<MatrixRow[]>(`/matrix${query(filters)}`, { signal });
 export const getAnalyticsSummary = (filters?: QueryFilters, signal?: AbortSignal) => request<import("@/types").AnalyticsSummary>(`/analytics/summary${query(filters)}`, { signal });
+// Optional bundle is backward-compatible with an older backend during rollout.
+export const getAnalyticsDashboard = (filters?: QueryFilters, signal?: AbortSignal) => request<import("@/types").AnalyticsSummary & { matrix?: MatrixRow[]; comparison?: import("@/types/comparison").Comparison }>(`/analytics/summary${query(filters)}${query(filters) ? "&" : "?"}dashboard=true`, { signal });
 export const getAnalyticsPipelines = (signal?: AbortSignal) => request<import("@/types").AnalyticsPipeline[]>("/analytics/pipelines", { signal });
 export const getAnalysisGroups = (dimension: "document-types" | "categories", filters?: QueryFilters) => request<import("@/types").AnalyticsGroup[]>(`/analytics/${dimension}${query(filters)}`);
 export const getCategoryAnalytics = (filters?: QueryFilters) => request<CategoryAnalytics[]>(`/analytics/categories${query(filters)}`);

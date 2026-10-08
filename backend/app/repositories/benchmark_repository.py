@@ -1,7 +1,7 @@
 from datetime import datetime, time, timedelta, timezone
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session, load_only, raiseload, selectinload
+from sqlalchemy import and_, exists, or_, select
+from sqlalchemy.orm import Session, aliased, load_only, raiseload, selectinload
 
 from app.core.errors import AppError
 from app.db.models import (
@@ -61,14 +61,27 @@ class BenchmarkRepository:
 
     def cases(
         self, filters: BenchmarkFilters, limit: int | None = None, offset: int = 0, *, runs_only=False,
-        analytics=False, summary=False, texts=False, test_case_id=None,
+        analytics=False, summary=False, texts=False, test_case_id=None, latest=False,
     ) -> list[TestCase]:
         query = select(TestCase)
         if summary:
+            visible_runs = PipelineRun.archived.is_(False)
+            if latest:
+                newer = aliased(PipelineRun)
+                # The selectin query limits case IDs first. Compare only another
+                # non-archived run for this same case/pipeline; keep full history elsewhere.
+                newer_run = exists(select(newer.id).where(
+                    newer.test_case_id == PipelineRun.test_case_id,
+                    newer.pipeline_id == PipelineRun.pipeline_id,
+                    newer.archived.is_(False),
+                    or_(newer.created_at > PipelineRun.created_at,
+                        and_(newer.created_at == PipelineRun.created_at, newer.id > PipelineRun.id)),
+                ))
+                visible_runs = and_(visible_runs, ~newer_run)
             query = query.options(
-                selectinload(TestCase.runs.and_(PipelineRun.archived.is_(False)))
+                selectinload(TestCase.runs.and_(visible_runs))
                     .defer(PipelineRun.raw_response, raiseload=True).defer(PipelineRun.boxes, raiseload=True),
-                selectinload(TestCase.runs.and_(PipelineRun.archived.is_(False)))
+                selectinload(TestCase.runs.and_(visible_runs))
                     .selectinload(PipelineRun.fields).defer(OCRField.diagnostics, raiseload=True),
             )
         if analytics:

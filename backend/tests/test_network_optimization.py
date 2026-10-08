@@ -416,3 +416,104 @@ def test_opt_in_diagnostics_capture_requests_without_sql_text_or_secret_values(
     assert all(r["route"] == "/pipelines/models" for r in records)
     assert "test-gateway-secret" not in caplog.text
     assert "SELECT" not in caplog.text and "INSERT" not in caplog.text
+
+
+@pytest.mark.parametrize("scope", ["", "pipeline=traffic_0", "category=thai_text"])
+def test_dashboard_reuses_one_cohort_and_preserves_existing_outputs(client, traffic_cases, scope):
+    install_diagnostics(client.app.state.database.engine)
+    suffix = "?" + scope if scope else ""
+    with measured() as separate:
+        matrix = client.get("/api/matrix" + suffix).json()
+        summary = client.get("/api/analytics/summary" + suffix).json()
+        decision = client.get("/api/analytics/comparison" + suffix).json()
+    with measured() as combined:
+        bundle = client.get("/api/analytics/summary?dashboard=true" + ("&" + scope if scope else "")).json()
+    comparison = bundle.pop("comparison")
+    assert bundle.pop("matrix") == matrix
+    comparison.pop("computation_ms")
+    decision.pop("computation_ms")
+    assert comparison == decision
+    assert bundle == summary
+    assert combined.queries < separate.queries
+    assert combined.rows < separate.rows
+    assert combined.estimated_result_bytes < separate.estimated_result_bytes
+
+
+def test_dashboard_does_not_retain_gt_metrics_or_deleted_configuration(client, traffic_cases):
+    case_id = traffic_cases[0]
+    path = "/api/analytics/summary?dashboard=true&document=" + client.get("/api/test-cases/" + case_id).json()["document_id"]
+    before = client.get(path).json()
+    result = client.put("/api/test-cases/" + case_id + "/ground-truth", json={"ground_truth_raw": "Changed Thai GT กำ", "confirmed": True})
+    assert result.status_code == 200, result.text
+    after = client.get(path).json()
+    assert before["matrix"] != after["matrix"]
+    assert client.delete("/api/pipelines/traffic_0").status_code == 204
+    retired = client.get(path + "&include_archived=true").json()
+    assert any(r["pipeline_id"] == "traffic_0" and r["retired"] for r in retired["matrix"])
+    assert not any(r["pipeline_id"] == "traffic_0" for r in client.get("/api/pipelines").json())
+    assert client.get("/api/test-cases/" + case_id).json()["runs"]
+
+
+def test_latest_history_limits_run_payload_with_stable_ties_and_full_detail(client, traffic_cases):
+    case_id = traffic_cases[0]
+    with client.app.state.database.session_factory() as session:
+        original = session.get(Case, case_id)
+        original.runs.append(PipelineRun(pipeline_id="traffic_0", pipeline_name="Previous name", status="error", created_at=datetime(2000, 1, 1, tzinfo=timezone.utc)))
+        original.runs.append(PipelineRun(pipeline_id="traffic_0", pipeline_name="Archived newer", status="error", archived=True, created_at=datetime(2030, 1, 1, tzinfo=timezone.utc)))
+        session.commit()
+    install_diagnostics(client.app.state.database.engine)
+    with measured() as all_runs:
+        full = client.get("/api/history?view=summary&limit=200").json()
+    with measured() as latest:
+        compact = client.get("/api/history?view=summary&latest=true&limit=200").json()
+    expected = deepcopy(full)
+    for case in expected:
+        selected = {}
+        for run in case["runs"]:
+            old = selected.get(run["pipeline_id"])
+            if old is None or (run["created_at"], run["id"]) > (old["created_at"], old["id"]):
+                selected[run["pipeline_id"]] = run
+        case["runs"] = [r for r in case["runs"] if selected[r["pipeline_id"]]["id"] == r["id"]]
+    # Paginated ordering is unchanged, and only selected runs are fetched.
+    assert compact == expected
+    assert latest.queries == all_runs.queries
+    assert latest.rows < all_runs.rows
+    all_detail = client.get("/api/test-cases/" + case_id).json()
+    assert any(r["pipeline_name"] == "Previous name" for r in all_detail["runs"])
+    assert client.get("/api/history?latest=true").json() == client.get("/api/history").json()
+    # Equal timestamps have an explicit ID tie-break; archived newer runs
+    # must not replace a visible snapshot. Full detail still retains both.
+    with client.app.state.database.session_factory() as session:
+        record = session.get(Case, case_id)
+        for suffix in ("2", "1"):
+            record.runs.append(PipelineRun(id="ffffffff-ffff-ffff-ffff-fffffffffff" + suffix,
+                pipeline_id="traffic_0", pipeline_name="Tie " + suffix, status="error",
+                created_at=datetime(2035, 1, 1, tzinfo=timezone.utc)))
+        session.commit()
+    compact = client.get("/api/history?view=summary&latest=true&limit=200").json()
+    selected = next(c for c in compact if c["id"] == case_id)
+    assert next(r for r in selected["runs"] if r["pipeline_id"] == "traffic_0")["pipeline_name"] == "Tie 2"
+    assert {"Tie 1", "Tie 2"} <= {r["pipeline_name"] for r in client.get("/api/test-cases/" + case_id).json()["runs"]}
+
+
+
+@pytest.mark.parametrize("error_level", ["char", "word"])
+def test_error_filters_and_thai_alignment_match_full_reference(client, traffic_cases, monkeypatch, error_level):
+    with client.app.state.database.session_factory() as session:
+        record = session.get(Case, traffic_cases[0])
+        record.ground_truth_raw = "กำลัง ไทย ABC"
+        for run in record.runs:
+            run.raw_text = "กําลัง ไท ABCZ"
+            run.final_text = "กำลัง ไท AB"
+        session.commit()
+    paths = [f"/api/analytics/errors?test_case_id={traffic_cases[0]}&error_level={error_level}&error_type={kind}&pipeline=traffic_0&text_kind={text_kind}" for kind in ("substitution", "insertion", "deletion") for text_kind in ("raw", "final")]
+    optimized = [client.get(p).json() for p in paths]
+    cases = BenchmarkRepository.cases
+    def full(self, *args, **kwargs):
+        kwargs.update(analytics=False, texts=False)
+        kwargs.pop("test_case_id", None)
+        return cases(self, *args, **kwargs)
+    with monkeypatch.context() as patch:
+        patch.setattr(BenchmarkRepository, "cases", full)
+        assert [client.get(p).json() for p in paths] == optimized
+    assert all("items" in r for r in optimized)

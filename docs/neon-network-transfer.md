@@ -140,7 +140,7 @@ existing databases. Probe uses synthetic records and never calls real OCR.
 same numeric diagnostic helper for comparable measurements. Default probe uses
 temporary SQLite; results above specifically used PostgreSQL.
 
-## Validation and known baseline failures
+## Initial iteration validation (commit 05a1776)
 
 - Complete backend with PostgreSQL: **243 passed, 54 failed**. Unmodified baseline:
   **219 passed, 54 failed**; normalized failing test IDs are identical. Twenty-four
@@ -188,3 +188,128 @@ Rollback is a normal revert of this branch's code change, followed by the usual
 approved deployment. No database rollback or historical-data deletion is needed.
 Keep this PR **Draft**, resolve baseline-suite gates before merge/release, and do
 not claim production traffic is fixed before actual deployment/verification.
+
+## PR #5 continuation: shared dashboard reads and latest History
+
+The Matrix browser now requests `/api/analytics/summary?dashboard=true` once.
+The opt-in response retains summary fields and adds `matrix` and `comparison`.
+All three views reuse a request-owned compact cohort and existing calculation
+functions. Default Summary/Matrix/Comparison APIs keep their contracts. An older
+backend ignoring the flag is supported by falling back to the two separate
+Matrix/Comparison reads. No sensitive derived output is cached across requests.
+This is one ORM cohort, not an atomic multi-query database snapshot under
+READ COMMITTED. Bundled comparison computation timing excludes preloading;
+it is a diagnostic timer, not OCR latency or a statistical metric.
+
+History's browser uses `view=summary&latest=true`. The latest opt-in returns one
+non-archived run per case/pipeline, ordered by creation time and UUID as a tie
+breaker. Case filtering/pagination happens before select-in run loading. Archived
+newer runs cannot displace an active older run. Full default History and summary
+without latest retain historical attempts. No stored data is deleted.
+
+### Comparable measurements against current main
+
+Each endpoint was sampled three times on fresh isolated PostgreSQL fixtures.
+Tables below use warm fetched-value bytes and query counts. Full sample SQL
+medians, fetched rows, HTTP bytes and normalized output hashes are in the JSON
+artifact. Output hashes agree for unchanged endpoints and combined dashboard
+semantics; intentional History projection/attempt omission is tested separately.
+
+| Fixture | Cases / runs / OCR fields | Dashboard SQL main -> PR | Dashboard fetched bytes main -> PR | Latest History fetched bytes main -> PR |
+|---|---|---|---|---|
+| Small legacy | 30 / 150 / 450 | 25 -> 9 | 783,435 -> 176,780 (77.44% less) | 1,364,920 -> 173,120 (87.32% less) |
+| Larger legacy, 3 attempts | 120 / 1,800 / 5,400 | 43 -> 15 | 9,031,875 -> 2,070,490 (77.08% less) | 4,076,960 -> 173,440 (95.75% less) |
+| Mixed lean, 3 attempts | 120 / 1,800 / 5,400 | 43 -> 15 | 9,808,515 -> 2,293,610 (76.62% less) | 1,043,664 -> 196,344 (81.19% less) |
+
+Mixed lean includes legacy, global per-field and global whole-document evaluation
+in equal case groups, with 240 global fields. Larger legacy dashboard fetched
+rows fall from 27,735 to 9,245. Latest History rows fall from 1,540 to 540.
+Incrementally versus initial PR commit 05a1776, larger legacy History drops
+501,560 -> 173,440 fetched bytes, and the dashboard 6,211,470 -> 2,070,490.
+
+| Larger legacy endpoint | SQL main -> PR | Fetched bytes main -> PR | HTTP bytes main -> PR |
+|---|---|---|---|
+| Matrix | 14 -> 14 | 3,010,625 -> 2,070,490 | 1,511 -> 1,511 |
+| Comparison | 15 -> 15 | 3,010,625 -> 2,070,490 | 18,605 -> 18,605 |
+| Errors | 13 -> 13 | 3,009,140 -> 2,203,330 | 51,364 -> 51,364 |
+| Dashboard workload | 43 -> 15 | 9,031,875 -> 2,070,490 | 21,247 -> 21,272 |
+| Latest History | 7 -> 7 | 4,076,960 -> 173,440 | 4,305,421 -> 281,661 |
+
+Latency is a trade-off, not an unconditional improvement: latest History's
+correlated anti-join increases median SQL time 12.51 -> 15.33 ms on larger legacy
+and 9.53 -> 15.44 ms on mixed lean; dashboard larger legacy median is
+93.10 -> 59.81 ms. These are three-sample local observations, not production
+latency guarantees. Dashboard still loads historical eligible runs in memory;
+future SQL aggregation/index changes require separate evidence and review.
+
+Catalog cold read remains one query; warm pipeline/model reads become zero.
+Eight simultaneous cold model reads execute eight SQL queries on main and one
+on this PR (one miss, seven hits), with equal returned JSON. PostgreSQL tests
+use two independent app/session-factory instances: a second worker's catalog
+may remain stale within its 60-second TTL, but OCR reads current persisted config;
+explicit fresh and TTL expiry retrieve the update. Connection termination/recovery,
+source PNG cropping, confirmed Thai GT ZIP labels, cache invalidation and
+failure isolation are tested without real Gateway calls.
+
+### Deployment readiness boundaries
+
+Local browser smoke exercises actual FastAPI/PostgreSQL with synthetic PNG/PDF
+and mock Gateway: CORS preflight, upload/preview, Auto plus Manual source-coordinate
+layout, two-pipeline OCR, four GT fields, evaluate, History reopen, shared Matrix,
+PDF page 2, batch pages, ZIP integrity/PNG dimensions/Thai labels and config refresh.
+Test selectors wait for asynchronous registry loading and choose only their own
+pipelines; no assumption of an empty registry or a fixed pipeline count.
+
+Existing CORS permits content-type and GET/POST/PUT/DELETE/OPTIONS. Existing limits
+are upload 20 MB, image 40 million pixels, PDF 200 DPI/500 pages, Gateway timeout
+240 seconds and response limit 64 MB. PostgreSQL connect_timeout 10 seconds,
+pool_pre_ping and existing 5 + 10 pool defaults are unchanged. Docker launches
+uvicorn on port 8000; existing lifespan migration/seeding is unchanged. Vercel
+public API URL is a build-time frontend value; conditional standalone output is
+unchanged. No committed railway.json/vercel.json establishes provider dashboard
+root/watch/startup settings; actual cloud configuration remains unverified.
+
+No isolated staging or authenticated Neon usage dashboard was available.
+No staging deployment, production database access or real OCR was performed.
+Actual monthly transfer and a <=500 MB/month target cannot be inferred from these
+synthetic estimates. Request/abort coordination does not guarantee cancellation
+of an already running SQL statement. Diagnostics remain opt-in/default off.
+
+Reproduce the larger and mixed fixtures with the existing secure local test URL:
+
+```powershell
+backend/.venv/Scripts/python scripts/measure_db_traffic.py .runtime/large.json --postgres --cases 120 --runs-per-pipeline 3
+backend/.venv/Scripts/python scripts/measure_db_traffic.py .runtime/mixed.json --postgres --lean --mixed --cases 120 --runs-per-pipeline 3
+```
+
+All test databases are newly created localhost *_test databases. Main comparisons
+use archived f9765f6 code with numeric instrumentation, no product modifications;
+baseline browser uses Webpack for an external node_modules junction, while this
+branch uses its normal Turbopack production build. Baseline smoke copies change
+only expected separate dashboard reads, interpreter location and isolated CORS
+port. No production credentials or sensitive output are present in artifacts.
+
+## Final continuation validation
+
+- Backend including isolated PostgreSQL: **250 passed / 54 failed**; fresh main
+  **219 passed / identical 54 failing IDs**. Thirty-one optimization/PG tests pass;
+  another 40 migration/current pipeline/metric/batch guards pass.
+- Complete final Playwright: **102 passed / 31 failed (133 total)**.
+  Fresh main with two copied smoke tests: 96 passed / 33 failed (129 total).
+  First equivalent full branch run: 100 passed / 33 failed, matching the same
+  32 existing failures plus the asynchronous-registry smoke fixture issue.
+  After waiting for registry loading and explicitly selecting test-owned configs,
+  baseline targeted smokes are 2/2 and both final branch smokes pass.
+  The final full rerun retains its isolated DB: the empty-registry batch retry case
+  passes because prior test configs exist. This is a fixture-state difference,
+  not a product fix. Final failing IDs are a subset of main failures; exact
+  lists and this qualification are retained in the measurement artifact.
+- Typecheck, ESLint, production build, changed-file Ruff, diff/secret/link checks
+  pass. Whole Ruff has 11 existing import-order violations (main 12).
+- Alembic clean-head/additive upgrade/schema-drift guards pass; head remains
+  `0010_dynamic_pipelines`. No migration, required env variable or deployment
+  configuration is added.
+
+No existing test was deleted or weakened. Suitable for draft review, **not a
+ green merge/release gate**. Resolve baseline tests and verify isolated staging
+and actual transfer before release.

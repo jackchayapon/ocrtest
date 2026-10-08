@@ -83,6 +83,24 @@ def test_current_postgresql_upload_ocr_gt_history_metrics_dataset_and_reconnect(
             assert crop.size == (230, 120)
             expected_crop = Image.open(io.BytesIO(png)).crop((40, 30, 270, 150)).convert("RGB")
             assert crop.convert("RGB").tobytes() == expected_crop.tobytes()
+        # Separate app/session factories model workers sharing ONLY the database.
+        worker = create_app(app.state.settings)
+        with TestClient(worker) as other:
+            cached = other.get("/api/pipelines").json()[0]
+            definition = integrated(source="custom", name="Worker current", version="5", rec_weight="thai_ft_v2")
+            assert client.put("/api/pipelines/" + pipeline["pipeline_id"] + "/definition", json=definition).status_code == 200
+            # Ordinary cross-worker catalog reads are bounded stale, not silently
+            # assumed globally invalidated; explicit fresh must read the commit.
+            assert other.get("/api/pipelines").json()[0]["name"] == cached["name"]
+            gateway[1].clear()
+            response = other.post(root + "/run", json={"pipelines": [pipeline["pipeline_id"]]})
+            assert response.json()["runs"][0]["status"] == "success"
+            assert dict(gateway[1][-1].url.params) == dict(engine="custom", version="5", det_model="baseline", rec_model="thai_ft_v2")
+            assert other.get("/api/pipelines?fresh=true").json()[0]["name"] == "Worker current"
+            assert client.put("/api/pipelines/" + pipeline["pipeline_id"] + "/definition", json={**definition, "name": "After expiry"}).status_code == 200
+            clock = worker.state.config_cache.clock
+            worker.state.config_cache.clock = lambda: clock() + 61
+            assert other.get("/api/pipelines").json()[0]["name"] == "After expiry"
         # Reconnect and repeat reads; no replacement SQLite or production credentials.
         with app.state.database.engine.connect() as connection:
             backend_pid = connection.scalar(text("SELECT pg_backend_pid()"))
