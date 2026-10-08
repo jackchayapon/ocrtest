@@ -7708,5 +7708,1728 @@
         "note": "Final complete rerun after test-only registry wait fix retains isolated test DB. Empty-registry retry now passes because configs exist. Both new smokes pass; no claim of fixing existing behavior."
       }
     }
+  },
+  "release_verification": {
+    "source_commit": "c78718f398a69d9445618ea9fc470d0101c009c9",
+    "main_commit": "f9765f6c3b01bca1341c1d273155ca5cd70aa488",
+    "main_large": {
+      "fixture": {
+        "cases": 120,
+        "runs": 1800,
+        "ocr_fields": 5400,
+        "runs_per_pipeline": 3,
+        "pipelines": 5,
+        "legacy_json": true,
+        "mixed_workflows": false
+      },
+      "database": "postgresql",
+      "units": "estimated fetched-value UTF-8 bytes; NOT wire bytes or Neon billed bytes",
+      "endpoints": {
+        "/api/pipelines": [
+          {
+            "queries": 1,
+            "query_ms": 3.408999997191131,
+            "rows": 5,
+            "estimated_result_bytes": 1485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 3166,
+            "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.26979995891451836,
+            "rows": 5,
+            "estimated_result_bytes": 1485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 3166,
+            "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.20539999241009355,
+            "rows": 5,
+            "estimated_result_bytes": 1485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 3166,
+            "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+          }
+        ],
+        "/api/pipelines/models": [
+          {
+            "queries": 1,
+            "query_ms": 0.1908999984152615,
+            "rows": 28,
+            "estimated_result_bytes": 5884,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 7789,
+            "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.18209998961538076,
+            "rows": 28,
+            "estimated_result_bytes": 5884,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 7789,
+            "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.16430002870038152,
+            "rows": 28,
+            "estimated_result_bytes": 5884,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 7789,
+            "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+          }
+        ],
+        "/api/categories": [
+          {
+            "queries": 1,
+            "query_ms": 0.18849998014047742,
+            "rows": 14,
+            "estimated_result_bytes": 940,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1305,
+            "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.14000001829117537,
+            "rows": 14,
+            "estimated_result_bytes": 940,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1305,
+            "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.1286999904550612,
+            "rows": 14,
+            "estimated_result_bytes": 940,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1305,
+            "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+          }
+        ],
+        "/api/document-types": [
+          {
+            "queries": 1,
+            "query_ms": 0.2345999819226563,
+            "rows": 4,
+            "estimated_result_bytes": 488,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 461,
+            "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.15680002979934216,
+            "rows": 4,
+            "estimated_result_bytes": 488,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 461,
+            "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+          },
+          {
+            "queries": 1,
+            "query_ms": 0.13930001296103,
+            "rows": 4,
+            "estimated_result_bytes": 488,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 461,
+            "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+          }
+        ],
+        "/api/history?limit=20": [
+          {
+            "queries": 7,
+            "query_ms": 14.559999923221767,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.927200004924089,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.58459995733574,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          }
+        ],
+        "/api/history?limit=20&view=summary": [
+          {
+            "queries": 7,
+            "query_ms": 12.869799975305796,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.500500190071762,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.385200010612607,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          }
+        ],
+        "/api/history?limit=20&view=summary&latest=true": [
+          {
+            "queries": 7,
+            "query_ms": 12.726799992378801,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.825000041630119,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.536499940324575,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          }
+        ],
+        "/api/matrix": [
+          {
+            "queries": 14,
+            "query_ms": 30.500699940603226,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1511,
+            "normalized_output_sha256": "74b2bea3a44191949059c079f1a53714698172b0d52f059becf484088390b167"
+          },
+          {
+            "queries": 14,
+            "query_ms": 30.413599975872785,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1511,
+            "normalized_output_sha256": "74b2bea3a44191949059c079f1a53714698172b0d52f059becf484088390b167"
+          },
+          {
+            "queries": 14,
+            "query_ms": 30.06010001990944,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1511,
+            "normalized_output_sha256": "74b2bea3a44191949059c079f1a53714698172b0d52f059becf484088390b167"
+          }
+        ],
+        "/api/analytics/summary": [
+          {
+            "queries": 14,
+            "query_ms": 31.40569996321574,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1131,
+            "normalized_output_sha256": "89615e62763dbf29f873f1560886fa2235bc28d9ca507400937d8685b4e15f6d"
+          },
+          {
+            "queries": 14,
+            "query_ms": 30.437400098890066,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1131,
+            "normalized_output_sha256": "89615e62763dbf29f873f1560886fa2235bc28d9ca507400937d8685b4e15f6d"
+          },
+          {
+            "queries": 14,
+            "query_ms": 30.175800144206733,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1131,
+            "normalized_output_sha256": "89615e62763dbf29f873f1560886fa2235bc28d9ca507400937d8685b4e15f6d"
+          }
+        ],
+        "/api/analytics/pipelines": [
+          {
+            "queries": 2,
+            "query_ms": 1.1310999980196357,
+            "rows": 1805,
+            "estimated_result_bytes": 82485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 361,
+            "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+          },
+          {
+            "queries": 2,
+            "query_ms": 1.0196000221185386,
+            "rows": 1805,
+            "estimated_result_bytes": 82485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 361,
+            "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+          },
+          {
+            "queries": 2,
+            "query_ms": 0.9584999643266201,
+            "rows": 1805,
+            "estimated_result_bytes": 82485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 361,
+            "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+          }
+        ],
+        "/api/analytics/categories": [
+          {
+            "queries": 15,
+            "query_ms": 65.93109999084845,
+            "rows": 9259,
+            "estimated_result_bytes": 3011565,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 25595,
+            "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+          },
+          {
+            "queries": 15,
+            "query_ms": 30.474399973172694,
+            "rows": 9259,
+            "estimated_result_bytes": 3011565,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 25595,
+            "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+          },
+          {
+            "queries": 15,
+            "query_ms": 30.43360006995499,
+            "rows": 9259,
+            "estimated_result_bytes": 3011565,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 25595,
+            "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+          }
+        ],
+        "/api/analytics/comparison": [
+          {
+            "queries": 15,
+            "query_ms": 30.44519980903715,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 18606,
+            "normalized_output_sha256": "12ebc936b4bcf676cb0f92257dde704e68564fd015493502025332a453d71f48"
+          },
+          {
+            "queries": 15,
+            "query_ms": 31.116299971472472,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 18605,
+            "normalized_output_sha256": "12ebc936b4bcf676cb0f92257dde704e68564fd015493502025332a453d71f48"
+          },
+          {
+            "queries": 15,
+            "query_ms": 30.16789985122159,
+            "rows": 9245,
+            "estimated_result_bytes": 3010625,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 18605,
+            "normalized_output_sha256": "12ebc936b4bcf676cb0f92257dde704e68564fd015493502025332a453d71f48"
+          }
+        ],
+        "/api/analytics/errors": [
+          {
+            "queries": 13,
+            "query_ms": 29.68720003264025,
+            "rows": 9240,
+            "estimated_result_bytes": 3009140,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 51364,
+            "normalized_output_sha256": "e8a3db472c3e1a98ac04863c75806f86d1395ff3b9079d5090df66b8f2f56605"
+          },
+          {
+            "queries": 13,
+            "query_ms": 30.200400040484965,
+            "rows": 9240,
+            "estimated_result_bytes": 3009140,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 51364,
+            "normalized_output_sha256": "e8a3db472c3e1a98ac04863c75806f86d1395ff3b9079d5090df66b8f2f56605"
+          },
+          {
+            "queries": 13,
+            "query_ms": 29.65280000353232,
+            "rows": 9240,
+            "estimated_result_bytes": 3009140,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 51364,
+            "normalized_output_sha256": "e8a3db472c3e1a98ac04863c75806f86d1395ff3b9079d5090df66b8f2f56605"
+          }
+        ],
+        "/api/analytics/errors?test_case_id=47c43f5d-6087-539f-af26-9b2ffcf2d177": [
+          {
+            "queries": 13,
+            "query_ms": 29.586700082290918,
+            "rows": 9240,
+            "estimated_result_bytes": 3009140,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4474,
+            "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+          },
+          {
+            "queries": 13,
+            "query_ms": 30.69460007827729,
+            "rows": 9240,
+            "estimated_result_bytes": 3009140,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4474,
+            "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+          },
+          {
+            "queries": 13,
+            "query_ms": 31.44570003496483,
+            "rows": 9240,
+            "estimated_result_bytes": 3009140,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4474,
+            "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+          }
+        ],
+        "dashboard_workload": [
+          {
+            "queries": 43,
+            "query_ms": 102.88020013831556,
+            "rows": 27735,
+            "estimated_result_bytes": 9031875,
+            "checkouts": 3,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "requests": 3,
+            "response_bytes": 21247,
+            "normalized_output_sha256": "37b0716b74247fd9aca1fbeb342ea5b115ebe6c9c97881b314d3677109631668"
+          },
+          {
+            "queries": 43,
+            "query_ms": 91.50249999947846,
+            "rows": 27735,
+            "estimated_result_bytes": 9031875,
+            "checkouts": 3,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "requests": 3,
+            "response_bytes": 21248,
+            "normalized_output_sha256": "37b0716b74247fd9aca1fbeb342ea5b115ebe6c9c97881b314d3677109631668"
+          },
+          {
+            "queries": 43,
+            "query_ms": 94.77389993844554,
+            "rows": 27735,
+            "estimated_result_bytes": 9031875,
+            "checkouts": 3,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "requests": 3,
+            "response_bytes": 21248,
+            "normalized_output_sha256": "37b0716b74247fd9aca1fbeb342ea5b115ebe6c9c97881b314d3677109631668"
+          }
+        ]
+      },
+      "concurrent_models": [
+        {
+          "queries": 1,
+          "query_ms": 1.2903999886475503,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 1.7303000204265118,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 1.9422000041231513,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 2.6502000400796533,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 1.5942000318318605,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 2.274000027682632,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 1.5816999948583543,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 1.6327999765053391,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 1,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        }
+      ]
+    },
+    "pr_large": {
+      "fixture": {
+        "cases": 120,
+        "runs": 1800,
+        "ocr_fields": 5400,
+        "runs_per_pipeline": 3,
+        "pipelines": 5,
+        "legacy_json": true,
+        "mixed_workflows": false
+      },
+      "database": "postgresql",
+      "units": "estimated fetched-value UTF-8 bytes; NOT wire bytes or Neon billed bytes",
+      "endpoints": {
+        "/api/pipelines": [
+          {
+            "queries": 1,
+            "query_ms": 3.4691000473685563,
+            "rows": 5,
+            "estimated_result_bytes": 1485,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "response_bytes": 3166,
+            "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 3166,
+            "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 3166,
+            "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+          }
+        ],
+        "/api/pipelines/models": [
+          {
+            "queries": 1,
+            "query_ms": 0.22079999325796962,
+            "rows": 28,
+            "estimated_result_bytes": 5884,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "response_bytes": 7789,
+            "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 7789,
+            "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 7789,
+            "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+          }
+        ],
+        "/api/categories": [
+          {
+            "queries": 1,
+            "query_ms": 0.21320005180314183,
+            "rows": 14,
+            "estimated_result_bytes": 940,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "response_bytes": 1305,
+            "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 1305,
+            "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 1305,
+            "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+          }
+        ],
+        "/api/document-types": [
+          {
+            "queries": 1,
+            "query_ms": 0.27759996009990573,
+            "rows": 4,
+            "estimated_result_bytes": 488,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 1,
+            "response_bytes": 461,
+            "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 461,
+            "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+          },
+          {
+            "queries": 0,
+            "query_ms": 0,
+            "rows": 0,
+            "estimated_result_bytes": 0,
+            "checkouts": 0,
+            "connections": 0,
+            "cache_hits": 1,
+            "cache_misses": 0,
+            "response_bytes": 461,
+            "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+          }
+        ],
+        "/api/history?limit=20": [
+          {
+            "queries": 7,
+            "query_ms": 14.785199891775846,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.869900034274906,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          },
+          {
+            "queries": 7,
+            "query_ms": 12.967699964065105,
+            "rows": 1540,
+            "estimated_result_bytes": 4076960,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4305421,
+            "normalized_output_sha256": "5c62e9fa2ed1d5e3ba679f158b3825123c910197c2f12c82458367447ab43f1d"
+          }
+        ],
+        "/api/history?limit=20&view=summary": [
+          {
+            "queries": 7,
+            "query_ms": 6.4446000615134835,
+            "rows": 1540,
+            "estimated_result_bytes": 501560,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 805321,
+            "normalized_output_sha256": "96321ba33ccf7bf8408c06db5a064bb6368083eea808a92c1e3d24414e9426c6"
+          },
+          {
+            "queries": 7,
+            "query_ms": 6.175799935590476,
+            "rows": 1540,
+            "estimated_result_bytes": 501560,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 805321,
+            "normalized_output_sha256": "96321ba33ccf7bf8408c06db5a064bb6368083eea808a92c1e3d24414e9426c6"
+          },
+          {
+            "queries": 7,
+            "query_ms": 6.102700077462941,
+            "rows": 1540,
+            "estimated_result_bytes": 501560,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 805321,
+            "normalized_output_sha256": "96321ba33ccf7bf8408c06db5a064bb6368083eea808a92c1e3d24414e9426c6"
+          }
+        ],
+        "/api/history?limit=20&view=summary&latest=true": [
+          {
+            "queries": 7,
+            "query_ms": 15.360799909103662,
+            "rows": 540,
+            "estimated_result_bytes": 173440,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 281661,
+            "normalized_output_sha256": "b6621560ba1d175408b75d43b3895a9e4eb9c549ab2ed41b7451488cbe7e403f"
+          },
+          {
+            "queries": 7,
+            "query_ms": 14.973199926316738,
+            "rows": 540,
+            "estimated_result_bytes": 173440,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 281661,
+            "normalized_output_sha256": "b6621560ba1d175408b75d43b3895a9e4eb9c549ab2ed41b7451488cbe7e403f"
+          },
+          {
+            "queries": 7,
+            "query_ms": 15.011300041805953,
+            "rows": 540,
+            "estimated_result_bytes": 173440,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 281661,
+            "normalized_output_sha256": "b6621560ba1d175408b75d43b3895a9e4eb9c549ab2ed41b7451488cbe7e403f"
+          }
+        ],
+        "/api/matrix": [
+          {
+            "queries": 14,
+            "query_ms": 26.749399898108095,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1511,
+            "normalized_output_sha256": "74b2bea3a44191949059c079f1a53714698172b0d52f059becf484088390b167"
+          },
+          {
+            "queries": 14,
+            "query_ms": 26.912599918432534,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1511,
+            "normalized_output_sha256": "74b2bea3a44191949059c079f1a53714698172b0d52f059becf484088390b167"
+          },
+          {
+            "queries": 14,
+            "query_ms": 26.49839996593073,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1511,
+            "normalized_output_sha256": "74b2bea3a44191949059c079f1a53714698172b0d52f059becf484088390b167"
+          }
+        ],
+        "/api/analytics/summary": [
+          {
+            "queries": 14,
+            "query_ms": 26.571900118142366,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1131,
+            "normalized_output_sha256": "89615e62763dbf29f873f1560886fa2235bc28d9ca507400937d8685b4e15f6d"
+          },
+          {
+            "queries": 14,
+            "query_ms": 27.12479990441352,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1131,
+            "normalized_output_sha256": "89615e62763dbf29f873f1560886fa2235bc28d9ca507400937d8685b4e15f6d"
+          },
+          {
+            "queries": 14,
+            "query_ms": 32.228800060693175,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 1131,
+            "normalized_output_sha256": "89615e62763dbf29f873f1560886fa2235bc28d9ca507400937d8685b4e15f6d"
+          }
+        ],
+        "/api/analytics/pipelines": [
+          {
+            "queries": 2,
+            "query_ms": 1.096900028642267,
+            "rows": 1805,
+            "estimated_result_bytes": 81360,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 361,
+            "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+          },
+          {
+            "queries": 2,
+            "query_ms": 0.9947000653482974,
+            "rows": 1805,
+            "estimated_result_bytes": 81360,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 361,
+            "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+          },
+          {
+            "queries": 2,
+            "query_ms": 0.9896000265143812,
+            "rows": 1805,
+            "estimated_result_bytes": 81360,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 361,
+            "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+          }
+        ],
+        "/api/analytics/categories": [
+          {
+            "queries": 15,
+            "query_ms": 27.37690001958981,
+            "rows": 9259,
+            "estimated_result_bytes": 2071430,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 25595,
+            "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+          },
+          {
+            "queries": 15,
+            "query_ms": 26.562000159174204,
+            "rows": 9259,
+            "estimated_result_bytes": 2071430,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 25595,
+            "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+          },
+          {
+            "queries": 15,
+            "query_ms": 32.68489975016564,
+            "rows": 9259,
+            "estimated_result_bytes": 2071430,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 25595,
+            "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+          }
+        ],
+        "/api/analytics/comparison": [
+          {
+            "queries": 15,
+            "query_ms": 27.578999986872077,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 18605,
+            "normalized_output_sha256": "12ebc936b4bcf676cb0f92257dde704e68564fd015493502025332a453d71f48"
+          },
+          {
+            "queries": 15,
+            "query_ms": 26.749199838377535,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 18605,
+            "normalized_output_sha256": "12ebc936b4bcf676cb0f92257dde704e68564fd015493502025332a453d71f48"
+          },
+          {
+            "queries": 15,
+            "query_ms": 66.85540004400536,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 18606,
+            "normalized_output_sha256": "12ebc936b4bcf676cb0f92257dde704e68564fd015493502025332a453d71f48"
+          }
+        ],
+        "/api/analytics/errors": [
+          {
+            "queries": 13,
+            "query_ms": 26.88080008374527,
+            "rows": 9240,
+            "estimated_result_bytes": 2203330,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 51364,
+            "normalized_output_sha256": "e8a3db472c3e1a98ac04863c75806f86d1395ff3b9079d5090df66b8f2f56605"
+          },
+          {
+            "queries": 13,
+            "query_ms": 27.57839992409572,
+            "rows": 9240,
+            "estimated_result_bytes": 2203330,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 51364,
+            "normalized_output_sha256": "e8a3db472c3e1a98ac04863c75806f86d1395ff3b9079d5090df66b8f2f56605"
+          },
+          {
+            "queries": 13,
+            "query_ms": 27.317799860611558,
+            "rows": 9240,
+            "estimated_result_bytes": 2203330,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 51364,
+            "normalized_output_sha256": "e8a3db472c3e1a98ac04863c75806f86d1395ff3b9079d5090df66b8f2f56605"
+          }
+        ],
+        "/api/analytics/errors?test_case_id=47c43f5d-6087-539f-af26-9b2ffcf2d177": [
+          {
+            "queries": 7,
+            "query_ms": 1.9404999329708517,
+            "rows": 77,
+            "estimated_result_bytes": 18360,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4474,
+            "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+          },
+          {
+            "queries": 7,
+            "query_ms": 1.267799932975322,
+            "rows": 77,
+            "estimated_result_bytes": 18360,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4474,
+            "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+          },
+          {
+            "queries": 7,
+            "query_ms": 1.4704999048262835,
+            "rows": 77,
+            "estimated_result_bytes": 18360,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "response_bytes": 4474,
+            "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+          }
+        ],
+        "dashboard_workload": [
+          {
+            "queries": 15,
+            "query_ms": 28.558299876749516,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "requests": 1,
+            "response_bytes": 21272,
+            "normalized_output_sha256": "37b0716b74247fd9aca1fbeb342ea5b115ebe6c9c97881b314d3677109631668"
+          },
+          {
+            "queries": 15,
+            "query_ms": 26.80679998593405,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "requests": 1,
+            "response_bytes": 21272,
+            "normalized_output_sha256": "37b0716b74247fd9aca1fbeb342ea5b115ebe6c9c97881b314d3677109631668"
+          },
+          {
+            "queries": 15,
+            "query_ms": 27.18300005653873,
+            "rows": 9245,
+            "estimated_result_bytes": 2070490,
+            "checkouts": 1,
+            "connections": 0,
+            "cache_hits": 0,
+            "cache_misses": 0,
+            "requests": 1,
+            "response_bytes": 21272,
+            "normalized_output_sha256": "37b0716b74247fd9aca1fbeb342ea5b115ebe6c9c97881b314d3677109631668"
+          }
+        ]
+      },
+      "concurrent_models": [
+        {
+          "queries": 1,
+          "query_ms": 1.817900047171861,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        }
+      ]
+    },
+    "backend": {
+      "main_passed": 219,
+      "pr_passed": 250,
+      "failed_each": 54,
+      "failure_ids_identical": true,
+      "exact_failure_ids": [
+        "tests/test_api.py::test_auto_roi_and_failure_do_not_block_manual",
+        "tests/test_api.py::test_config_validation_and_secret_status",
+        "tests/test_api.py::test_failure_isolation_real_mode_and_trace",
+        "tests/test_api.py::test_http_fixture_workflow_and_metrics_update",
+        "tests/test_api.py::test_matrix_latest_runs_filters_and_categories",
+        "tests/test_api.py::test_no_ground_truth_and_empty_ground_truth",
+        "tests/test_api.py::test_roi_changes_preserve_old_predictions",
+        "tests/test_batch_logs_delete.py::test_batch_order_failure_independence_and_safe_logs",
+        "tests/test_batch_logs_delete.py::test_delete_cascades_preserves_shared_document_and_audit",
+        "tests/test_batch_logs_delete.py::test_log_never_accepts_secret_identifiers_or_arbitrary_payload",
+        "tests/test_benchmark_pipeline.py::test_additive_seed_and_fixed_benchmark_settings",
+        "tests/test_benchmark_pipeline.py::test_benchmark_failure_isolated_from_existing_pipelines",
+        "tests/test_benchmark_pipeline.py::test_benchmark_persistence_metrics_error_analysis_and_dynamic_views",
+        "tests/test_error_analysis_dataset.py::test_error_replacement_filters_latest_and_historical_recompute",
+        "tests/test_error_analysis_dataset.py::test_future_config_is_iterable_without_invented_adapter",
+        "tests/test_fields_roi.py::test_explicit_roi_origin_pipeline_inputs[auto]",
+        "tests/test_fields_roi.py::test_explicit_roi_origin_pipeline_inputs[manual]",
+        "tests/test_fields_roi.py::test_explicit_roi_origin_pipeline_inputs[none]",
+        "tests/test_fields_roi.py::test_fields_lifecycle_scoping_preview_replacement_and_history",
+        "tests/test_fields_roi.py::test_postgresql_field_roundtrip",
+        "tests/test_fields_roi.py::test_roi_source_validation_and_no_roi_full_page",
+        "tests/test_global_layout.py::test_detector_order_is_not_global_identity_and_failure_isolation",
+        "tests/test_global_layout.py::test_field_alignment[per_field-ABD-insertion]",
+        "tests/test_global_layout.py::test_field_alignment[per_field-ABXCD-deletion]",
+        "tests/test_global_layout.py::test_field_alignment[per_field-ABXD-substitution]",
+        "tests/test_global_layout.py::test_field_alignment[whole_document-ABD-insertion]",
+        "tests/test_global_layout.py::test_field_alignment[whole_document-ABXCD-deletion]",
+        "tests/test_global_layout.py::test_field_alignment[whole_document-ABXD-substitution]",
+        "tests/test_global_layout.py::test_field_dataset_exact_source_crop_confirmed_gt_and_missing_source",
+        "tests/test_global_layout.py::test_field_edit_invalidates_only_its_evaluation_and_modes_remain_independent",
+        "tests/test_global_layout.py::test_geometry_order_reorder_identity_and_historical_lock",
+        "tests/test_global_layout.py::test_layout_identity_confirmation_history_and_crop_fairness",
+        "tests/test_global_layout.py::test_postgresql_0007_upgrade_preserves_history_and_has_no_drift",
+        "tests/test_global_layout.py::test_shared_gt_explicit_evaluation_persistence_and_invalidation[per_field]",
+        "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[False-False]",
+        "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[False-True]",
+        "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[True-False]",
+        "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[True-True]",
+        "tests/test_global_layout.py::test_synchronized_gt_requires_all_fields_and_matching_document",
+        "tests/test_global_layout.py::test_whole_document_explicit_evaluation_invalidation_and_no_dataset_labels",
+        "tests/test_hutch_fine_tune_v2.py::test_global_identity_order_shared_gt_history_and_partial_failure",
+        "tests/test_hutch_fine_tune_v2.py::test_registration_fixed_route_unknown_readiness",
+        "tests/test_pdf.py::test_pdf_page_roi_persistence_and_three_real_adapter_contracts",
+        "tests/test_privacy_and_database.py::test_bad_metadata_cannot_cancel_other_runs",
+        "tests/test_privacy_and_database.py::test_live_postgresql_repository_roundtrip",
+        "tests/test_privacy_and_database.py::test_private_upstream_fields_never_reach_storage_or_frontend",
+        "tests/test_real_boundaries.py::test_archived_history_excluded_without_deleting_data",
+        "tests/test_real_boundaries.py::test_missing_key_has_no_fake_fallback",
+        "tests/test_real_boundaries.py::test_one_shared_key_and_boolean_only_status[]",
+        "tests/test_real_boundaries.py::test_one_shared_key_and_boolean_only_status[shared-test-only-credential]",
+        "tests/test_real_boundaries.py::test_shared_gateway_ignores_stale_pipeline_hosts",
+        "tests/test_thai_ft_v2.py::test_registration_fixed_settings_and_unknown_readiness",
+        "tests/test_thai_ft_v2.py::test_roi_fields_persistence_and_dynamic_views[auto]",
+        "tests/test_thai_ft_v2.py::test_roi_fields_persistence_and_dynamic_views[manual]"
+      ],
+      "clean_main_application_files_verified": 128,
+      "main_pristine_reproduced": true
+    },
+    "release_critical_focused_playwright": {
+      "passed": 4,
+      "failed": 0
+    },
+    "isolation": "All mutation smokes use new loopback PostgreSQL *_test DBs and intercepted Model Gateway; no production mutation.",
+    "infrastructure": {
+      "c78718f398a69d9445618ea9fc470d0101c009c9": {
+        "status": "success",
+        "statuses": [
+          {
+            "context": "Vercel",
+            "state": "success",
+            "url": "https://vercel.com/jackchayapon-s-projects/ocrtest/4qoGy1uCi7UMPXwamgxQYWHzvmQX"
+          }
+        ],
+        "checks": [
+          {
+            "name": "Vercel Preview Comments",
+            "status": "completed",
+            "conclusion": "success",
+            "url": "https://vercel.com/github"
+          }
+        ]
+      },
+      "f9765f6c3b01bca1341c1d273155ca5cd70aa488": {
+        "status": "success",
+        "statuses": [
+          {
+            "context": "Vercel",
+            "state": "success",
+            "url": "https://vercel.com/jackchayapon-s-projects/ocrtest/2d9WrHPLPSaokXK2v1dm6x7GmoMV"
+          },
+          {
+            "context": "ocrtest - ocrtest",
+            "state": "success",
+            "url": "https://railway.com/project/8cedfe1f-bfcd-4712-a4f0-6fed98130e69/service/dc3bec1b-632a-4edb-813f-5c55d3505dba?id=809c3453-fbd1-48fe-95f7-379d836df153&environmentId=5c48a7f7-fc51-4514-95e9-3dbe8b686d59"
+          }
+        ],
+        "checks": []
+      },
+      "deployments": [
+        {
+          "id": 6934931941,
+          "sha": "c78718f398a69d9445618ea9fc470d0101c009c9",
+          "environment": "Preview",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6933527953,
+          "sha": "05a177651f702ba184530b361d1383140bc69b72",
+          "environment": "Preview",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6932323416,
+          "sha": "f9765f6c3b01bca1341c1d273155ca5cd70aa488",
+          "environment": "ocrtest / production",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6929341780,
+          "sha": "f9765f6c3b01bca1341c1d273155ca5cd70aa488",
+          "environment": "Production",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6904288259,
+          "sha": "b3948c0abfe429942fc2f7003547d49577e59f26",
+          "environment": "Preview",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6903541596,
+          "sha": "edf1269e973da72d3016b613d66a8da6a4d619fa",
+          "environment": "Preview",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6903294817,
+          "sha": "27ae30d8a65689ea6569911003474c5579e0ab90",
+          "environment": "Production",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6903123198,
+          "sha": "557ad4fb37320b2be004f67c20e87a7dd09f8541",
+          "environment": "Preview",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6902275175,
+          "sha": "1f2b645bae38efa02bb484f659c63671e88b468d",
+          "environment": "Production",
+          "production_environment": false,
+          "transient_environment": false
+        },
+        {
+          "id": 6902220331,
+          "sha": "96e348d4dcfa3ba77d5c3daf564ae4388fc3d541",
+          "environment": "Preview",
+          "production_environment": false,
+          "transient_environment": false
+        }
+      ],
+      "deployment_statuses": [
+        {
+          "deployment_id": 6934931941,
+          "statuses": [
+            {
+              "state": "success",
+              "environment": "Preview",
+              "environment_url": "https://ocrtest-i4upg3ng6-jackchayapon-s-projects.vercel.app",
+              "log_url": "https://ocrtest-i4upg3ng6-jackchayapon-s-projects.vercel.app",
+              "updated_at": "2026-10-08T12:01:39Z"
+            }
+          ]
+        },
+        {
+          "deployment_id": 6932323416,
+          "statuses": [
+            {
+              "state": "success",
+              "environment": "ocrtest / production",
+              "environment_url": "https://railway.com/project/8cedfe1f-bfcd-4712-a4f0-6fed98130e69?environmentId=5c48a7f7-fc51-4514-95e9-3dbe8b686d59",
+              "log_url": "https://railway.com/project/8cedfe1f-bfcd-4712-a4f0-6fed98130e69?environmentId=5c48a7f7-fc51-4514-95e9-3dbe8b686d59",
+              "updated_at": "2026-10-08T09:47:18Z"
+            }
+          ]
+        },
+        {
+          "deployment_id": 6929341780,
+          "statuses": [
+            {
+              "state": "success",
+              "environment": "Production",
+              "environment_url": "https://ocrtest-kkq7ro9ue-jackchayapon-s-projects.vercel.app",
+              "log_url": "https://ocrtest-kkq7ro9ue-jackchayapon-s-projects.vercel.app",
+              "updated_at": "2026-10-08T07:03:10Z"
+            }
+          ]
+        }
+      ],
+      "production_read_only_health": {
+        "http_status": 200,
+        "status": "ok",
+        "database": {
+          "status": "connected",
+          "provider": "postgresql",
+          "mode": "postgresql"
+        },
+        "storage": {
+          "status": "ready",
+          "mode": "local"
+        }
+      },
+      "production_read_only_preflight": [
+        {
+          "origin": "https://ocrtest-sandy.vercel.app",
+          "status": 200,
+          "url": "https://ocrtest-production-095b.up.railway.app/api/documents",
+          "allow_origin": "https://ocrtest-sandy.vercel.app",
+          "allow_methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "allow_headers": "Accept, Accept-Language, Content-Language, Content-Type"
+        },
+        {
+          "origin": "https://unapproved.example",
+          "status": 400,
+          "url": "https://ocrtest-production-095b.up.railway.app/api/documents",
+          "allow_origin": null,
+          "allow_methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "allow_headers": "Accept, Accept-Language, Content-Language, Content-Type"
+        }
+      ]
+    },
+    "preview_access": {
+      "url": "https://ocrtest-i4upg3ng6-jackchayapon-s-projects.vercel.app",
+      "http_status": 200,
+      "final_host": "vercel.com"
+    },
+    "typecheck": "pass",
+    "eslint": "pass",
+    "production_build": "pass",
+    "ruff": "11 pre-existing findings; changed Python files passed",
+    "schema_guards": {
+      "passed": 2,
+      "failed": 0,
+      "head": "0010_dynamic_pipelines",
+      "drift": "none",
+      "new_migration": false
+    },
+    "secret_scan": "pass (private values suppressed)",
+    "env_ignored_untracked": true,
+    "documentation_links": "pass",
+    "playwright": {
+      "main": {
+        "passed": 99,
+        "failed": 32,
+        "exact_failure_ids": [
+          "tests/batch-logs-delete.spec.ts:7:5 \u203a legacy compatibility: selected PDF pages run separately; logs and confirmed deletion preserve document",
+          "tests/batch-review.spec.ts:7:5 \u203a legacy compatibility: batch selection is independent of preview; selected page results and GT stay inline",
+          "tests/batch-review.spec.ts:84:5 \u203a legacy compatibility: batch retries only failed pages and preserves completed progress",
+          "tests/benchmark.spec.ts:8:5 \u203a legacy compatibility: Benchmark appears dynamically and flows through ROI, saved metrics, errors and comparison",
+          "tests/console.spec.ts:102:5 \u203a business library filters, detail tabs, missing metrics and history links",
+          "tests/console.spec.ts:161:5 \u203a all data routes have recoverable errors and intentional empty states",
+          "tests/dataset-errors.spec.ts:8:5 \u203a confirmed source crop dataset export and persisted error analysis drilldown",
+          "tests/fields-roi.spec.ts:101:5 \u203a legacy compatibility: Dataset stale-file failure stays actionable and does not hide the selection",
+          "tests/fields-roi.spec.ts:27:5 \u203a legacy compatibility: default field GT uses Check preview, accessible red errors and explicit confirmation",
+          "tests/global-layout.spec.ts:107:5 \u203a smart calculation stays on page four and evaluates Whole/Sub/both from data, with collapsed cards",
+          "tests/global-layout.spec.ts:133:5 \u203a global boxes move/resize/delete/add without losing other identities or zoom coordinates",
+          "tests/global-layout.spec.ts:145:5 \u203a four-page PDF navigation preserves saved layout per selected page",
+          "tests/global-layout.spec.ts:153:5 \u203a image upload refresh, bulk layout selection and safe back navigation preserve historical runs",
+          "tests/global-layout.spec.ts:172:39 \u203a global workflow responsive 1440 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/global-layout.spec.ts:172:39 \u203a global workflow responsive 390 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/global-layout.spec.ts:172:39 \u203a global workflow responsive 768 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/global-layout.spec.ts:32:5 \u203a Hutch fine tune v2 shares four-page workflow, busy state and result blocks with Mint",
+          "tests/global-layout.spec.ts:49:5 \u203a Run OCR shows immediate busy feedback, blocks duplicates and restores after failure",
+          "tests/global-layout.spec.ts:64:5 \u203a GT input cards show focus and preserve both drafts across repeated toggles",
+          "tests/global-layout.spec.ts:74:5 \u203a global acceptance: 3 Auto + Manual, shared crops/GT, explicit calculate, History and field Dataset",
+          "tests/pdf.spec.ts:129:7 \u203a Thai PDF workspace remains usable at 1024px \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/pdf.spec.ts:129:7 \u203a Thai PDF workspace remains usable at 1440px \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/pdf.spec.ts:129:7 \u203a Thai PDF workspace remains usable at 768px \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/pdf.spec.ts:9:5 \u203a legacy compatibility: Thai multi-page PDF: choose page two, ROI, all configured pipelines, save and reopen",
+          "tests/release-b.spec.ts:6:39 \u203a document types, one-pipeline History, dataset exclusion and log search 1440",
+          "tests/release-b.spec.ts:6:39 \u203a document types, one-pipeline History, dataset exclusion and log search 390",
+          "tests/release-b.spec.ts:6:39 \u203a document types, one-pipeline History, dataset exclusion and log search 768",
+          "tests/thai-ft-v2.spec.ts:9:5 \u203a legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, field GT, persistence and dashboards",
+          "tests/workflow.spec.ts:14:7 \u203a upload public/sample-document.png, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+          "tests/workflow.spec.ts:14:7 \u203a upload tests/fixtures/sample-document.jpg, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+          "tests/workflow.spec.ts:310:5 \u203a legacy compatibility: ROI move and resize, selectable Auto ROI, and failure recovery",
+          "tests/workflow.spec.ts:453:5 \u203a legacy compatibility: settings save and upstream connection test"
+        ]
+      },
+      "pr": {
+        "passed": 103,
+        "failed": 32,
+        "exact_failure_ids": [
+          "tests/batch-logs-delete.spec.ts:7:5 \u203a legacy compatibility: selected PDF pages run separately; logs and confirmed deletion preserve document",
+          "tests/batch-review.spec.ts:7:5 \u203a legacy compatibility: batch selection is independent of preview; selected page results and GT stay inline",
+          "tests/batch-review.spec.ts:84:5 \u203a legacy compatibility: batch retries only failed pages and preserves completed progress",
+          "tests/benchmark.spec.ts:8:5 \u203a legacy compatibility: Benchmark appears dynamically and flows through ROI, saved metrics, errors and comparison",
+          "tests/console.spec.ts:102:5 \u203a business library filters, detail tabs, missing metrics and history links",
+          "tests/console.spec.ts:161:5 \u203a all data routes have recoverable errors and intentional empty states",
+          "tests/dataset-errors.spec.ts:8:5 \u203a confirmed source crop dataset export and persisted error analysis drilldown",
+          "tests/fields-roi.spec.ts:101:5 \u203a legacy compatibility: Dataset stale-file failure stays actionable and does not hide the selection",
+          "tests/fields-roi.spec.ts:27:5 \u203a legacy compatibility: default field GT uses Check preview, accessible red errors and explicit confirmation",
+          "tests/global-layout.spec.ts:107:5 \u203a smart calculation stays on page four and evaluates Whole/Sub/both from data, with collapsed cards",
+          "tests/global-layout.spec.ts:133:5 \u203a global boxes move/resize/delete/add without losing other identities or zoom coordinates",
+          "tests/global-layout.spec.ts:145:5 \u203a four-page PDF navigation preserves saved layout per selected page",
+          "tests/global-layout.spec.ts:153:5 \u203a image upload refresh, bulk layout selection and safe back navigation preserve historical runs",
+          "tests/global-layout.spec.ts:172:39 \u203a global workflow responsive 1440 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/global-layout.spec.ts:172:39 \u203a global workflow responsive 390 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/global-layout.spec.ts:172:39 \u203a global workflow responsive 768 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/global-layout.spec.ts:32:5 \u203a Hutch fine tune v2 shares four-page workflow, busy state and result blocks with Mint",
+          "tests/global-layout.spec.ts:49:5 \u203a Run OCR shows immediate busy feedback, blocks duplicates and restores after failure",
+          "tests/global-layout.spec.ts:64:5 \u203a GT input cards show focus and preserve both drafts across repeated toggles",
+          "tests/global-layout.spec.ts:74:5 \u203a global acceptance: 3 Auto + Manual, shared crops/GT, explicit calculate, History and field Dataset",
+          "tests/pdf.spec.ts:129:7 \u203a Thai PDF workspace remains usable at 1024px \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/pdf.spec.ts:129:7 \u203a Thai PDF workspace remains usable at 1440px \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/pdf.spec.ts:129:7 \u203a Thai PDF workspace remains usable at 768px \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+          "tests/pdf.spec.ts:9:5 \u203a legacy compatibility: Thai multi-page PDF: choose page two, ROI, all configured pipelines, save and reopen",
+          "tests/release-b.spec.ts:6:39 \u203a document types, one-pipeline History, dataset exclusion and log search 1440",
+          "tests/release-b.spec.ts:6:39 \u203a document types, one-pipeline History, dataset exclusion and log search 390",
+          "tests/release-b.spec.ts:6:39 \u203a document types, one-pipeline History, dataset exclusion and log search 768",
+          "tests/thai-ft-v2.spec.ts:9:5 \u203a legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, field GT, persistence and dashboards",
+          "tests/workflow.spec.ts:14:7 \u203a upload public/sample-document.png, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+          "tests/workflow.spec.ts:14:7 \u203a upload tests/fixtures/sample-document.jpg, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+          "tests/workflow.spec.ts:310:5 \u203a legacy compatibility: ROI move and resize, selectable Auto ROI, and failure recovery",
+          "tests/workflow.spec.ts:453:5 \u203a legacy compatibility: settings save and upstream connection test"
+        ]
+      },
+      "new_failure_ids": [],
+      "release_critical_smokes_each": 4,
+      "fixtures": "Both complete suites use separate newly created empty local PostgreSQL test DBs. Main application source equals origin/main; additional copied smoke tests only change bundle expectations and interpreter location; test server CORS uses isolated origin."
+    },
+    "release_verdict": "BLOCKED ? ACTION REQUIRED: isolated staging, backend/DB/storage/env mapping, backup and final approval not verified"
   }
 }

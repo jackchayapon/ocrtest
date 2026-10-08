@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import path from "node:path";
+import { createHash, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import type { PipelineRun, TestCase } from "../types";
 
@@ -138,3 +139,97 @@ test("isolated real backend: PDF pages, single pipeline, batch, confirmed GT dat
     expect((await request.delete(`${api}/api/pipelines/${pipeline.pipeline_id}`)).status()).toBe(204);
   }
 });
+
+
+for (const input of [
+  { filename: "tests/fixtures/sample-document.jpg", page: null },
+  { filename: "tests/fixtures/two-pages.pdf", page: 2 },
+]) {
+  test(`release-critical real backend: ${input.filename}, manual page crop, repeated GT and dataset exclusion`, async ({ page, request }) => {
+    test.setTimeout(90_000);
+    const created = await request.post(`${api}/api/pipelines`, { data: definitions[0] });
+    expect(created.status()).toBe(201);
+    const pipeline = await created.json();
+    try {
+      await page.goto("/");
+      const uploaded = page.waitForResponse(r => r.url().endsWith("/api/documents") && r.request().method() === "POST");
+      await page.locator("input[type=file]").setInputFiles(path.resolve(input.filename));
+      const document = await (await uploaded).json();
+      if (input.page) await page.getByLabel("เลือกหน้า PDF").selectOption(String(input.page));
+      await expect(page.getByAltText("เอกสารที่อัปโหลด")).toBeVisible();
+      const prepared = await request.post(`${api}/api/test-cases`, { data: { document_id: document.id, workflow: "global", page_number: input.page } });
+      expect(prepared.status()).toBe(201);
+      const testCase = await prepared.json();
+      const root = `${api}/api/test-cases/${testCase.id}`;
+      const fieldId = randomUUID();
+      const roi = { x1: 40, y1: 30, x2: 270, y2: 150 };
+      const layout = await request.put(`${root}/global-fields`, { data: { confirmed: true, fields: [{ id: fieldId, field_index: 1, source: "manual", roi }] } });
+      expect(layout.status()).toBe(200);
+      await page.goto(`/workflow/${testCase.id}/pipelines`);
+      const options = page.getByTestId("pipeline-options");
+      const registry = await (await request.get(`${api}/api/pipelines?fresh=true`)).json();
+      await expect(options.getByRole("checkbox")).toHaveCount(registry.length);
+      for (const checkbox of await options.getByRole("checkbox").all()) if (await checkbox.isEnabled()) await checkbox.uncheck();
+      await options.getByRole("checkbox", { name: `เลือก ${pipeline.name}`, exact: true }).check();
+      const completed = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
+      await page.getByRole("button", { name: "Run OCR", exact: true }).click();
+      const result = await (await completed).json();
+      expect(result.runs).toHaveLength(1);
+      expect(result.runs[0].status).toBe("success");
+      expect(result.runs[0].fields).toHaveLength(1);
+      expect(result.runs[0].fields[0].geometry.roi).toEqual(roi);
+      expect(result.runs[0].fields[0].diagnostics.boxes.length).toBeGreaterThan(0);
+      expect(result.runs[0].fields[0].diagnostics.boxes[0].bbox).toHaveLength(4);
+      const prediction = result.runs[0].fields[0].ocr_text;
+      expect(prediction.length).toBeGreaterThan(0);
+      const originalFieldId = result.runs[0].fields[0].id;
+      for (const gt of [prediction + " กำลัง", prediction.normalize("NFD")]) {
+        expect((await request.put(`${root}/global-fields/${fieldId}/ground-truth`, { data: { ground_truth_raw: gt } })).status()).toBe(200);
+        const evaluated = await request.post(`${root}/evaluate`, { data: { mode: "per_field", global_field_ids: [fieldId] } });
+        expect(evaluated.status()).toBe(200);
+        const saved = await (await request.get(root)).json();
+        expect(saved.global_fields).toHaveLength(1);
+        expect(saved.runs[0].fields).toHaveLength(1);
+        expect(saved.runs[0].fields[0].id).toBe(originalFieldId);
+        expect(saved.runs[0].fields[0].evaluation.exact_match).toBe(gt === prediction.normalize("NFD"));
+      }
+      const label = "กำลัง ทดสอบ ภาษาไทย";
+      expect((await request.put(`${root}/global-fields/${fieldId}/ground-truth`, { data: { ground_truth_raw: label } })).status()).toBe(200);
+      expect((await request.post(`${root}/evaluate`, { data: { mode: "per_field", global_field_ids: [fieldId] } })).status()).toBe(200);
+      expect((await request.put(`${root}/ground-truth`, { data: { ground_truth_raw: prediction } })).status()).toBe(200);
+      expect((await request.post(`${root}/evaluate`, { data: { mode: "whole_document" } })).status()).toBe(200);
+      const detail = await (await request.get(root)).json();
+      expect(detail.page_number).toBe(input.page);
+      expect(detail.runs[0].document_evaluation.exact_match).toBe(true);
+      expect(detail.runs[0].fields[0].evaluation).toBeTruthy();
+      const cropQuery = new URLSearchParams(Object.entries(roi).map(([k,v]) => [k,String(v)]));
+      if (input.page) cropQuery.set("page_number", String(input.page));
+      const crop = await request.get(`${api}/api/documents/${document.id}/crop?${cropQuery}`);
+      expect(crop.status()).toBe(200);
+      const cropHash = createHash("sha256").update(await crop.body()).digest("hex");
+      expect(result.runs[0].fields[0].diagnostics.crop_sha256).toBe(cropHash);
+      const exported = await request.post(`${api}/api/dataset/export`, { data: { global_field_ids: [fieldId] } });
+      expect(exported.status()).toBe(200);
+      const python = path.resolve(process.platform === "win32" ? "../backend/.venv/Scripts/python.exe" : "../backend/.venv/bin/python");
+      const inspected = spawnSync(python, ["-c", "import sys,io,json,hashlib; from zipfile import ZipFile; from PIL import Image; z=ZipFile(io.BytesIO(sys.stdin.buffer.read())); assert z.testzip() is None; b=z.read('dataset/images/000001.png'); print(json.dumps({'files':sorted(z.namelist()),'label':z.read('dataset/label.txt').decode('utf-8'),'hash':hashlib.sha256(b).hexdigest(),'size':Image.open(io.BytesIO(b)).size}))"], { input: await exported.body() });
+      expect(inspected.status).toBe(0);
+      const contents = JSON.parse(inspected.stdout.toString());
+      expect(contents.files).toEqual(["dataset/images/000001.png", "dataset/label.txt"]);
+      expect(contents.label).toBe(`images/000001.png\t${label}\n`);
+      expect(contents.hash).toBe(cropHash);
+      expect(contents.size).toEqual([230,120]);
+      const excluded = await request.post(`${api}/api/dataset/items/bulk-exclude`, { data: { global_field_ids: [fieldId] } });
+      expect(excluded.status()).toBe(200);
+      expect((await excluded.json()).excluded).toBe(1);
+      const repeated = await request.post(`${api}/api/dataset/items/bulk-exclude`, { data: { global_field_ids: [fieldId] } });
+      expect((await repeated.json()).already_excluded).toBe(1);
+      expect((await request.post(`${api}/api/dataset/export`, { data: { global_field_ids: [fieldId] } })).status()).toBe(422);
+      expect((await (await request.get(root)).json()).runs[0].status).toBe("success");
+      const denied = await request.fetch(`${api}/api/documents`, { method: "OPTIONS", headers: { Origin: "https://unapproved.example", "Access-Control-Request-Method": "POST", "Access-Control-Request-Headers": "content-type" } });
+      expect(denied.status()).toBe(400);
+      expect(denied.headers()["access-control-allow-origin"]).toBeUndefined();
+    } finally {
+      expect((await request.delete(`${api}/api/pipelines/${pipeline.pipeline_id}`)).status()).toBe(204);
+    }
+  });
+}

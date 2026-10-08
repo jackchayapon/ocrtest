@@ -313,3 +313,31 @@ port. No production credentials or sensitive output are present in artifacts.
 No existing test was deleted or weakened. Suitable for draft review, **not a
  green merge/release gate**. Resolve baseline tests and verify isolated staging
 and actual transfer before release.
+
+## Staging/production gate continuation
+
+See [release readiness and rollback](neon-release-readiness.md) for verified GitHub
+auto-deployment metadata, current read-only health/CORS evidence, access blockers
+and the isolated-staging procedure. No new optimization or product behavior
+change was needed in this continuation. Two additional release-critical browser
+smokes cover JPEG and PDF page manual crops, exact dataset/source PNG hash pairing,
+repeated GT/NFC, whole/per-field evaluation and idempotent bulk exclusion.
+
+### Current release-gate verification
+
+Fresh complete suites: backend **250 passed/54 failed** vs pristine main
+**219 passed/same 54 failing IDs**; full Playwright **103 passed/32 failed (135)**
+vs main **99 passed/same 32 failing IDs (131)**. Both browser suites start with
+new empty test DBs; all four current real-backend critical smokes pass in each.
+Typecheck/ESLint/build pass; clean-head/additive-upgrade/drift guards 2/2 pass.
+No application code or migration change was needed. See release readiness for
+staging/production blockers; no merge or production deployment took place.
+
+The large controlled workload was remeasured in this session: dashboard 43 ->15
+SQL, 27,735 ->9,245 rows, 9,031,875 ->2,070,490 fetched-value bytes and HTTP
+21,248 ->21,272 bytes. Median SQL time is 94.77 ->27.18 ms. Latest History is
+7 ->7 SQL, 1,540 ->540 rows, 4,076,960 ->173,440 fetched bytes and HTTP
+4,305,421 ->281,661 bytes, with median SQL 12.73 ->15.01 ms. Eight concurrent
+cold catalog reads execute 8 ->1 SQL. Semantic dashboard output hashes match.
+These local three-sample observations are not wire bytes, Neon billing or cloud
+latency guarantees. Raw samples are appended under release_verification.
