@@ -404,6 +404,7 @@ README อธิบายพฤติกรรมคงที่ ไม่ฝั
 
 เอกสารละเอียด:
 
+- [Neon network-transfer audit and optimization](docs/neon-network-transfer.md)
 - [Lean database storage / bulk management](docs/lean-database-storage.md)
 - [Comparison Decision Engine](docs/comparison-decision-engine.md)
 - [Comparison production audit และ coverage](docs/comparison-redesign-audit.md)

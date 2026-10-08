@@ -1,0 +1,2044 @@
+{
+  "baseline_commit": "f9765f6c3b01bca1341c1d273155ca5cd70aa488",
+  "units": "Estimated UTF-8 fetched-value bytes, NOT wire traffic or Neon billing",
+  "samples_per_endpoint": 3,
+  "warm_sample_index": 1,
+  "fixture": {
+    "cases": 30,
+    "runs": 150,
+    "fields": 450,
+    "pipelines": 5
+  },
+  "legacy": {
+    "/api/pipelines": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 3.597600036300719,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.21430000197142363,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.18400000408291817,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 3.533199953380972,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        }
+      ]
+    },
+    "/api/pipelines/models": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 0.2229000092484057,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.19420002354308963,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.15679997159168124,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 0.255499966442585,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        }
+      ]
+    },
+    "/api/categories": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 0.1925000105984509,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.26050000451505184,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.17409998690709472,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 0.2825999981723726,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        }
+      ]
+    },
+    "/api/document-types": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 0.34550001146271825,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.15199999324977398,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.1914000022225082,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 0.30390004394575953,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        }
+      ]
+    },
+    "/api/history?limit=20": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 7.797699945513159,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        },
+        {
+          "queries": 7,
+          "query_ms": 5.454699974507093,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        },
+        {
+          "queries": 7,
+          "query_ms": 5.174199992325157,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 7.7584999380633235,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        },
+        {
+          "queries": 7,
+          "query_ms": 5.395100044552237,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        },
+        {
+          "queries": 7,
+          "query_ms": 7.194100006017834,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        }
+      ]
+    },
+    "/api/history?limit=20&view=summary": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 5.373400112148374,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        },
+        {
+          "queries": 7,
+          "query_ms": 5.354400025680661,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        },
+        {
+          "queries": 7,
+          "query_ms": 5.426799936685711,
+          "rows": 540,
+          "estimated_result_bytes": 1364920,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1448181,
+          "normalized_output_sha256": "a64cec56a1ea3e6644a7ad036bb5fae521ff1fb9a98add26f4d7d0ffcb0a486c"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 3.3310999860987067,
+          "rows": 540,
+          "estimated_result_bytes": 173120,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 281481,
+          "normalized_output_sha256": "1856168410c2f383e2a0c94fc64770e9778c0cce9436ca8fd3d995abbe5b5174"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.342099953442812,
+          "rows": 540,
+          "estimated_result_bytes": 173120,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 281481,
+          "normalized_output_sha256": "1856168410c2f383e2a0c94fc64770e9778c0cce9436ca8fd3d995abbe5b5174"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.260900091845542,
+          "rows": 540,
+          "estimated_result_bytes": 173120,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 281481,
+          "normalized_output_sha256": "1856168410c2f383e2a0c94fc64770e9778c0cce9436ca8fd3d995abbe5b5174"
+        }
+      ]
+    },
+    "/api/matrix": {
+      "before": [
+        {
+          "queries": 8,
+          "query_ms": 4.499300033785403,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 4.287799820303917,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 4.0732999332249165,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        }
+      ],
+      "after": [
+        {
+          "queries": 8,
+          "query_ms": 3.994000027887523,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.510299895424396,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.57489992165938,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        }
+      ]
+    },
+    "/api/analytics/summary": {
+      "before": [
+        {
+          "queries": 8,
+          "query_ms": 4.068199952598661,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.935100103262812,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.841299971099943,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        }
+      ],
+      "after": [
+        {
+          "queries": 8,
+          "query_ms": 3.3980999141931534,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.639700124040246,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.96319996798411,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        }
+      ]
+    },
+    "/api/analytics/pipelines": {
+      "before": [
+        {
+          "queries": 2,
+          "query_ms": 0.4260000423528254,
+          "rows": 155,
+          "estimated_result_bytes": 8235,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.3377999528311193,
+          "rows": 155,
+          "estimated_result_bytes": 8235,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.40740001713857055,
+          "rows": 155,
+          "estimated_result_bytes": 8235,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        }
+      ],
+      "after": [
+        {
+          "queries": 2,
+          "query_ms": 0.40849996730685234,
+          "rows": 155,
+          "estimated_result_bytes": 7110,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.37430005613714457,
+          "rows": 155,
+          "estimated_result_bytes": 7110,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.4379000165499747,
+          "rows": 155,
+          "estimated_result_bytes": 7110,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        }
+      ]
+    },
+    "/api/analytics/categories": {
+      "before": [
+        {
+          "queries": 9,
+          "query_ms": 4.169000079855323,
+          "rows": 829,
+          "estimated_result_bytes": 262085,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.934499982278794,
+          "rows": 829,
+          "estimated_result_bytes": 262085,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.0685999556444585,
+          "rows": 829,
+          "estimated_result_bytes": 262085,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        }
+      ],
+      "after": [
+        {
+          "queries": 9,
+          "query_ms": 3.799100057221949,
+          "rows": 829,
+          "estimated_result_bytes": 177720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.9730999851599336,
+          "rows": 829,
+          "estimated_result_bytes": 177720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.8278999854810536,
+          "rows": 829,
+          "estimated_result_bytes": 177720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        }
+      ]
+    },
+    "/api/analytics/comparison": {
+      "before": [
+        {
+          "queries": 9,
+          "query_ms": 4.216499975882471,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.477499925997108,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.429300082847476,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18420,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        }
+      ],
+      "after": [
+        {
+          "queries": 9,
+          "query_ms": 3.982699941843748,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.7328999023884535,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.6980999284423888,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        }
+      ]
+    },
+    "/api/analytics/errors": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 3.861400007735938,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.6619000020436943,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.8785000797361135,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 3.4492999548092484,
+          "rows": 810,
+          "estimated_result_bytes": 187520,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.434400074183941,
+          "rows": 810,
+          "estimated_result_bytes": 187520,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.275900089647621,
+          "rows": 810,
+          "estimated_result_bytes": 187520,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        }
+      ]
+    },
+    "/api/analytics/errors?test_case_id=47c43f5d-6087-539f-af26-9b2ffcf2d177": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 4.146399965975434,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.0565000381320715,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.763300133869052,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 1.5700999647378922,
+          "rows": 27,
+          "estimated_result_bytes": 6250,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 1.4647999196313322,
+          "rows": 27,
+          "estimated_result_bytes": 6250,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 1.2423999141901731,
+          "rows": 27,
+          "estimated_result_bytes": 6250,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        }
+      ]
+    }
+  },
+  "lean": {
+    "/api/pipelines": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 3.2587999594397843,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.19779999274760485,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.17479999223724008,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 3.452399978414178,
+          "rows": 5,
+          "estimated_result_bytes": 1485,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 3166,
+          "normalized_output_sha256": "5130cc779261fd4271857149080a5f72cc9ba141bb21fc75905f256c864be797"
+        }
+      ]
+    },
+    "/api/pipelines/models": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 0.1933000166900456,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.15659997006878257,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.1547999563626945,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 0.2251000260002911,
+          "rows": 28,
+          "estimated_result_bytes": 5884,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 7789,
+          "normalized_output_sha256": "2cb9ab896b31dbe79fdb368f3bce23b03172929618f64f7c957e9421d45212a5"
+        }
+      ]
+    },
+    "/api/categories": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 0.17479999223724008,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.13899995246902108,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.14630000805482268,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 0.22299995180219412,
+          "rows": 14,
+          "estimated_result_bytes": 940,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 1305,
+          "normalized_output_sha256": "567146906d9318c386d70d0bd9503208450aa0d0b1c96326081b3d15691c3879"
+        }
+      ]
+    },
+    "/api/document-types": {
+      "before": [
+        {
+          "queries": 1,
+          "query_ms": 0.2345999819226563,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.1365999924018979,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 1,
+          "query_ms": 0.13599998783320189,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        }
+      ],
+      "after": [
+        {
+          "queries": 1,
+          "query_ms": 0.28119998751208186,
+          "rows": 4,
+          "estimated_result_bytes": 488,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 1,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        },
+        {
+          "queries": 0,
+          "query_ms": 0,
+          "rows": 0,
+          "estimated_result_bytes": 0,
+          "checkouts": 0,
+          "connections": 0,
+          "cache_hits": 1,
+          "cache_misses": 0,
+          "response_bytes": 461,
+          "normalized_output_sha256": "6b514ef0fad77b2dee4b494abe7431241cb834cbb8a09b531338ccba732cfd7b"
+        }
+      ]
+    },
+    "/api/history?limit=20": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 6.426500098314136,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.287500050850213,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.510300001129508,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 6.497299997135997,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.19879995752126,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.4250000501051545,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        }
+      ]
+    },
+    "/api/history?limit=20&view=summary": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 4.406000080052763,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.462400043848902,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        },
+        {
+          "queries": 7,
+          "query_ms": 4.49789990670979,
+          "rows": 540,
+          "estimated_result_bytes": 338720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 421981,
+          "normalized_output_sha256": "3afd2a43063a0e68613fa9ad2f007028d52959681f3188c7417c503eda50d641"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 3.3873000647872686,
+          "rows": 540,
+          "estimated_result_bytes": 173120,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 281481,
+          "normalized_output_sha256": "1856168410c2f383e2a0c94fc64770e9778c0cce9436ca8fd3d995abbe5b5174"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.146599920000881,
+          "rows": 540,
+          "estimated_result_bytes": 173120,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 281481,
+          "normalized_output_sha256": "1856168410c2f383e2a0c94fc64770e9778c0cce9436ca8fd3d995abbe5b5174"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.183000080753118,
+          "rows": 540,
+          "estimated_result_bytes": 173120,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 281481,
+          "normalized_output_sha256": "1856168410c2f383e2a0c94fc64770e9778c0cce9436ca8fd3d995abbe5b5174"
+        }
+      ]
+    },
+    "/api/matrix": {
+      "before": [
+        {
+          "queries": 8,
+          "query_ms": 4.1491001029498875,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.9261000347323716,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.9035999798215926,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        }
+      ],
+      "after": [
+        {
+          "queries": 8,
+          "query_ms": 4.066299996338785,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.4362999722361565,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.3599999733269215,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1491,
+          "normalized_output_sha256": "24c9c524ea7a54c777343309b776db5a21108715654c8b1fc0510e42897e6f5e"
+        }
+      ]
+    },
+    "/api/analytics/summary": {
+      "before": [
+        {
+          "queries": 8,
+          "query_ms": 3.9672000566497445,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 4.155400034505874,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.8318000151775777,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        }
+      ],
+      "after": [
+        {
+          "queries": 8,
+          "query_ms": 3.2250999938696623,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.344799974001944,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        },
+        {
+          "queries": 8,
+          "query_ms": 3.1449999660253525,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 1122,
+          "normalized_output_sha256": "29499d121d4736cec192547d375202f500583480386ba68df4088ca8a263ca0c"
+        }
+      ]
+    },
+    "/api/analytics/pipelines": {
+      "before": [
+        {
+          "queries": 2,
+          "query_ms": 0.5543999723158777,
+          "rows": 155,
+          "estimated_result_bytes": 8235,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.42179995216429234,
+          "rows": 155,
+          "estimated_result_bytes": 8235,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.3567999810911715,
+          "rows": 155,
+          "estimated_result_bytes": 8235,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        }
+      ],
+      "after": [
+        {
+          "queries": 2,
+          "query_ms": 0.36259996704757214,
+          "rows": 155,
+          "estimated_result_bytes": 7110,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.30479999259114265,
+          "rows": 155,
+          "estimated_result_bytes": 7110,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        },
+        {
+          "queries": 2,
+          "query_ms": 0.28310000197961926,
+          "rows": 155,
+          "estimated_result_bytes": 7110,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 361,
+          "normalized_output_sha256": "c3bae2bdb10fb25430211b1e78efb85bf306f966da2eadad1262c185d520bccc"
+        }
+      ]
+    },
+    "/api/analytics/categories": {
+      "before": [
+        {
+          "queries": 9,
+          "query_ms": 3.960600064601749,
+          "rows": 829,
+          "estimated_result_bytes": 262085,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.114600014872849,
+          "rows": 829,
+          "estimated_result_bytes": 262085,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.0914000128395855,
+          "rows": 829,
+          "estimated_result_bytes": 262085,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        }
+      ],
+      "after": [
+        {
+          "queries": 9,
+          "query_ms": 3.5121000837534666,
+          "rows": 829,
+          "estimated_result_bytes": 177720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.3794999471865594,
+          "rows": 829,
+          "estimated_result_bytes": 177720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.4289999748580158,
+          "rows": 829,
+          "estimated_result_bytes": 177720,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 25595,
+          "normalized_output_sha256": "0d63fa1d58414764255e80b38cf482b12095fcaebf888ed5d6573cd0aa3df59d"
+        }
+      ]
+    },
+    "/api/analytics/comparison": {
+      "before": [
+        {
+          "queries": 9,
+          "query_ms": 4.051399999298155,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.186200094409287,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 4.367400077171624,
+          "rows": 815,
+          "estimated_result_bytes": 261145,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18420,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        }
+      ],
+      "after": [
+        {
+          "queries": 9,
+          "query_ms": 3.4468999947421253,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18420,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.595300018787384,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18420,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        },
+        {
+          "queries": 9,
+          "query_ms": 3.5301000461913645,
+          "rows": 815,
+          "estimated_result_bytes": 176780,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 18419,
+          "normalized_output_sha256": "1c91de4342420623c06efe781a585cbfe2587f7619df42e004373b3e9fafa910"
+        }
+      ]
+    },
+    "/api/analytics/errors": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 3.73520003631711,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.80469998344779,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.7932999548502266,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 3.5485000698827207,
+          "rows": 810,
+          "estimated_result_bytes": 187520,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.242200007662177,
+          "rows": 810,
+          "estimated_result_bytes": 187520,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.2461999799124897,
+          "rows": 810,
+          "estimated_result_bytes": 187520,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 51124,
+          "normalized_output_sha256": "f581d08b2bcb8bdababe3de6d429b4464dc803b147cb040d070b957d578e4b73"
+        }
+      ]
+    },
+    "/api/analytics/errors?test_case_id=47c43f5d-6087-539f-af26-9b2ffcf2d177": {
+      "before": [
+        {
+          "queries": 7,
+          "query_ms": 3.6778999492526054,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.9206999936141074,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 3.7383000017143786,
+          "rows": 810,
+          "estimated_result_bytes": 259660,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        }
+      ],
+      "after": [
+        {
+          "queries": 7,
+          "query_ms": 1.4189001522026956,
+          "rows": 27,
+          "estimated_result_bytes": 6250,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 1.1832999880425632,
+          "rows": 27,
+          "estimated_result_bytes": 6250,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        },
+        {
+          "queries": 7,
+          "query_ms": 1.3663999852724373,
+          "rows": 27,
+          "estimated_result_bytes": 6250,
+          "checkouts": 1,
+          "connections": 0,
+          "cache_hits": 0,
+          "cache_misses": 0,
+          "response_bytes": 4474,
+          "normalized_output_sha256": "85e83f754fca38e483f97108077e06537a566d3ae87426d914e90670dab502a4"
+        }
+      ]
+    }
+  }
+}

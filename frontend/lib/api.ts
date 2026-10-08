@@ -1,3 +1,4 @@
+import { ReadCoordinator } from "@/lib/read-coordinator";
 import { t, userError } from "@/lib/i18n/th";
 import type { Category, CategoryAnalytics, Document, MatrixRow, PipelineConfig, QueryFilters, RunResponse, TestCase, TestCaseInput } from "@/types";
 
@@ -9,7 +10,20 @@ export function assetUrl(path: string): string {
 
 export const deletePipeline = (id: string) => request<void>(`/pipelines/${encodeURIComponent(id)}`, {method:"DELETE"});
 
+const reads = new ReadCoordinator();
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (typeof window === "undefined") return fetchJSON<T>(path, init);
+  const method = (init?.method || "GET").toUpperCase();
+  if (method === "GET") {
+    return reads.read(path, key => fetchJSON<T>(key, init), !!init?.signal || !!init?.headers);
+  }
+  const value = await fetchJSON<T>(path, init);
+  reads.mutated(path);
+  return value;
+}
+
+async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}/api${path}`, {
@@ -17,7 +31,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: init?.body instanceof FormData ? init.headers : { "Content-Type": "application/json", ...init?.headers },
       cache: "no-store",
     });
-  } catch {
+  } catch (error) {
+    if (init?.signal?.aborted) throw error;
     throw new Error(t("Cannot reach the backend. Check that the API is running and try again."));
   }
   if (!response.ok) {
@@ -34,7 +49,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 function query(filters?: QueryFilters): string {
   const params = new URLSearchParams();
-  Object.entries(filters ?? {}).forEach(([key, value]) => { if (value !== undefined && value !== "") params.set(key, String(value)); });
+  Object.entries(filters ?? {}).sort(([a], [b]) => a.localeCompare(b)).forEach(([key, value]) => { if (value !== undefined && value !== "") params.set(key, String(value)); });
   return params.size ? `?${params}` : "";
 }
 
@@ -78,10 +93,10 @@ export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed 
 export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
-export const getHistory = (filters?: QueryFilters) => request<TestCase[]>(`/history${query(filters)}`);
-export const getMatrix = (filters?: QueryFilters) => request<MatrixRow[]>(`/matrix${query(filters)}`);
-export const getAnalyticsSummary = (filters?: QueryFilters) => request<import("@/types").AnalyticsSummary>(`/analytics/summary${query(filters)}`);
-export const getAnalyticsPipelines = () => request<import("@/types").AnalyticsPipeline[]>("/analytics/pipelines");
+export const getHistory = (filters?: QueryFilters, signal?: AbortSignal) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary`, { signal });
+export const getMatrix = (filters?: QueryFilters, signal?: AbortSignal) => request<MatrixRow[]>(`/matrix${query(filters)}`, { signal });
+export const getAnalyticsSummary = (filters?: QueryFilters, signal?: AbortSignal) => request<import("@/types").AnalyticsSummary>(`/analytics/summary${query(filters)}`, { signal });
+export const getAnalyticsPipelines = (signal?: AbortSignal) => request<import("@/types").AnalyticsPipeline[]>("/analytics/pipelines", { signal });
 export const getAnalysisGroups = (dimension: "document-types" | "categories", filters?: QueryFilters) => request<import("@/types").AnalyticsGroup[]>(`/analytics/${dimension}${query(filters)}`);
 export const getCategoryAnalytics = (filters?: QueryFilters) => request<CategoryAnalytics[]>(`/analytics/categories${query(filters)}`);
 export type ErrorGroup = { pipeline_id: string; error_type: string; ground_truth_unit: string | null; ocr_unit: string | null; count: number; test_case_count: number; cases: { id: string; document_id: string; filename: string; page_number: number | null; categories: string[] }[] };
@@ -113,7 +128,7 @@ export const excludeDatasetSample = (id: string, kind: "field" | "case") => requ
 
 export const updateDocumentType = (id: string, typeId: string, page?: number | null) => request<Document>(`/documents/${id}/type${page?`?page_number=${page}`:""}`, {method:"PUT",body:JSON.stringify({document_type_id:typeId||null})});
 
-export const getComparison = (filters: import("@/types").QueryFilters, includeArchived=false) => request<import("@/types/comparison").Comparison>(`/analytics/comparison?${new URLSearchParams({...Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null).map(([k,v])=>[k,String(v)])),include_archived:includeArchived?"1":"0"})}`);
+export const getComparison = (filters: import("@/types").QueryFilters, includeArchived=false, signal?: AbortSignal) => request<import("@/types/comparison").Comparison>(`/analytics/comparison?${new URLSearchParams({...Object.fromEntries(Object.entries(filters).filter(([,v])=>v!=null).map(([k,v])=>[k,String(v)])),include_archived:includeArchived?"1":"0"})}`, { signal });
 
 
 export const bulkDeleteTestCases = (ids:string[]) => request<{requested:number;deleted:number;already_missing:number}>("/test-cases/bulk-delete",{method:"POST",body:JSON.stringify({test_case_ids:ids})});

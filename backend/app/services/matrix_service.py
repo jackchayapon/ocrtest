@@ -34,7 +34,7 @@ class MatrixService:
 
     def configs(self):
         if self._configs is None:
-            self._configs = self.repository.configs()
+            self._configs = self.repository.configs(summary=True)
         return self._configs
 
     @staticmethod

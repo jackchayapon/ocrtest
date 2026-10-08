@@ -13,7 +13,7 @@ class ErrorRepository:
     def aggregate(self, filters, limit, offset):
         service = MatrixService(self.session)
         cases = service.repository.cases(BenchmarkFilters(pipeline=filters.pipeline,
-            category=filters.category, document=filters.document), analytics=True)
+            category=filters.category, document=filters.document), analytics=True, texts=True, test_case_id=filters.test_case_id)
         groups = defaultdict(lambda: {'count': 0, 'cases': {}})
         for case, run in service.latest(cases, filters.pipeline):
             if filters.test_case_id and case.id != str(filters.test_case_id):

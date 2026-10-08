@@ -42,16 +42,17 @@ export default function MatrixPage() {
   },[]);
   useEffect(() => {
     let active = true;
+    const controller = new AbortController();
     async function load() {
       setLoading(true);
       setError("");
 
       await Promise.all([
-        getHistory({ limit: 21, offset }),
-        getAnalyticsSummary({}),
-        getComparison({}, false),
+        getHistory({ limit: 21, offset }, controller.signal),
+        getAnalyticsSummary({}, controller.signal),
+        getComparison({}, false, controller.signal),
         getPipelines(),
-        getMatrix({}),
+        getMatrix({}, controller.signal),
       ])
         .then(([h, s, d, config, m]) => {
           if (active) {
@@ -74,6 +75,7 @@ export default function MatrixPage() {
     void load();
     return () => {
       active = false;
+      controller.abort();
     };
   }, [offset, revision]);
   const visible = cases;

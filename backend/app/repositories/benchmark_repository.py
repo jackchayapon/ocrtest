@@ -1,10 +1,19 @@
 from datetime import datetime, time, timedelta, timezone
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, load_only, raiseload, selectinload
 
 from app.core.errors import AppError
-from app.db.models import Category, Document, OCRField, PipelineConfig, PipelineRun, TestCase
+from app.db.models import (
+    Category,
+    Document,
+    GlobalField,
+    Metric,
+    OCRField,
+    PipelineConfig,
+    PipelineRun,
+    TestCase,
+)
 from app.schemas.contracts import BenchmarkFilters
 
 
@@ -35,11 +44,12 @@ class BenchmarkRepository:
             raise AppError("One or more categories are unknown", 422)
         return results
 
-    def configs(self) -> list[PipelineConfig]:
-        return list(self.session.scalars(
-            select(PipelineConfig).where(PipelineConfig.execution_mode.is_not(None))
-            .order_by(PipelineConfig.created_at, PipelineConfig.pipeline_id)
-        ))
+    def configs(self, *, summary=False) -> list[PipelineConfig]:
+        query = select(PipelineConfig).where(PipelineConfig.execution_mode.is_not(None))
+        if summary:
+            query = query.options(load_only(PipelineConfig.pipeline_id, PipelineConfig.name,
+                                           PipelineConfig.enabled, raiseload=True), raiseload("*"))
+        return list(self.session.scalars(query.order_by(PipelineConfig.created_at, PipelineConfig.pipeline_id)))
 
     def config(self, pipeline_id: str) -> PipelineConfig:
         record = self.session.scalar(
@@ -51,14 +61,41 @@ class BenchmarkRepository:
 
     def cases(
         self, filters: BenchmarkFilters, limit: int | None = None, offset: int = 0, *, runs_only=False,
-        analytics=False,
+        analytics=False, summary=False, texts=False, test_case_id=None,
     ) -> list[TestCase]:
         query = select(TestCase)
-        if analytics:
+        if summary:
             query = query.options(
-                selectinload(TestCase.runs).defer(PipelineRun.raw_response).defer(PipelineRun.boxes),
-                selectinload(TestCase.runs).selectinload(PipelineRun.fields).defer(OCRField.diagnostics),
+                selectinload(TestCase.runs.and_(PipelineRun.archived.is_(False)))
+                    .defer(PipelineRun.raw_response, raiseload=True).defer(PipelineRun.boxes, raiseload=True),
+                selectinload(TestCase.runs.and_(PipelineRun.archived.is_(False)))
+                    .selectinload(PipelineRun.fields).defer(OCRField.diagnostics, raiseload=True),
             )
+        if analytics:
+            run_columns = [PipelineRun.test_case_id, PipelineRun.pipeline_id, PipelineRun.pipeline_name,
+                PipelineRun.status, PipelineRun.archived, PipelineRun.crop_stage, PipelineRun.created_at,
+                PipelineRun.confidence, PipelineRun.processing_time_ms, PipelineRun.gateway_duration_ms,
+                PipelineRun.document_evaluation]
+            field_columns = [OCRField.pipeline_run_id, OCRField.global_field_id, OCRField.status,
+                OCRField.confirmed_at, OCRField.evaluation, OCRField.ground_truth_raw]
+            if texts:
+                run_columns += [PipelineRun.raw_text, PipelineRun.final_text]
+                field_columns += [OCRField.ocr_text]
+            query = query.options(
+                load_only(TestCase.document_id, TestCase.page_number, TestCase.workflow,
+                          TestCase.evaluation_mode, TestCase.document_gt_confirmed_at,
+                          TestCase.ground_truth_raw, TestCase.status, raiseload=True),
+                selectinload(TestCase.document).load_only(Document.filename, Document.document_type_id,
+                                                        raiseload=True).raiseload(Document.business_type),
+                selectinload(TestCase.global_fields).load_only(GlobalField.ground_truth_raw,
+                    GlobalField.confirmed_at, raiseload=True),
+                selectinload(TestCase.runs).load_only(*run_columns, raiseload=True),
+                selectinload(TestCase.runs).selectinload(PipelineRun.fields).load_only(*field_columns, raiseload=True),
+                selectinload(TestCase.runs).selectinload(PipelineRun.metric_records).load_only(
+                    Metric.text_kind, Metric.cer, Metric.wer, Metric.exact_match, Metric.created_at, raiseload=True),
+            )
+        if test_case_id is not None:
+            query = query.where(TestCase.id == str(test_case_id))
         if runs_only:
             query = query.where(TestCase.runs.any())
         if filters.category:
