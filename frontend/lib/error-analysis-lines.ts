@@ -5,6 +5,31 @@ type Span = FieldComparison["spans"][number];
 export function errorAnalysisLines(evaluation: FieldComparison, groundTruth: string) {
  const raw=groundTruth.normalize("NFC").replace(/\r\n?/g,"\n");
  const lines=raw.split("\n").map(gt=>({gt,spans:[] as Span[]}));
+ // New CER aligns non-whitespace characters. Restore GT spacing for readability,
+ // without introducing whitespace errors or changing the saved alignment.
+ if(raw.replace(/\s/gu,"")===evaluation.normalized_ground_truth){
+  const owners:number[]=[],spaces:string[]=[];
+  let row=0,pending="";
+  for(const char of Array.from(raw)){
+   if(char==="\n"){row++;pending="";continue;}
+   if(/\s/u.test(char)){pending+=char;continue;}
+   owners.push(row);spaces.push(pending);pending="";
+  }
+  let cursor=0,lastSpace=-1;
+  for(const span of evaluation.spans){
+   const units=Array.from(span.kind==="deletion"?span.missing??"":span.text);
+   const missing=Array.from(span.missing??"");
+   units.forEach((unit,index)=>{
+    const owner=owners[cursor]??owners[owners.length-1]??0;
+    if(lastSpace!==cursor&&spaces[cursor]){
+     lines[owner].spans.push({kind:"equal",text:spaces[cursor]});lastSpace=cursor;
+    }
+    lines[owner].spans.push({kind:span.kind,text:span.kind==="deletion"?"":unit,missing:span.kind==="deletion"?unit:missing[index]});
+    if(span.kind!=="insertion")cursor++;
+   });
+  }
+  return lines;
+ }
  const normalized:string[]=[],owners:number[]=[];
  let line=0,pendingSpace=false,spaceLine=0;
  for(const char of Array.from(raw)){

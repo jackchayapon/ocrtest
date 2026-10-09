@@ -2,12 +2,48 @@ import re
 import unicodedata
 from collections.abc import Sequence
 
+from pythainlp.tokenize import word_tokenize
+
 
 def normalize_text(text: str) -> str:
-    """NFC, normalized newlines, trim and collapse whitespace; preserve spelling/punctuation."""
+    """NFC, normalize newlines, collapse whitespace and trim."""
     return re.sub(
         r"\s+", " ", unicodedata.normalize("NFC", text).replace("\r\n", "\n").replace("\r", "\n")
     ).strip()
+
+
+def character_text(text: str) -> str:
+    """CER and character alignment include normalized spaces."""
+    return normalize_text(text)
+
+
+def tokenize_words(text: str, thai: bool = True) -> list[str]:
+    text = normalize_text(text)
+    if not text:
+        return []
+    if thai:
+        return [word for word in word_tokenize(text, engine="newmm") if word.strip()]
+    return text.split()
+
+
+def calculate_cer(reference, hypothesis, return_counts=False, ignore_whitespace=False):
+    ref, hyp = character_text(reference), character_text(hypothesis)
+    if ignore_whitespace:
+        ref, hyp = re.sub(r"\s+", "", ref), re.sub(r"\s+", "", hyp)
+    distance = levenshtein(ref, hyp)
+    rate = distance / len(ref) if ref else (0.0 if not hyp else 1.0)
+    return (rate, distance, len(ref)) if return_counts else rate
+
+
+def calculate_wer(reference, hypothesis, thai=True, return_counts=False):
+    ref, hyp = tokenize_words(reference, thai), tokenize_words(hypothesis, thai)
+    distance = levenshtein(ref, hyp)
+    rate = distance / len(ref) if ref else (0.0 if not hyp else 1.0)
+    return (rate, distance, len(ref)) if return_counts else rate
+
+
+def is_exact_match(reference, hypothesis):
+    return normalize_text(reference) == normalize_text(hypothesis)
 
 
 def levenshtein(reference: Sequence, prediction: Sequence) -> int:
@@ -119,8 +155,8 @@ def error_breakdown(prediction: str, ground_truth: str) -> list[dict]:
     return [
         dict(error_level=level, **event)
         for level, ref, pred in (
-            ("char", reference, predicted),
-            ("word", whitespace_tokenizer(reference), whitespace_tokenizer(predicted)),
+            ("char", character_text(reference), character_text(predicted)),
+            ("word", tokenize_words(reference), tokenize_words(predicted)),
         )
         for event in align_errors(ref, pred)
     ]
@@ -131,17 +167,14 @@ def whitespace_tokenizer(text: str) -> list[str]:
     return text.split()
 
 
-def calculate_metrics(prediction: str, ground_truth: str, tokenizer=whitespace_tokenizer) -> dict:
+def calculate_metrics(prediction: str, ground_truth: str, tokenizer=tokenize_words) -> dict:
     prediction = normalize_text(prediction)
     reference = normalize_text(ground_truth)
     reference_words, predicted_words = tokenizer(reference), tokenizer(prediction)
     return {
-        # Empty reference has undefined rates if prediction is nonempty; never emit NaN/Infinity.
-        "cer": levenshtein(reference, prediction) / len(reference)
-        if reference
-        else (0.0 if not prediction else None),
+        "cer": calculate_cer(reference, prediction),
         "wer": levenshtein(reference_words, predicted_words) / len(reference_words)
         if reference_words
-        else (0.0 if not predicted_words else None),
-        "exact_match": prediction == reference,
+        else (0.0 if not predicted_words else 1.0),
+        "exact_match": is_exact_match(reference, prediction),
     }

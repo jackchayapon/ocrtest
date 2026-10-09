@@ -118,7 +118,7 @@ export async function loadSample(): Promise<File> {
   return new File([await response.blob()], "sample-document.png", { type: "image/png" });
 }
 
-export const saveGlobalLayout = (id: string, fields: import("@/types").GlobalField[], confirmed: boolean) => request<TestCase>(`/test-cases/${id}/global-fields`, {method: "PUT", body: JSON.stringify({fields: fields.map(({id,field_index,roi,source})=>({id,field_index,roi,source})),confirmed})});
+export const saveGlobalLayout = (id: string, fields: import("@/types").GlobalField[], confirmed: boolean) => request<TestCase>(`/test-cases/${id}/global-fields`, {method: "PUT", body: JSON.stringify({fields: fields.map(({id,field_index,roi,source,ground_truth_raw})=>({id,field_index,roi,source,ground_truth_raw})),confirmed})});
 export const saveGlobalGT = (caseId: string, field: import("@/types").GlobalField) => request<TestCase>(`/test-cases/${caseId}/global-fields/${field.id}/ground-truth`, {method:"PUT",body:JSON.stringify({ground_truth_raw:field.ground_truth_raw ?? ""})});
 export const setEvaluationMode = (caseId: string, mode: import("@/types").EvaluationMode) => request<TestCase>(`/test-cases/${caseId}/evaluation-mode`, {method:"PUT",body:JSON.stringify({mode})});
 export const evaluateGlobal = (caseId: string, mode: import("@/types").EvaluationMode | "auto", global_field_ids: string[] = [], require_complete_gt = false) => request<TestCase>(`/test-cases/${caseId}/evaluate`, {method:"POST",body:JSON.stringify({mode,global_field_ids,require_complete_gt})});

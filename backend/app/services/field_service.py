@@ -3,23 +3,24 @@ from app.db.models import OCRField, now
 from app.repositories.field_repository import FieldRepository
 from app.services.metrics_service import (
     calculate_metrics,
+    character_text,
     error_breakdown,
     levenshtein,
     normalize_text,
-    whitespace_tokenizer,
+    tokenize_words,
 )
 
 
 def compact_comparison(prediction, ground_truth):
-    predicted, reference = normalize_text(prediction), normalize_text(ground_truth)
+    predicted, reference = character_text(prediction), character_text(ground_truth)
     return dict(**calculate_metrics(prediction, ground_truth),
                 character_edits=levenshtein(reference, predicted),
-                word_edits=levenshtein(whitespace_tokenizer(reference), whitespace_tokenizer(predicted)),
-                gt_characters=len(reference), gt_words=len(whitespace_tokenizer(reference)))
+                word_edits=levenshtein(tokenize_words(ground_truth), tokenize_words(prediction)),
+                gt_characters=len(reference), gt_words=len(tokenize_words(ground_truth)))
 
 
 def compare_field(prediction, ground_truth):
-    predicted, reference = normalize_text(prediction), normalize_text(ground_truth)
+    predicted, reference = character_text(prediction), character_text(ground_truth)
     events = error_breakdown(prediction, ground_truth)
     # Reconstruct matches/gaps from the existing ordered alignment, not another diff algorithm.
     spans, ref_cursor, pred_cursor = [], 0, 0
@@ -46,7 +47,7 @@ def compare_field(prediction, ground_truth):
         character_edits=sum(e["error_level"] == "char" for e in events),
         word_edits=sum(e["error_level"] == "word" for e in events),
         gt_characters=len(reference),
-        gt_words=len(whitespace_tokenizer(reference)),
+        gt_words=len(tokenize_words(ground_truth)),
         normalized_ocr=predicted,
         normalized_ground_truth=reference,
         events=events,
@@ -71,8 +72,8 @@ def field_summary(fields):
         word_edits=word_edits,
         gt_characters=chars,
         gt_words=words,
-        cer=char_edits / chars if chars else (None if char_edits else 0.0),
-        wer=word_edits / words if words else (None if word_edits else 0.0),
+        cer=char_edits / chars if chars else (1.0 if char_edits else 0.0),
+        wer=word_edits / words if words else (1.0 if word_edits else 0.0),
         exact_match=all(f["exact_match"] for f in confirmed),
     )
 

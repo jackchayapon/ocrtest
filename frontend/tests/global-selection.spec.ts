@@ -46,9 +46,63 @@ async function clickFrame(page: Page, x: number, y: number) {
   const canvas = page.getByTestId("document-viewer").locator(".konvajs-content");
   await canvas.scrollIntoViewIfNeeded();
   const box = (await canvas.boundingBox())!;
-  const scale = Math.min((box.width - 64) / 300, (box.height - 64) / 200, 1);
+  const scale = Number(await page.getByTestId("document-viewer").getAttribute("data-view-scale"));
   await page.mouse.click(box.x + (box.width - 300 * scale) / 2 + x * scale, box.y + (box.height - 200 * scale) / 2 + y * scale);
 }
+
+test("layout can hide other frames and reveal the selected row in a long list",async({page})=>{
+ const {record}=await setup(page);
+ record.global_fields=Array.from({length:25},(_,i)=>({...record.global_fields[0],id:`field-${i}`,field_index:i+1,
+   roi:i===24?{x1:220,y1:180,x2:280,y2:195}:{x1:20,y1:20,x2:120,y2:70}}));
+ await page.reload();
+ const viewer=page.getByTestId("document-viewer"),list=page.getByRole("region",{name:"Global Fields",exact:true});
+ await expect(page.getByTestId("global-field-nav")).toHaveCount(25);
+ const previewBounds=await viewer.boundingBox();
+ const controlsBounds=await page.getByTestId("controls-column").boundingBox();
+ expect(Math.abs(previewBounds!.height-controlsBounds!.height)).toBeLessThan(2);
+ expect(Math.abs(previewBounds!.y-controlsBounds!.y)).toBeLessThan(2);
+ await viewer.getByRole("button",{name:"แสดงกรอบ Global ทั้งหมด",exact:true}).click();
+ await expect(viewer).toHaveAttribute("data-show-all-fields","false");
+ await clickFrame(page,250,187);
+ const selected=page.getByTestId("global-field-nav").last();
+ await expect(selected).toHaveAttribute("aria-pressed","true");
+ await expect.poll(()=>list.evaluate(el=>el.scrollTop)).toBeGreaterThan(0);
+ await expect.poll(async()=>{
+   const row=await selected.boundingBox(),container=await list.boundingBox();
+   return !!row&&!!container&&row.y>=container.y&&row.y+row.height<=container.y+container.height;
+ }).toBe(true);
+});
+
+test("returning from pipelines always opens GT editor even with older evaluations",async({page})=>{
+ const {record}=await setup(page,true);
+ Object.assign(record.runs[0],{document_evaluation:{cer:0,wer:0,exact_match:true}});
+ await page.goto("/workflow/selection-test/pipelines");
+ await expect(page.getByRole("button",{name:"แสดงกรอบ Global ทั้งหมด",exact:true})).toHaveCount(0);
+ await page.getByRole("link",{name:"4. Ground Truth & Evaluation"}).click();
+ await expect(page.getByTestId("comparison-scroll")).toHaveCount(0);
+ await expect(page.getByLabel("Ground Truth Field 01",{exact:true})).toBeVisible();
+ await page.getByRole("link",{name:/3. Pipelines/}).click();
+ await page.getByRole("button",{name:"Run OCR",exact:true}).click();
+ await expect(page.getByLabel("Ground Truth Field 01",{exact:true})).toBeVisible();
+ await expect(page.getByTestId("comparison-scroll")).toHaveCount(0);
+});
+
+for(const gt of [false,true])test(`blank preview clears field selection without deleting ROI (${gt?"GT":"layout"})`,async({page})=>{
+ const {record}=await setup(page,gt);
+ const original=JSON.stringify(record.global_fields);
+ const viewer=page.getByTestId("document-viewer");
+ await clickFrame(page,50,45);
+ await expect(viewer).toHaveAttribute("data-active-field","field-a");
+ await clickFrame(page,140,90);
+ await expect(viewer).toHaveAttribute("data-active-field","");
+ if(!gt){
+   await expect(page.getByTestId("global-field-nav")).toHaveCount(2);
+   await expect(page.getByTestId("global-field-nav").first()).toHaveAttribute("aria-pressed","false");
+ }
+ expect(JSON.stringify(record.global_fields)).toBe(original);
+ await clickFrame(page,210,140);
+ await expect(viewer).toHaveAttribute("data-active-field","field-b");
+});
 
 test("GT preview highlights input, keeps hidden fields selectable and supports zoom/pan",async({page})=>{
  await setup(page,true);
@@ -225,6 +279,10 @@ test("GT synchronizes both modes, supports multiline ROI boundaries and requires
 
 test("returning to confirmed layout keeps editable frames and revisions preserve existing OCR",async({page})=>{
  const {record}=await setup(page,true);
+ record.global_fields[0].ground_truth_raw="First saved GT";
+ record.global_fields[1].ground_truth_raw="Second saved GT\nSecond line";
+ record.ground_truth_raw="First saved GT\nSecond saved GT\nSecond line";
+ await page.reload();
  const original=JSON.stringify(record);
  await page.getByRole("link",{name:/2\. Global Layout/}).click();
  await expect(page.getByTestId("global-field-nav")).toHaveCount(2);
@@ -251,6 +309,7 @@ test("returning to confirmed layout keeps editable frames and revisions preserve
  expect(revision.global_fields).toHaveLength(1);
  expect(revision.global_fields[0].roi).toEqual(record.global_fields[1].roi);
  expect(revision.global_fields[0].id).not.toBe(record.global_fields[1].id);
+ expect(revision.global_fields[0].ground_truth_raw).toBe("Second saved GT\nSecond line");
  await page.getByRole("link",{name:/2\. Global Layout/}).click();
  await expect(page.getByTestId("global-field-nav")).toHaveCount(1);
  await expect(page.getByRole("button",{name:"ลบ Field 01",exact:true})).toBeEnabled();

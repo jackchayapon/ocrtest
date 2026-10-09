@@ -9,9 +9,11 @@ from sqlalchemy import delete, func, select
 from app.db.models import OCRErrorEvent, PipelineConfig
 from app.services.metrics_service import (
     align_errors,
+    character_text,
     error_breakdown,
     levenshtein,
     normalize_text,
+    tokenize_words,
     whitespace_tokenizer,
 )
 from tests.test_api import run
@@ -32,7 +34,7 @@ from tests.test_api import run
 )
 def test_alignment_matches_metrics(reference, prediction, kind):
     events = error_breakdown(prediction, reference)
-    for level, tokenizer in (("char", list), ("word", whitespace_tokenizer)):
+    for level, tokenizer in (("char", character_text), ("word", tokenize_words)):
         aligned = [event for event in events if event["error_level"] == level]
         ref, pred = tokenizer(normalize_text(reference)), tokenizer(normalize_text(prediction))
         assert len(aligned) == levenshtein(ref, pred)
@@ -52,7 +54,7 @@ def test_alignment_exhaustive_ties_and_long_context():
     assert len(events) == 1 and events[0]["ground_truth_position"] == 100000
 
 
-def test_word_alignment_uses_existing_whitespace_tokens():
+def test_word_alignment_uses_newmm_tokens():
     for ref, pred, kind in [
         ("A B", "A C", "substitution"),
         ("A B C", "A C", "deletion"),
@@ -60,7 +62,9 @@ def test_word_alignment_uses_existing_whitespace_tokens():
         ("บริษัท", "บริสัท", "substitution"),
     ]:
         words = [e for e in error_breakdown(pred, ref) if e["error_level"] == "word"]
-        assert len(words) == 1 and words[0]["error_type"] == kind
+        assert len(words) == levenshtein(tokenize_words(ref), tokenize_words(pred))
+        if ref.isascii():
+            assert len(words) == 1 and words[0]["error_type"] == kind
 
 
 def test_error_replacement_filters_latest_and_historical_recompute(client, case, document):

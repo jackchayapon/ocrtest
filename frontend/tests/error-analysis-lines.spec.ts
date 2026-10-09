@@ -22,3 +22,13 @@ test("NFC, indentation and Unicode codepoints retain correct line ownership",()=
 test("stale GT cannot be assigned to the saved alignment",()=>{
  expect(errorAnalysisLines(evaluation("old",[{kind:"equal",text:"old"}]),"new")).toBeNull();
 });
+
+test("whitespace-free CER restores GT spacing and line ownership without space errors",()=>{
+ const result=errorAnalysisLines(evaluation("ABCD",[
+  {kind:"equal",text:"AB"},{kind:"substitution",text:"X",missing:"C"},
+  {kind:"deletion",text:"",missing:"D"},
+ ]),"A B\n\nC D")!;
+ expect(result.map(l=>l.gt)).toEqual(["A B","","C D"]);
+ expect(result.map(l=>l.spans.map(s=>s.text).join(""))).toEqual(["A B","","X "]);
+ expect(result.flatMap(l=>l.spans).filter(s=>s.kind!=="equal")).toHaveLength(2);
+});

@@ -12,7 +12,7 @@ from app.core.config import Settings
 from app.db.models import OCRField, PipelineRun
 from app.main import create_app
 from app.services.field_service import compare_field, field_summary
-from app.services.metrics_service import calculate_metrics, normalize_text
+from app.services.metrics_service import calculate_metrics, character_text
 from tests.test_benchmark_pipeline import parts
 
 
@@ -34,10 +34,10 @@ def test_field_diff_same_metrics_and_visible_gaps(gt, ocr, kind):
     assert {key: result[key] for key in ("cer", "wer", "exact_match")} == calculate_metrics(ocr, gt)
     errors = [s for s in result["spans"] if s["kind"] != "equal"]
     assert (errors[0]["kind"] if errors else None) == kind
-    assert "".join(s["text"] for s in result["spans"]) == normalize_text(ocr)
+    assert "".join(s["text"] for s in result["spans"]) == character_text(ocr)
     assert "".join(
         s["text"] if s["kind"] == "equal" else s["missing"] or "" for s in result["spans"]
-    ) == normalize_text(gt)
+    ) == character_text(gt)
 
 
 def test_field_diff_alignment_exhaustive_and_weighted_totals():
@@ -59,7 +59,7 @@ def test_field_diff_alignment_exhaustive_and_weighted_totals():
     assert field_summary([])["exact_match"] is None
     assert (
         field_summary([OCRField(confirmed_at=True, evaluation=compare_field("x", ""))])["cer"]
-        is None
+        == 1.0
     )
 
 

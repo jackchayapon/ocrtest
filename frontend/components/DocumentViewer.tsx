@@ -23,6 +23,7 @@ import BoundingBoxLayer from "./BoundingBoxLayer";
 import TestRegionLayer from "./TestRegionLayer";
 
 export interface DocumentViewerProps {
+  fillParent?: boolean;
   reviewMode?: boolean;
   globalFieldColor?: string;
   compactReference?: boolean;
@@ -30,6 +31,8 @@ export interface DocumentViewerProps {
   selectedGlobalFieldId?: string | null;
   selectedGlobalFieldIds?: string[];
   showRoiDelete?: boolean;
+  showGlobalFieldToggle?: boolean;
+  onClearSelection?: () => void;
   onSelectGlobalField?: (id: string) => void;
   imageUrl: string;
   width: number;
@@ -58,6 +61,7 @@ const MIN_ZOOM = 0.005;
 const MAX_ZOOM = 8;
 
 export default function DocumentViewer({
+  fillParent = false,
   reviewMode = false,
   globalFieldColor,
   compactReference = false,
@@ -82,6 +86,8 @@ export default function DocumentViewer({
   selectedGlobalFieldId,
   selectedGlobalFieldIds = [],
   showRoiDelete = true,
+  showGlobalFieldToggle = true,
+  onClearSelection,
   onSelectGlobalField,
 }: DocumentViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -116,7 +122,6 @@ export default function DocumentViewer({
       Math.min(
         (viewport.width - 64) / width,
         (viewport.height - 64) / height,
-        1,
       ),
       MIN_ZOOM,
       MAX_ZOOM,
@@ -262,6 +267,7 @@ export default function DocumentViewer({
       event.target.name() === "document-image"
     ) {
       onSelectBox(null);
+      onClearSelection?.();
     }
   }
 
@@ -321,7 +327,7 @@ export default function DocumentViewer({
 
   return (
     <div
-      className={`flex ${compactReference ? "min-h-[380px]" : "min-h-[520px]"} flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white`}
+      className={`flex ${fillParent ? "lg:h-full" : ""} ${compactReference ? "min-h-[380px]" : "min-h-[520px]"} flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white`}
       data-testid="document-viewer"
       data-highlighted-det-count={highlightedBoxIds.length}
       data-show-all-fields={showAllFields}
@@ -377,7 +383,7 @@ export default function DocumentViewer({
             <Crop size={16} />
           </button>}
           <span className="mx-1 h-5 w-px bg-slate-200" />
-          {reviewMode && !!globalFields?.length && <button type="button" aria-label="แสดงกรอบ Global ทั้งหมด" aria-pressed={showAllFields} title="ซ่อนกรอบ Global อื่น โดยยังแสดง Field ที่เลือก" className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-slate-700 hover:bg-slate-100" onClick={()=>setShowAllFields(v=>!v)}><ScanLine size={16}/>{showAllFields?"ซ่อนกรอบ Global อื่น":"แสดงกรอบ Global ทั้งหมด"}</button>}
+          {showGlobalFieldToggle && !!globalFields?.length && <button type="button" aria-label="แสดงกรอบ Global ทั้งหมด" aria-pressed={showAllFields} title="ซ่อนกรอบ Global อื่น โดยยังแสดง Field ที่เลือก" className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-slate-700 hover:bg-slate-100" onClick={()=>setShowAllFields(v=>!v)}><ScanLine size={16}/>{showAllFields?"ซ่อนกรอบ Global อื่น":"แสดงกรอบ Global ทั้งหมด"}</button>}
           {!!boxes.length && <button
             type="button"
             aria-label={reviewMode ? "แสดงกรอบ DET ทั้งหมด" : showBoxes ? t("Hide OCR boxes") : t("Show OCR boxes")}
@@ -466,9 +472,9 @@ export default function DocumentViewer({
 
       <div
         ref={containerRef}
-        className={`relative ${compactReference ? "min-h-[320px] flex-none" : "min-h-[420px] flex-1"} overflow-hidden bg-slate-100`}
+        className={`relative ${fillParent ? "lg:!h-0" : ""} ${compactReference ? "min-h-[320px] flex-none" : "min-h-[420px] flex-1"} overflow-hidden bg-slate-100`}
         style={{
-          height: reviewMode ? "clamp(460px, 75vh, 960px)" : compactReference ? "clamp(320px, 40vh, 520px)" : "clamp(420px, 62vh, 760px)",
+          height: reviewMode ? "clamp(460px, 75dvh, 960px)" : compactReference ? "clamp(320px, 40vh, 520px)" : "clamp(560px, 82dvh, 1080px)",
           backgroundImage: "radial-gradient(#cbd5e1 0.7px, transparent 0.7px)",
           backgroundSize: "16px 16px",
           cursor: regionMode ? "crosshair" : panMode ? "grab" : "default",
@@ -606,8 +612,8 @@ export default function DocumentViewer({
                   </Group>
                 ) : (
                   <Group key={field.id} name="global-layout-field" onClick={() => onSelectGlobalField?.(field.id)} onTap={() => onSelectGlobalField?.(field.id)} listening={!regionMode && !panMode}>
-                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={selectedGlobalFieldIds.includes(field.id) ? "#7c3aed" : "#2563eb"} strokeWidth={(selectedGlobalFieldIds.includes(field.id) ? 3 : 2)/view.scale} fill={selectedGlobalFieldIds.includes(field.id) ? "rgba(124,58,237,0.18)" : "rgba(37,99,235,0.04)"} />
-                    <FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}`} color="#1d4ed8" />
+                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "#7c3aed" : "#2563eb") : undefined} strokeWidth={(selectedGlobalFieldIds.includes(field.id) ? 3 : 2)/view.scale} fill={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "rgba(124,58,237,0.18)" : "rgba(37,99,235,0.04)") : "rgba(0,0,0,0)"} />
+                    {showAllFields && <FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}`} color="#1d4ed8" />}
                   </Group>
                 ))}
                 {!!suggestions.length && onSelectSuggestion && (

@@ -55,6 +55,7 @@ class GlobalFieldInput(InputModel):
     field_index: int = Field(ge=1, le=10000, strict=True)
     roi: ROI
     source: Literal["auto", "manual"]
+    ground_truth_raw: str | None = Field(default=None, max_length=100000)
 
 
 class GlobalLayoutUpdate(InputModel):

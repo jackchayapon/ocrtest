@@ -72,7 +72,16 @@ class GlobalLayoutService:
                 field = GlobalField(
                     id=field_id, field_index=item.field_index, roi=roi, source=item.source
                 )
+            if field.roi != roi:
+                field.confirmed_at = None
             field.roi, field.source = roi, item.source
+            # GT belongs to this field identity, never to its display index.
+            # The editor supplies it when cloning a layout into a new case.
+            if "ground_truth_raw" in item.model_fields_set:
+                if field.ground_truth_raw != item.ground_truth_raw:
+                    field.confirmed_at = None
+                field.ground_truth_raw = item.ground_truth_raw
+                field.ground_truth_normalized = normalize_text(item.ground_truth_raw or "")
             fields.append(field)
         for field in list(case.global_fields):
             if field.id not in {str(i.id) for i in data.fields}:
@@ -84,6 +93,11 @@ class GlobalLayoutService:
         case.global_fields = reading_order(fields)
         for index, field in enumerate(case.global_fields, 1):
             field.field_index = index
+        if (case.ground_truth_raw is not None or any(f.ground_truth_raw is not None for f in fields)
+                or any("ground_truth_raw" in item.model_fields_set for item in data.fields)):
+            case.ground_truth_raw = "\n".join(f.ground_truth_raw or "" for f in case.global_fields)
+            case.ground_truth_normalized = normalize_text(case.ground_truth_raw)
+            case.document_gt_confirmed_at = None
         case.layout_confirmed_at = now() if data.confirmed else None
         case.updated_at = now()
         return self.repo.save(case)
