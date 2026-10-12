@@ -271,10 +271,10 @@ export default function HistoryPage() {
                               <span>
                                 {!r ? (
                                   "ยังไม่ทดสอบ"
-                                ) : r.status === "error" ? (
+                                ) : r.status === "error" && r.metrics?.cer==null ? (
                                   <span className="text-red-700">ผิดพลาด</span>
                                 ) : (
-                                  <>CER {percent(r.metrics?.cer)}{r.metrics?.cer!=null&&r.metrics.cer>0&&<button type="button" className="ml-2 rounded border border-red-200 px-2 text-red-700 underline" onClick={()=>setInspecting({record:c,pipeline:r.pipeline_id,name:r.pipeline_name})}>View Errors</button>}</>
+                                  <>{r.status==="error"&&<span className="text-amber-800">บาง Field ล้มเหลว · </span>}CER {percent(r.metrics?.cer)}{r.metrics?.cer!=null&&r.metrics.cer>0&&<button type="button" className="ml-2 rounded border border-red-200 px-2 text-red-700 underline" onClick={()=>setInspecting({record:c,pipeline:r.pipeline_id,name:r.pipeline_name})}>ดูข้อผิดพลาด</button>}</>
                                 )}
                               </span>
                             </div>

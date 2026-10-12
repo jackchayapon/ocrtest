@@ -76,14 +76,18 @@ def main():
             case_id = str(uuid5(NAMESPACE_URL, "ocrtest/traffic/case/19"))
             field_id = str(uuid5(NAMESPACE_URL, "ocrtest/traffic/global/19/0"))
 
-            def measure(path):
+            def measure(path, payload=None):
                 readings = []
                 for _ in range(3):
                     stats = ReadStats()
                     token = current_stats.set(stats)
                     started = perf_counter()
                     try:
-                        response = client.get(path)
+                        response = (
+                            client.post(path, json=payload)
+                            if payload is not None
+                            else client.get(path)
+                        )
                         assert response.status_code == 200, response.status_code
                     finally:
                         current_stats.reset(token)
@@ -98,6 +102,20 @@ def main():
                 return {key: median(r[key] for r in readings) for key in readings[0]}
 
             detail = f"/api/test-cases/{case_id}"
+            case_payload = client.get(f"/api/test-cases/{case_id}").json()
+            export_selection = {
+                "mode": "per_field",
+                "pipeline_ids": [f"audit_{i}" for i in range(5)],
+                "run_ids": [
+                    str(uuid5(NAMESPACE_URL, f"ocrtest/traffic/run/19/{i + 10}"))
+                    for i in range(5)
+                ],
+                "field_ids": [
+                    str(uuid5(NAMESPACE_URL, f"ocrtest/traffic/global/19/{i}"))
+                    for i in range(3)
+                ],
+                "revision": case_payload["updated_at"],
+            }
             rows = {
                 "A_history_before": measure(
                     "/api/history?view=summary&latest=true&limit=20"
@@ -122,6 +140,9 @@ def main():
                 ),
                 "E_export_source_baseline": measure(detail),
                 "E_export_after": measure(detail + "/evaluation-report"),
+                "F_excel_selected": measure(
+                    detail + "/evaluation-excel", export_selection
+                ),
             }
     report = {
         "fixture": "20 cases, 5 pipelines, 3 runs per pipeline, 3 fields; mixed legacy/global",

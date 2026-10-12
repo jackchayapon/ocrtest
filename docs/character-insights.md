@@ -1,15 +1,15 @@
-﻿# Character Error Insights
+# Character Error Insights
 
 Evaluation shows errors for the latest non-archived run of each pipeline on one test case/page. No OCR rerun, new database tables, or persisted alignment streams are involved.
 
 ## Walkthrough
 
 1. Open Ground Truth & Evaluation. Highlight starts enabled here only; Deep detail remains optional. Each pipeline has an independent Highlight toggle.
-2. Under a field's metrics, expand **Character Error Summary**. Closed summaries use already-loaded spans for counts and issue no detail requests.
+2. Under a field's metrics, expand **สรุปข้อผิดพลาดในการอ่านตัวอักษร**. Closed summaries use already-loaded spans for counts and issue no detail requests.
 3. Select a character to inspect GT/OCR excerpts, error type and field identity. Combining marks use a dotted circle; actual code points are unchanged.
 4. Select **Field Crop** to load the original crop endpoint for that document, ROI and PDF page. Zoom, Fit, mouse drag, keyboard arrows and full-page view are available. Full-page view outlines the field, not an invented character box. Missing source files show an error.
-5. **Export Evaluation Report** downloads every latest non-archived pipeline in the current case/page, including pipelines hidden by the UI filter.
-6. History **View Errors** opens only the clicked pipeline's detail. Escape closes the top dialog and returns focus. No details or crops are fetched for unclicked rows.
+5. **ส่งออก Excel (.xlsx)** downloads the visible pipelines and selected fields in their displayed order, in the current mode/case/page. **ตัวเลือกขั้นสูง → ส่งออกรายงาน ZIP (ทุก Pipeline)** retains the all-latest-pipelines export, including hidden pipelines.
+6. History **ดูข้อผิดพลาด** opens only the clicked pipeline's detail. Escape closes the top dialog and returns focus. No details or crops are fetched for unclicked rows.
 
 The comparison table uses 280px pipeline columns and one bounded scroll region with sticky headers and GT column. Text panes no longer have separate fixed-height scroll regions. Wheel scrolling can chain to the page at the boundary. Image-viewer wheel events are consumed only while moving the image or during Ctrl/Cmd zoom.
 
@@ -53,3 +53,31 @@ Bounds: 100 pipelines, 2,000 prediction fields, 200,000 input characters overall
 ## Validation and transfer evidence
 
 See [character-insights-validation.md](character-insights-validation.md). Measurements use isolated local PostgreSQL and estimate fetched UTF-8 DBAPI values. They are **not** Neon billing reductions.
+
+
+## Single-sheet Excel and Thai explanations
+
+POST /api/test-cases/{id}/evaluation-excel accepts mode, ordered pipeline_ids,
+matching run_ids, ordered field_ids (empty for whole-document), and the saved
+case updated_at as revision. Unknown/duplicate/foreign IDs are rejected; changed
+revision/latest run returns 409. The server reads saved OCR/confirmed GT and
+canonical alignment, not client predictions. No Gateway calls or database writes.
+
+OCRLab_Evaluation.xlsx has exactly one sheet, ผลการประเมิน OCR:
+document/case/page/mode/export time, field/document GT and OCR rows, Thai
+substitution/insertion/deletion explanations, CER/WER/Exact Match/confidence and
+explicit state, followed by weighted pipeline totals. Ratios are stored as
+numbers with percentage formatting. Thai tone marks use a dotted circle only
+for display; NFC, code-point CER and Thai newmm WER remain unchanged.
+
+Successful child fields remain eligible even when their parent run fails.
+Failed/missing fields retain confirmed GT where available and have blank scores;
+partial totals include only eligible fields and disclose evaluated/total counts.
+Whole-document evaluation still requires a successful complete run.
+
+All strings are literal cells, including leading = + - @. No formulas, external
+links, images or vendor responses. Wrap text, Tahoma, frozen headers/GT and
+filters are applied. Oversized/illegal Excel text returns a clear error, never
+silent truncation; use ZIP instead. Limits include 32,767 UTF-16 units per cell,
+10,000 rows and 16 MiB output/text. Workbook data is verified with openpyxl;
+native Microsoft Excel rendering has not been independently tested.

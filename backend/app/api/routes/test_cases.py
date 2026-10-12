@@ -19,7 +19,9 @@ from app.schemas.contracts import (
     TestCaseCreate,
     TestCaseUpdate,
 )
+from app.schemas.evaluation_export import ExcelEvaluationSelection
 from app.services.evaluation_insights_service import EvaluationInsightsService
+from app.services.excel_evaluation_service import ExcelEvaluationService
 from app.services.field_service import FieldService
 from app.services.global_layout_service import GlobalLayoutService
 from app.services.serializers import field_json, run_json, test_case_json
@@ -157,3 +159,12 @@ def evaluation_report(case_id: UUID, session: SessionDep,
         "Content-Disposition": f'attachment; filename="evaluation-{case_id}.zip"',
         "Cache-Control": "private, no-store",
     })
+
+
+@router.post("/{case_id}/evaluation-excel")
+def evaluation_excel(case_id: UUID, data: ExcelEvaluationSelection, session: SessionDep):
+    payload = ExcelEvaluationService(session).export(str(case_id), data)
+    return Response(payload,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": 'attachment; filename="OCRLab_Evaluation.xlsx"',
+                 "Cache-Control": "private, no-store"})

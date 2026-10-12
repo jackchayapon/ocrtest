@@ -420,4 +420,4 @@ README อธิบายพฤติกรรมคงที่ ไม่ฝั
 
 ### Character Error Insights
 
-Ground Truth & Evaluation provides on-demand character statistics, original Field Crop inspection, and an all-pipeline Evaluation ZIP. History loads a compact list and fetches errors only after a click. See [the feature guide](docs/character-insights.md) and [validation/transfer evidence](docs/character-insights-validation.md).
+Ground Truth & Evaluation provides on-demand character statistics, original Field Crop inspection, a visible-pipeline single-sheet Excel report, and an advanced all-pipeline Evaluation ZIP. History loads a compact list and fetches errors only after a click. See [the feature guide](docs/character-insights.md) and [validation/transfer evidence](docs/character-insights-validation.md).

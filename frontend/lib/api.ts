@@ -147,3 +147,14 @@ export async function exportEvaluationReport(caseId: string, mode: import("@/typ
   const url=URL.createObjectURL(await response.blob()), a=document.createElement("a");
   a.href=url; a.download=`evaluation-${caseId}.zip`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),0);
 }
+
+export async function exportEvaluationExcel(caseId: string, selection: {
+ mode: import("@/types").EvaluationMode; pipeline_ids: string[]; run_ids: string[]; field_ids: string[]; revision: string;
+}) {
+ const response=await fetch(API_BASE_URL+"/api/test-cases/"+encodeURIComponent(caseId)+"/evaluation-excel",{
+  method:"POST",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify(selection)
+ });
+ if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(typeof error?.detail==="string"?error.detail:"ส่งออก Excel ไม่สำเร็จ");}
+ const url=URL.createObjectURL(await response.blob()),link=document.createElement("a");
+ link.href=url;link.download="OCRLab_Evaluation.xlsx";link.click();setTimeout(()=>URL.revokeObjectURL(url),0);
+}

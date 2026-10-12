@@ -10,33 +10,31 @@ class EvaluationInsightsRepository:
     def __init__(self, session):
         self.session = session
 
-    def read(self, case_id, pipeline_id=None, field_id=None):
-        case = (
-            self.session.execute(
-                select(
-                    TestCase.id,
-                    TestCase.document_id,
-                    TestCase.page_number,
-                    TestCase.workflow,
-                    TestCase.evaluation_mode,
-                    literal(None).label("ground_truth_raw")
-                    if field_id
-                    else TestCase.ground_truth_raw,
-                    TestCase.document_gt_confirmed_at,
-                    TestCase.status,
-                    TestCase.roi,
-                    Document.filename,
-                    Document.width,
-                    Document.height,
-                    TestCase.page_width,
-                    TestCase.page_height,
-                )
-                .join(Document, Document.id == TestCase.document_id)
-                .where(TestCase.id == case_id)
+    def read(self, case_id, pipeline_id=None, field_id=None, *, selection=None):
+        case_query = (
+            select(
+                TestCase.id,
+                TestCase.document_id,
+                TestCase.page_number,
+                TestCase.workflow,
+                TestCase.evaluation_mode,
+                TestCase.updated_at,
+                literal(None).label("ground_truth_raw") if field_id else TestCase.ground_truth_raw,
+                TestCase.document_gt_confirmed_at,
+                TestCase.status,
+                TestCase.roi,
+                Document.filename,
+                Document.width,
+                Document.height,
+                TestCase.page_width,
+                TestCase.page_height,
             )
-            .mappings()
-            .first()
+            .join(Document, Document.id == TestCase.document_id)
+            .where(TestCase.id == case_id)
         )
+        if selection:
+            case_query = case_query.with_for_update(read=True)
+        case = self.session.execute(case_query).mappings().first()
         if case is None:
             raise AppError("Test case not found", 404)
         candidates = select(
@@ -50,6 +48,8 @@ class EvaluationInsightsRepository:
         ).where(PipelineRun.test_case_id == case_id, PipelineRun.archived.is_(False))
         if pipeline_id:
             candidates = candidates.where(PipelineRun.pipeline_id == pipeline_id)
+        if selection:
+            candidates = candidates.where(PipelineRun.pipeline_id.in_(selection.pipeline_ids))
         ranked = candidates.subquery()
         runs = (
             self.session.execute(
@@ -87,6 +87,10 @@ class EvaluationInsightsRepository:
         ).where(GlobalField.test_case_id == case_id)
         if field_id:
             globals_query = globals_query.where(GlobalField.id == field_id)
+        if selection and selection.mode == "per_field":
+            globals_query = globals_query.where(
+                GlobalField.id.in_([str(i) for i in selection.field_ids])
+            )
         globals_ = (
             self.session.execute(globals_query.order_by(GlobalField.field_index)).mappings().all()
         )
@@ -104,6 +108,8 @@ class EvaluationInsightsRepository:
         ).where(OCRField.pipeline_run_id.in_([r["id"] for r in runs]))
         if field_id:
             query = query.where((OCRField.global_field_id == field_id) | (OCRField.id == field_id))
+        if selection and selection.mode == "per_field":
+            query = query.where(OCRField.global_field_id.in_([str(i) for i in selection.field_ids]))
         fields = (
             self.session.execute(query.order_by(OCRField.field_index).limit(2001)).mappings().all()
         )

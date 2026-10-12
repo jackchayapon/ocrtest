@@ -27,6 +27,10 @@ THAI_NAMES.update(
 )
 THAI_NAMES.update({c: f"เลขไทย {i}" for i, c in enumerate("๐๑๒๓๔๕๖๗๘๙")})
 
+THAI_NAMES.update({char: f"อักษรอังกฤษ {char}" for char in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"})
+THAI_NAMES.update({char: f"เลขอารบิก {char}" for char in "0123456789"})
+THAI_NAMES.update({" ": "ช่องว่าง", ".": "จุด", ",": "จุลภาค", "-": "ขีดกลาง", "!": "อัศเจรีย์", "?": "ปรัศนี"})
+
 
 def character_identity(char):
     return dict(

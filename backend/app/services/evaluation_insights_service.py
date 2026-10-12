@@ -16,6 +16,7 @@ from app.services.character_statistics import (
 )
 from app.services.field_service import compact_comparison
 from app.services.metrics_service import normalize_text
+from app.services.thai_error_explanations import explain_event, explain_events
 
 
 def aggregate(scopes):
@@ -74,9 +75,36 @@ class EvaluationInsightsService:
         self.repository = EvaluationInsightsRepository(session)
 
     def report(
-        self, case_id, pipeline_id=None, field_id=None, mode=None, character=None, export=False
+        self,
+        case_id,
+        pipeline_id=None,
+        field_id=None,
+        mode=None,
+        character=None,
+        export=False,
+        selection=None,
     ):
-        case, runs, globals_, predictions = self.repository.read(case_id, pipeline_id, field_id)
+        case, runs, globals_, predictions = self.repository.read(
+            case_id, pipeline_id, field_id, selection=selection
+        )
+        if selection:
+            revision = case["updated_at"]
+            if revision.tzinfo is None:
+                revision = revision.replace(tzinfo=timezone.utc)
+            if revision != selection.revision:
+                raise AppError("ข้อมูลเปลี่ยนแล้ว กรุณาโหลดผลประเมินใหม่ก่อนส่งออก", 409)
+            by_pipeline = {r["pipeline_id"]: r for r in runs}
+            if set(by_pipeline) != set(selection.pipeline_ids):
+                raise AppError("Pipeline ที่เลือกไม่อยู่ใน Test Case นี้", 422)
+            runs = [by_pipeline[i] for i in selection.pipeline_ids]
+            if [r["id"] for r in runs] != [str(i) for i in selection.run_ids]:
+                raise AppError("มีผล OCR ใหม่ กรุณาโหลดผลประเมินใหม่ก่อนส่งออก", 409)
+            if selection.mode == "per_field":
+                by_field = {f["id"]: f for f in globals_}
+                if set(by_field) != {str(i) for i in selection.field_ids}:
+                    raise AppError("Field ที่เลือกไม่อยู่ใน Test Case นี้", 422)
+                globals_ = [by_field[str(i)] for i in selection.field_ids]
+            mode = selection.mode
         mode = mode or (
             case["evaluation_mode"] if case["workflow"] == "global" else "whole_document"
         )
@@ -155,7 +183,7 @@ class EvaluationInsightsService:
                         gt,
                         f["evaluation"],
                         confirmed and fresh,
-                        f["status"] if run["status"] == "success" else "error",
+                        f["status"],
                         f["id"],
                         f["global_field_id"],
                         g["field_index"] if g else f["field_index"],
@@ -165,6 +193,31 @@ class EvaluationInsightsService:
                     )
                     scope["confidence"] = f["confidence"]
                     scopes.append(scope)
+                present = {f["global_field_id"] for f in fields}
+                for g in globals_:
+                    if g["id"] not in present:
+                        missing = self.scope(
+                            "",
+                            g["ground_truth_raw"],
+                            None,
+                            False,
+                            "error",
+                            None,
+                            g["id"],
+                            g["field_index"],
+                            g["roi"],
+                            character,
+                            export,
+                        )
+                        missing["state"] = (
+                            "pipeline_failed" if run["status"] == "error" else "no_prediction"
+                        )
+                        if export and g["confirmed_at"]:
+                            missing["confirmed_ground_truth"] = g["ground_truth_raw"]
+                        scopes.append(missing)
+                if selection:
+                    positions = {str(i): n for n, i in enumerate(selection.field_ids)}
+                    scopes.sort(key=lambda s: positions.get(s["global_field_id"], len(positions)))
             total = aggregate(scopes)
             eligible = [s for s in scopes if s["state"] == "ready"]
             chars = total["gt_characters"]
@@ -193,6 +246,11 @@ class EvaluationInsightsService:
                     processing_time_ms=run["processing_time_ms"],
                     statistics=total,
                     metrics=metrics,
+                    evaluation_status="complete"
+                    if eligible and len(eligible) == len(scopes)
+                    else "partial"
+                    if eligible
+                    else "not_evaluated",
                     evaluated_scopes=len(eligible),
                     total_scopes=len(scopes),
                     scopes=scopes,
@@ -246,6 +304,7 @@ class EvaluationInsightsService:
             k: metrics.get(k) for k in ("cer", "wer", "exact_match", "word_edits", "gt_words")
         }
         scope["statistics"] = {k: v for k, v in stats.items() if k != "events"}
+        scope["explanations"] = explain_events(stats["events"])
         reference, predicted = normalize_text(gt or ""), normalize_text(prediction)
         filtered = [
             e
@@ -260,6 +319,9 @@ class EvaluationInsightsService:
             scope["details"].append(
                 dict(
                     **event,
+                    explanation=explain_event(
+                        event["error_type"], event["ground_truth_unit"], event["ocr_unit"]
+                    ),
                     line_number=1 if "\n" not in (gt or "") and "\n" not in prediction else None,
                     ground_truth_excerpt=reference[max(0, (a or 0) - 32) : (a or 0) + 33],
                     ocr_excerpt=predicted[max(0, (b or 0) - 32) : (b or 0) + 33],
