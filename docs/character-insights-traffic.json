@@ -1,0 +1,119 @@
+{
+  "fixture": "20 cases, 5 pipelines, 3 runs per pipeline, 3 fields; mixed legacy/global",
+  "method": "Median of 3 sequential warm-process requests; estimated UTF-8 DBAPI values, NOT Neon billed transfer",
+  "baseline": "Unchanged main case/summary endpoints on same fixture. Overlay/export did not exist on main; source baseline is equivalent full-case read, NOT a prior implemented export.",
+  "notes": "D adds one explicit request for server-authoritative statistics; closed summaries issue none. C remains existing full evaluation payload. No OCR or external requests.",
+  "measurements": {
+    "A_history_before": {
+      "queries": 7,
+      "query_ms": 5.995600135065615,
+      "rows": 579,
+      "estimated_result_bytes": 199834,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 305793,
+      "latency_ms": 55.8,
+      "requests": 1
+    },
+    "A_history_after": {
+      "queries": 7,
+      "query_ms": 4.5126997865736485,
+      "rows": 379,
+      "estimated_result_bytes": 40348,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 39643,
+      "latency_ms": 23.26,
+      "requests": 1
+    },
+    "B_overlay_source_baseline": {
+      "queries": 7,
+      "query_ms": 3.1238998053595424,
+      "rows": 80,
+      "estimated_result_bytes": 208268,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 355061,
+      "latency_ms": 36.46,
+      "requests": 1
+    },
+    "B_overlay_after": {
+      "queries": 4,
+      "query_ms": 1.46499986294657,
+      "rows": 8,
+      "estimated_result_bytes": 1846,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 6105,
+      "latency_ms": 7.77,
+      "requests": 1
+    },
+    "C_evaluation_before_and_after": {
+      "queries": 7,
+      "query_ms": 2.936200122348964,
+      "rows": 80,
+      "estimated_result_bytes": 208268,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 355061,
+      "latency_ms": 36.24,
+      "requests": 1
+    },
+    "D_expand_before_loaded_alignment": {
+      "queries": 0,
+      "estimated_result_bytes": 0,
+      "http_bytes": 0,
+      "requests": 0,
+      "latency_ms": 0
+    },
+    "D_expand_after": {
+      "queries": 4,
+      "query_ms": 1.7524000722914934,
+      "rows": 4,
+      "estimated_result_bytes": 779,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 2856,
+      "latency_ms": 6.73,
+      "requests": 1
+    },
+    "E_export_source_baseline": {
+      "queries": 7,
+      "query_ms": 3.09070001821965,
+      "rows": 80,
+      "estimated_result_bytes": 208268,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 355061,
+      "latency_ms": 36.93,
+      "requests": 1
+    },
+    "E_export_after": {
+      "queries": 4,
+      "query_ms": 1.7296000150963664,
+      "rows": 24,
+      "estimated_result_bytes": 6758,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 4875,
+      "latency_ms": 8.84,
+      "requests": 1
+    }
+  }
+}

@@ -205,3 +205,27 @@ def config_json(record, settings=None):
         "created_at": timestamp(record.created_at),
         "updated_at": timestamp(record.updated_at),
     }
+
+
+def compact_history_json(record, has_gt, evaluated_runs):
+    """Explicit opt-in list shape; no OCR text, repeated GT, geometry or alignment."""
+    successes = [r for r in record.runs if r.status == "success"]
+    evaluated = any(r.id in evaluated_runs or (has_gt and r.metric_records) for r in successes)
+    state = ("pending" if not record.runs else "error" if not successes else
+             "partial" if len(successes) != len(record.runs) else
+             "success" if evaluated else "no_gt")
+    return {
+        "id": record.id, "document_id": record.document_id,
+        "document": document_json(record.document, record.page_number,
+            (record.page_width, record.page_height) if record.page_number else None),
+        "page_number": record.page_number, "workflow": record.workflow,
+        "created_at": timestamp(record.created_at), "history_status": state,
+        "has_ground_truth": has_gt,
+        "global_fields": [{"id": f.id, "field_index": f.field_index,
+            "confirmed_at": timestamp(f.confirmed_at) if f.confirmed_at else None}
+            for f in record.global_fields],
+        "runs": [{"id": r.id, "pipeline_id": r.pipeline_id, "pipeline_name": r.pipeline_name,
+            "status": r.status, "created_at": timestamp(r.created_at),
+            "metrics": next((metrics_json(m) for m in r.metric_records if m.text_kind == "final"), None)}
+            for r in record.runs],
+    }

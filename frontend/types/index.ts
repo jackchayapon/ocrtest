@@ -28,7 +28,7 @@ export type PipelineRun = {
   input_byte_size?: number | null; input_format?: string | null; crop_stage?: string | null;
   model_info?: { detector?: string | null; recognizer?: string | null; service?: string | null; gateway_model?: string | null };
 };
-export type TestCase = { history_status?: string;
+export type TestCase = { has_ground_truth?: boolean; history_status?: string;
   evaluation_mode?: EvaluationMode; document_gt_confirmed_at?: string | null;
   workflow?: "legacy" | "global"; global_fields?: GlobalField[]; layout_confirmed_at?: string | null; layout_locked_at?: string | null;
   id: string; document_id: string; document: Document; roi: ROI | null;

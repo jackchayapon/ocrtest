@@ -1,6 +1,6 @@
 from datetime import datetime, time, timedelta, timezone
 
-from sqlalchemy import and_, exists, or_, select
+from sqlalchemy import JSON, and_, exists, or_, select
 from sqlalchemy.orm import Session, aliased, load_only, raiseload, selectinload
 
 from app.core.errors import AppError
@@ -61,7 +61,7 @@ class BenchmarkRepository:
 
     def cases(
         self, filters: BenchmarkFilters, limit: int | None = None, offset: int = 0, *, runs_only=False,
-        analytics=False, summary=False, texts=False, test_case_id=None, latest=False,
+        analytics=False, summary=False, texts=False, test_case_id=None, latest=False, compact=False,
     ) -> list[TestCase]:
         query = select(TestCase)
         if summary:
@@ -78,11 +78,26 @@ class BenchmarkRepository:
                         and_(newer.created_at == PipelineRun.created_at, newer.id > PipelineRun.id)),
                 ))
                 visible_runs = and_(visible_runs, ~newer_run)
+            if not compact:
+                query = query.options(
+                    selectinload(TestCase.runs.and_(visible_runs))
+                        .defer(PipelineRun.raw_response, raiseload=True).defer(PipelineRun.boxes, raiseload=True),
+                    selectinload(TestCase.runs.and_(visible_runs))
+                        .selectinload(PipelineRun.fields).defer(OCRField.diagnostics, raiseload=True),
+                )
+        if compact:
+            query = query.add_columns(TestCase.ground_truth_raw.is_not(None).label("has_gt"))
             query = query.options(
-                selectinload(TestCase.runs.and_(visible_runs))
-                    .defer(PipelineRun.raw_response, raiseload=True).defer(PipelineRun.boxes, raiseload=True),
-                selectinload(TestCase.runs.and_(visible_runs))
-                    .selectinload(PipelineRun.fields).defer(OCRField.diagnostics, raiseload=True),
+                load_only(TestCase.document_id, TestCase.page_number, TestCase.page_width,
+                          TestCase.page_height, TestCase.workflow, TestCase.created_at, raiseload=True),
+                selectinload(TestCase.global_fields).load_only(
+                    GlobalField.field_index, GlobalField.confirmed_at, raiseload=True),
+                selectinload(TestCase.runs.and_(visible_runs)).load_only(
+                    PipelineRun.pipeline_id, PipelineRun.pipeline_name, PipelineRun.status,
+                    PipelineRun.created_at, raiseload=True),
+                selectinload(TestCase.runs.and_(visible_runs)).raiseload(PipelineRun.fields),
+                selectinload(TestCase.runs.and_(visible_runs)).selectinload(PipelineRun.metric_records).load_only(
+                    Metric.text_kind, Metric.cer, Metric.wer, Metric.exact_match, raiseload=True),
             )
         if analytics:
             run_columns = [PipelineRun.test_case_id, PipelineRun.pipeline_id, PipelineRun.pipeline_name,
@@ -131,6 +146,15 @@ class BenchmarkRepository:
         query = query.order_by(TestCase.created_at.desc(), TestCase.id).offset(offset)
         if limit is not None:
             query = query.limit(limit)
+        if compact:
+            records = list(self.session.execute(query))
+            run_ids = [r.id for record, _ in records for r in record.runs]
+            evaluated = set(self.session.scalars(select(PipelineRun.id).where(
+                PipelineRun.id.in_(run_ids),
+                or_(and_(PipelineRun.document_evaluation.is_not(None), PipelineRun.document_evaluation != JSON.NULL),
+                    PipelineRun.fields.any(and_(OCRField.evaluation.is_not(None), OCRField.evaluation != JSON.NULL))),
+            ))) if run_ids else set()
+            return [(record, has_gt, evaluated) for record, has_gt in records]
         return list(self.session.scalars(query))
 
     def save(self, record):

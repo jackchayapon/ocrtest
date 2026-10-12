@@ -552,32 +552,21 @@ export default function DocumentViewer({
             setPointerCoordinates(null);
           }}
           onWheel={(event) => {
-            event.evt.preventDefault();
             if (drawStartRef.current || panStartRef.current) return;
             if (event.evt.ctrlKey || event.evt.metaKey) {
-              zoomAt(
-                Math.exp(-event.evt.deltaY * 0.005),
-                stageRef.current?.getPointerPosition() ?? undefined,
-              );
+              event.evt.preventDefault();
+              zoomAt(Math.exp(-event.evt.deltaY * 0.005), stageRef.current?.getPointerPosition() ?? undefined);
             } else {
-              const unit =
-                event.evt.deltaMode === 1
-                  ? 16
-                  : event.evt.deltaMode === 2
-                    ? viewport.height
-                    : 1;
-              setView((current) =>
-                constrainView({
-                  ...current,
-                  x:
-                    current.x -
-                    (event.evt.shiftKey ? event.evt.deltaY : event.evt.deltaX) *
-                      unit,
-                  y:
-                    current.y -
-                    (event.evt.shiftKey ? 0 : event.evt.deltaY) * unit,
-                }),
-              );
+              const unit = event.evt.deltaMode === 1 ? 16 : event.evt.deltaMode === 2 ? viewport.height : 1;
+              const next = constrainView({
+                ...view,
+                x: view.x - (event.evt.shiftKey ? event.evt.deltaY : event.evt.deltaX) * unit,
+                y: view.y - (event.evt.shiftKey ? 0 : event.evt.deltaY) * unit,
+              });
+              if (next.x !== view.x || next.y !== view.y) {
+                event.evt.preventDefault();
+                setView(next);
+              }
             }
           }}
         >

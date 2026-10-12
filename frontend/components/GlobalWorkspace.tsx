@@ -71,7 +71,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  {!allowed?<section className="panel panel-body"><p>กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน</p><Link className="button primary" href={workflowUrl(saved.id,locked?"pipelines":"layout")}>กลับไปขั้นตอนก่อนหน้า</Link></section>:<>
  {stage==="ground-truth"&&comparison?<>
  {notice&&<p role="status" className="notice-banner">คำนวณแล้ว — ผลประเมินอยู่ในตาราง</p>}
- <GlobalFieldEvaluation fields={fields} saved={saved} runs={latestRuns} mode={mode} documentGT={documentGT} busy={busy} onMode={setMode} onEdit={()=>{setComparison(false);setNotice(false);}}/>
+ <GlobalFieldEvaluation key={saved.id} fields={fields} saved={saved} runs={latestRuns} mode={mode} documentGT={documentGT} busy={busy} onMode={setMode} onEdit={()=>{setComparison(false);setNotice(false);}}/>
  </>:<div className="grid gap-5 lg:grid-cols-2">
  <section data-testid="preview-column" className="relative min-w-0 lg:min-h-[560px]"><div className="lg:absolute lg:inset-0">
  <DocumentViewer fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy)setActiveId(null);}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fields} selectedGlobalFieldId={activeId} showRoiDelete={false} onSelectGlobalField={selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!locked&&!busy}/>

@@ -93,7 +93,7 @@ export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed 
 export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
-export const getHistory = (filters?: QueryFilters, signal?: AbortSignal) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary&latest=true`, { signal });
+export const getHistory = (filters?: QueryFilters, signal?: AbortSignal, compact = false) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary&latest=true${compact ? "&compact=true" : ""}`, { signal });
 export const getMatrix = (filters?: QueryFilters, signal?: AbortSignal) => request<MatrixRow[]>(`/matrix${query(filters)}`, { signal });
 export const getAnalyticsSummary = (filters?: QueryFilters, signal?: AbortSignal) => request<import("@/types").AnalyticsSummary>(`/analytics/summary${query(filters)}`, { signal });
 // Optional bundle is backward-compatible with an older backend during rollout.
@@ -135,3 +135,26 @@ export const getComparison = (filters: import("@/types").QueryFilters, includeAr
 
 export const bulkDeleteTestCases = (ids:string[]) => request<{requested:number;deleted:number;already_missing:number}>("/test-cases/bulk-delete",{method:"POST",body:JSON.stringify({test_case_ids:ids})});
 export const bulkExcludeDataset = (ids:string[]) => request<{requested:number;excluded:number;already_excluded:number;not_found:number}>("/dataset/items/bulk-exclude",{method:"POST",body:JSON.stringify({test_case_ids:ids.filter(id=>!id.startsWith("field:")),global_field_ids:ids.filter(id=>id.startsWith("field:")).map(id=>id.slice(6))})});
+
+export const getErrorInsights = (caseId: string, filters: {pipeline_id: string; field_id?: string; mode?: import("@/types").EvaluationMode; character?: string}, signal?: AbortSignal) => {
+  const params = new URLSearchParams();
+  for (const [key,value] of Object.entries(filters)) if(value !== undefined) params.set(key,value);
+  return request<import("@/types/evaluation-insights").ErrorInsights>(`/test-cases/${encodeURIComponent(caseId)}/error-summary?${params}`, {signal});
+};
+export async function exportEvaluationReport(caseId: string, mode: import("@/types").EvaluationMode) {
+  const response = await fetch(`${API_BASE_URL}/api/test-cases/${encodeURIComponent(caseId)}/evaluation-report?mode=${mode}`, {cache:"no-store"});
+  if(!response.ok) { const error = await response.json().catch(()=>null); throw new Error(typeof error?.detail==="string"?error.detail:"Export failed"); }
+  const url=URL.createObjectURL(await response.blob()), a=document.createElement("a");
+  a.href=url; a.download=`evaluation-${caseId}.zip`; a.click(); setTimeout(()=>URL.revokeObjectURL(url),0);
+}
+
+export async function exportEvaluationExcel(caseId: string, selection: {
+ mode: import("@/types").EvaluationMode; pipeline_ids: string[]; run_ids: string[]; field_ids: string[]; revision: string;
+}) {
+ const response=await fetch(API_BASE_URL+"/api/test-cases/"+encodeURIComponent(caseId)+"/evaluation-excel",{
+  method:"POST",cache:"no-store",headers:{"Content-Type":"application/json"},body:JSON.stringify(selection)
+ });
+ if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(typeof error?.detail==="string"?error.detail:"ส่งออก Excel ไม่สำเร็จ");}
+ const url=URL.createObjectURL(await response.blob()),link=document.createElement("a");
+ link.href=url;link.download="OCRLab_Evaluation.xlsx";link.click();setTimeout(()=>URL.revokeObjectURL(url),0);
+}

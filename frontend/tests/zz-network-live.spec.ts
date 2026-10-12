@@ -69,7 +69,7 @@ test("isolated real backend: browser upload, Auto/Manual layout, multi OCR, GT, 
     const result = await (await resultPromise).json();
     expect(result.runs.map((r: PipelineRun) => r.pipeline_id).sort()).toEqual([...ids].sort());
     expect(result.runs.every((r: PipelineRun) => r.status === "success")).toBe(true);
-    await expect(page).toHaveURL(/\/ground-truth$/);
+    await expect(page).toHaveURL(/\/ground-truth\?edit=1$/);
     for (const n of [1, 2, 3, 4]) {
       await page.getByLabel(`Ground Truth Field 0${n}`, { exact: true }).fill("บริษัท ซีดีจี จำกัด ABXD");
     }

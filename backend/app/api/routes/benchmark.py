@@ -9,7 +9,7 @@ from app.schemas.contracts import BenchmarkFilters, ErrorFilters
 from app.services.config_cache import catalog
 from app.services.error_analysis_service import ErrorAnalysisService
 from app.services.matrix_service import MatrixService
-from app.services.serializers import category_json, test_case_json
+from app.services.serializers import category_json, compact_history_json, test_case_json
 
 router = APIRouter()
 
@@ -22,7 +22,11 @@ def history(
     offset: int = Query(default=0, ge=0),
     view: Literal["full", "summary"] = "full",
     latest: bool = False,
+    compact: bool = False,
 ):
+    if compact and view == "summary":
+        return [compact_history_json(record, has_gt, evaluated) for record, has_gt, evaluated in
+                repository.cases(filters, limit, offset, runs_only=True, summary=True, latest=latest, compact=True)]
     return [test_case_json(record, summary=view == "summary") for record in
             repository.cases(filters, limit, offset, runs_only=True, summary=view == "summary", latest=latest and view == "summary")]
 

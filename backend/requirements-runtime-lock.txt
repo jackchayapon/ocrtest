@@ -37,3 +37,5 @@ tzdata==2026.3
 uvicorn==0.52.4
 watchfiles==1.2.0
 websockets==17.1
+openpyxl==3.1.5
+et-xmlfile==2.0.0

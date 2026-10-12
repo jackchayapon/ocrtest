@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import InsightDialog from "@/components/InsightDialog";
+import CharacterErrorSummary from "@/components/CharacterErrorSummary";
 import { useRouter } from "next/navigation";
 import { RefreshCw, Plus } from "lucide-react";
 import { getHistory, getAnalyticsPipelines, bulkDeleteTestCases } from "@/lib/api";
@@ -22,6 +24,7 @@ import DeleteHistoryButton from "@/components/DeleteHistoryButton";
 import { percent } from "@/components/MatrixTable";
 export default function HistoryPage() {
   const router = useRouter();
+  const [inspecting,setInspecting]=useState<{record:TestCase;pipeline:string;name:string}|null>(null);
   const [cases, setCases] = useState<TestCase[]>([]),
     [pipelines, setPipelines] = useState<AnalyticsPipeline[]>([]);
   const [filters, setFilters] = useAnalyticsFilters();
@@ -50,7 +53,7 @@ export default function HistoryPage() {
         return;
       }
       await Promise.all([
-        getHistory({ ...filters, limit: 21, offset }, controller.signal),
+        getHistory({ ...filters, limit: 21, offset }, controller.signal, true),
         getAnalyticsPipelines(controller.signal),
       ])
         .then(([h, p]) => {
@@ -88,6 +91,9 @@ export default function HistoryPage() {
   );
   return (
     <div className="page-stack">
+      {inspecting&&<InsightDialog title={`${inspecting.record.document.filename} · ${inspecting.name}`} onClose={()=>setInspecting(null)}>
+        <CharacterErrorSummary key={inspecting.record.id+inspecting.pipeline} caseId={inspecting.record.id} pipelineId={inspecting.pipeline} initiallyOpen/>
+      </InsightDialog>}
       <PageHeader
         title="ประวัติการทดสอบ"
         description="ค้นหาเอกสาร เปิดผลล่าสุด และจัดการชุดทดสอบที่บันทึกไว้"
@@ -233,7 +239,7 @@ export default function HistoryPage() {
                           หน้า {c.page_number ?? 1} / {c.document.page_count}
                         </span>
                         <span className="row-meta">
-                          {c.workflow === "global" ? `${c.global_fields?.length ?? 0} Fields · GT ยืนยัน ${c.global_fields?.filter(f=>f.confirmed_at).length ?? 0}` : c.ground_truth_raw === null
+                          {c.workflow === "global" ? `${c.global_fields?.length ?? 0} Fields · GT ยืนยัน ${c.global_fields?.filter(f=>f.confirmed_at).length ?? 0}` : !(c.has_ground_truth ?? (c.ground_truth_raw != null))
                             ? "ยังไม่มี Ground Truth"
                             : "มี Ground Truth"}
                         </span>
@@ -265,10 +271,10 @@ export default function HistoryPage() {
                               <span>
                                 {!r ? (
                                   "ยังไม่ทดสอบ"
-                                ) : r.status === "error" ? (
+                                ) : r.status === "error" && r.metrics?.cer==null ? (
                                   <span className="text-red-700">ผิดพลาด</span>
                                 ) : (
-                                  <>CER {percent(r.metrics?.cer)}</>
+                                  <>{r.status==="error"&&<span className="text-amber-800">บาง Field ล้มเหลว · </span>}CER {percent(r.metrics?.cer)}{r.metrics?.cer!=null&&r.metrics.cer>0&&<button type="button" className="ml-2 rounded border border-red-200 px-2 text-red-700 underline" onClick={()=>setInspecting({record:c,pipeline:r.pipeline_id,name:r.pipeline_name})}>ดูข้อผิดพลาด</button>}</>
                                 )}
                               </span>
                             </div>

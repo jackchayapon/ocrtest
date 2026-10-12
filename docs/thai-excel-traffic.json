@@ -1,0 +1,132 @@
+{
+  "fixture": "20 cases, 5 pipelines, 3 runs per pipeline, 3 fields; mixed legacy/global",
+  "method": "Median of 3 sequential warm-process requests; estimated UTF-8 DBAPI values, NOT Neon billed transfer",
+  "baseline": "Unchanged main case/summary endpoints on same fixture. Overlay/export did not exist on main; source baseline is equivalent full-case read, NOT a prior implemented export.",
+  "notes": "D adds one explicit request for server-authoritative statistics; closed summaries issue none. C remains existing full evaluation payload. No OCR or external requests.",
+  "measurements": {
+    "A_history_before": {
+      "queries": 7,
+      "query_ms": 7.882200065068901,
+      "rows": 579,
+      "estimated_result_bytes": 199834,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 305793,
+      "latency_ms": 45.77,
+      "requests": 1
+    },
+    "A_history_after": {
+      "queries": 7,
+      "query_ms": 5.753800040110946,
+      "rows": 379,
+      "estimated_result_bytes": 40348,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 39643,
+      "latency_ms": 20.67,
+      "requests": 1
+    },
+    "B_overlay_source_baseline": {
+      "queries": 7,
+      "query_ms": 5.006999825127423,
+      "rows": 80,
+      "estimated_result_bytes": 208268,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 355061,
+      "latency_ms": 31.09,
+      "requests": 1
+    },
+    "B_overlay_after": {
+      "queries": 4,
+      "query_ms": 2.740900148637593,
+      "rows": 8,
+      "estimated_result_bytes": 1875,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 8719,
+      "latency_ms": 6.97,
+      "requests": 1
+    },
+    "C_evaluation_before_and_after": {
+      "queries": 7,
+      "query_ms": 5.033999914303422,
+      "rows": 80,
+      "estimated_result_bytes": 208268,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 355061,
+      "latency_ms": 30.83,
+      "requests": 1
+    },
+    "D_expand_before_loaded_alignment": {
+      "queries": 0,
+      "estimated_result_bytes": 0,
+      "http_bytes": 0,
+      "requests": 0,
+      "latency_ms": 0
+    },
+    "D_expand_after": {
+      "queries": 4,
+      "query_ms": 2.7785999700427055,
+      "rows": 4,
+      "estimated_result_bytes": 808,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 3774,
+      "latency_ms": 7.05,
+      "requests": 1
+    },
+    "E_export_source_baseline": {
+      "queries": 7,
+      "query_ms": 4.769799881614745,
+      "rows": 80,
+      "estimated_result_bytes": 208268,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 355061,
+      "latency_ms": 30.15,
+      "requests": 1
+    },
+    "E_export_after": {
+      "queries": 4,
+      "query_ms": 2.854699967429042,
+      "rows": 24,
+      "estimated_result_bytes": 6787,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 5202,
+      "latency_ms": 8.35,
+      "requests": 1
+    },
+    "F_excel_selected": {
+      "queries": 4,
+      "query_ms": 2.7909998316317797,
+      "rows": 24,
+      "estimated_result_bytes": 6787,
+      "checkouts": 1,
+      "connections": 0,
+      "cache_hits": 0,
+      "cache_misses": 0,
+      "http_bytes": 7796,
+      "latency_ms": 31.36,
+      "requests": 1
+    }
+  }
+}
