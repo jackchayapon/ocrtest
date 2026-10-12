@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, Request, Response
@@ -19,6 +19,7 @@ from app.schemas.contracts import (
     TestCaseCreate,
     TestCaseUpdate,
 )
+from app.services.evaluation_insights_service import EvaluationInsightsService
 from app.services.field_service import FieldService
 from app.services.global_layout_service import GlobalLayoutService
 from app.services.serializers import field_json, run_json, test_case_json
@@ -136,3 +137,23 @@ def get_results(case_id: UUID, repository: RepoDep):
         "test_case_id": str(case_id),
         "runs": [run_json(run, detail=True) for run in repository.test_case(str(case_id)).runs if not run.archived],
     }
+
+
+@router.get("/{case_id}/error-summary")
+def error_summary(case_id: UUID, session: SessionDep,
+                  pipeline_id: str = Query(min_length=1, max_length=50),
+                  field_id: UUID | None = None,
+                  mode: Literal["per_field", "whole_document"] | None = None,
+                  character: str | None = Query(default=None, min_length=1, max_length=1)):
+    return EvaluationInsightsService(session).report(str(case_id), pipeline_id,
+        str(field_id) if field_id else None, mode, character)
+
+
+@router.get("/{case_id}/evaluation-report")
+def evaluation_report(case_id: UUID, session: SessionDep,
+                      mode: Literal["per_field", "whole_document"] | None = None):
+    payload = EvaluationInsightsService(session).export(str(case_id), mode)
+    return Response(payload, media_type="application/zip", headers={
+        "Content-Disposition": f'attachment; filename="evaluation-{case_id}.zip"',
+        "Cache-Control": "private, no-store",
+    })

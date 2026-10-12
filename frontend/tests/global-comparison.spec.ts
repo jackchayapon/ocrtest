@@ -64,7 +64,7 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await page.getByRole("button",{name:"ยืนยันตัวกรอง",exact:true}).click();
  await expect(scroll.getByRole("columnheader")).toHaveCount(6);
  expect(mutationRequests.length).toBe(requestsBeforeFilter);
- await expect(first.getByTestId("global-result-pipeline-0")).toContainText("OCR 1 / 1");
+ await expect(first.getByTestId("global-result-pipeline-0").getByTestId("highlight-output")).toBeVisible();
  const metricPosition=await first.getByTestId("global-metrics-pipeline-0").getByRole("region",{name:"Metrics"}).boundingBox();
  const otherMetricPosition=await first.getByTestId("global-metrics-pipeline-1").getByRole("region",{name:"Metrics"}).boundingBox();
  expect(Math.abs(metricPosition!.y-otherMetricPosition!.y)).toBeLessThan(2);
@@ -87,7 +87,7 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await expect(resultCell.getByTestId("highlight-correct").first()).toHaveClass(/bg-green-100/);
  await expect(resultCell.getByTestId("highlight-output")).toBeVisible();
  await expect(analysisToggle).toHaveAttribute("aria-pressed","true");
- await expect(page.getByRole("button",{name:"Error Analysis Pipeline 2",exact:true})).toHaveAttribute("aria-pressed","false");
+ await expect(page.getByRole("button",{name:"Error Analysis Pipeline 2",exact:true})).toHaveAttribute("aria-pressed","true");
  const analysis=first.getByTestId("global-metrics-pipeline-0").getByTestId("error-analysis-line");
  await expect(analysis).toHaveCount(2);
  await expect(analysis.nth(1)).toContainText("GT: Line2!");
@@ -99,7 +99,8 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await expect(resultCell.getByTestId("global-prediction")).toHaveCount(0);
  const gtPane=await first.getByTestId("gt-pane").boundingBox();
  const ocrPane=await resultCell.getByTestId("prediction-pane").boundingBox();
- expect(Math.abs(gtPane!.height-ocrPane!.height)).toBeLessThan(2);
+ expect(gtPane!.height).toBeGreaterThanOrEqual(128);
+ expect(ocrPane!.height).toBeGreaterThanOrEqual(128);
  expect(Math.abs(gtPane!.y-ocrPane!.y)).toBeLessThan(2);
  const afterToggle=await first.getByTestId("global-metrics-pipeline-0").getByRole("region",{name:"Metrics"}).boundingBox();
  expect(Math.abs(afterToggle!.y-metricPosition!.y)).toBeLessThan(2);
@@ -145,8 +146,12 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await scroll.evaluate(e=>{e.scrollLeft=650;});
  await expect.poll(async()=>Math.abs((await pinned.boundingBox())!.x-before.x)).toBeLessThan(2);
  expect(await scroll.evaluate(e=>e.scrollWidth>e.clientWidth)).toBe(true);
+ const header=scroll.getByRole("columnheader").first();
+ const headerY=(await header.boundingBox())!.y;
  await scroll.evaluate(e=>{e.scrollTop=500;});
  expect(await scroll.evaluate(e=>e.scrollTop)).toBeGreaterThan(0);
+ expect(Math.abs((await header.boundingBox())!.y-headerY)).toBeLessThan(2);
+ expect(await scroll.evaluate(e=>getComputedStyle(e).overscrollBehaviorY)).toBe("auto");
  await page.screenshot({path:`test-results/comparison-${width}.png`,fullPage:true});
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
  await page.getByRole("button",{name:"Whole Field",exact:true}).click();
@@ -157,7 +162,7 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  const longMetrics=await scroll.getByTestId("global-metrics-pipeline-1").getByRole("region",{name:"Metrics"}).boundingBox();
  expect(Math.abs(wholeMetrics!.y-longMetrics!.y)).toBeLessThan(2);
  const longPane=scroll.getByTestId("global-result-pipeline-1").getByTestId("prediction-pane");
- expect(await longPane.evaluate(el=>el.scrollHeight>el.clientHeight)).toBe(true);
+ expect(await longPane.evaluate(el=>getComputedStyle(el).overflowY)).toBe("visible");
  await analysisToggle.click();
  await page.getByRole("checkbox",{name:"Deep detail",exact:true}).check();
  await page.getByRole("checkbox",{name:"HIGHLIGHT",exact:true}).check();

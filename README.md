@@ -417,3 +417,7 @@ README อธิบายพฤติกรรมคงที่ ไม่ฝั
 - [Thai FT v2 contract](docs/thai-ft-v2.md)
 
 เอกสาร audit/release รุ่นก่อนเป็นหลักฐานตามเวลานั้น ไม่ใช่คำสั่งให้สร้าง fixed configurations กลับมา หากข้อความสรุป UI รุ่นเก่าต่างจากหน้านี้ให้ใช้ source ปัจจุบันและ README/decision guide สำหรับ Comparison ใหม่
+
+### Character Error Insights
+
+Ground Truth & Evaluation provides on-demand character statistics, original Field Crop inspection, and an all-pipeline Evaluation ZIP. History loads a compact list and fetches errors only after a click. See [the feature guide](docs/character-insights.md) and [validation/transfer evidence](docs/character-insights-validation.md).
