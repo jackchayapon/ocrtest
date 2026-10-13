@@ -50,6 +50,29 @@ async function clickFrame(page: Page, x: number, y: number) {
   await page.mouse.click(box.x + (box.width - 300 * scale) / 2 + x * scale, box.y + (box.height - 200 * scale) / 2 + y * scale);
 }
 
+test("OCR draft prefill opens editable GT, syncs multiline fields and waits for confirmation",async({page})=>{
+ const {record,state}=await setup(page,true);
+ record.global_fields[0].ground_truth_raw="Draft first\nSecond line";
+ record.global_fields[1].ground_truth_raw="Draft last";
+ record.ground_truth_raw="Draft first\nSecond line\nDraft last";
+ Object.assign(record,{gt_prefill:{status:"ready",field_ids:["field-a","field-b"]}});
+ await page.reload();
+ await expect(page.getByTestId("gt-prefill-notice")).toContainText("ฉบับร่าง");
+ await expect(page.getByLabel("Ground Truth Field 01",{exact:true})).toHaveValue("Draft first\nSecond line");
+ await page.getByRole("button",{name:"Whole Field",exact:true}).click();
+ await expect(page.getByLabel("Ground Truth ทั้งเอกสาร",{exact:true})).toHaveValue(record.ground_truth_raw);
+ await expect(page.getByLabel("จำนวนบรรทัด Field 01",{exact:true})).toHaveValue("2");
+ await page.getByRole("button",{name:"Sub-fields",exact:true}).click();
+ await page.getByLabel("Ground Truth Field 01",{exact:true}).fill("Corrected\nSecond line");
+ await page.getByRole("button",{name:"บันทึก GT ฉบับร่าง",exact:true}).click();
+ await expect.poll(()=>state.gtSaves).toBe(1);
+ expect(state.evaluations).toBe(0);
+ await page.reload();
+ await expect(page.getByLabel("Ground Truth Field 01",{exact:true})).toHaveValue("Corrected\nSecond line");
+ await page.getByRole("button",{name:"ยืนยันเพื่อคำนวณ",exact:true}).click();
+ await expect.poll(()=>state.evaluations).toBe(1);
+});
+
 test("layout can hide other frames and reveal the selected row in a long list",async({page})=>{
  const {record}=await setup(page);
  record.global_fields=Array.from({length:25},(_,i)=>({...record.global_fields[0],id:`field-${i}`,field_index:i+1,

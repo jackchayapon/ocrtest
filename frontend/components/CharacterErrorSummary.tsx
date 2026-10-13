@@ -1,19 +1,19 @@
 "use client";
 import {useEffect,useState} from "react";
 import type {EvaluationMode,FieldComparison} from "@/types";
-import type {ErrorInsights,InsightScope} from "@/types/evaluation-insights";
+import type {ErrorInsights} from "@/types/evaluation-insights";
 import {getErrorInsights} from "@/lib/api";
 import {alignmentCounts} from "./CanonicalAlignment";
-import SourceCropPreview from "./SourceCropPreview";
+import FieldErrorDetails from "./FieldErrorDetails";
 const states:Record<string,string>={no_confirmed_gt:"ยังไม่มี Ground Truth ที่ยืนยัน",outdated:"ผลประเมินล้าสมัย — กรุณาคำนวณใหม่",pipeline_failed:"Pipeline ประมวลผลไม่สำเร็จ",alignment_unavailable:"ไม่สามารถสร้าง alignment ที่ตรงกับผลประเมินเดิมได้"};
 export default function CharacterErrorSummary({caseId,pipelineId,fieldId,mode,evaluation,unavailable,initiallyOpen=false}:{caseId:string;pipelineId:string;fieldId?:string;mode?:EvaluationMode;evaluation?:FieldComparison|null;unavailable?:string;initiallyOpen?:boolean}){
- const [open,setOpen]=useState(initiallyOpen),[data,setData]=useState<ErrorInsights|null>(null),[error,setError]=useState(""),[character,setCharacter]=useState<string|undefined>(),[all,setAll]=useState(false),[crop,setCrop]=useState<InsightScope|null>(null);
+ const [open,setOpen]=useState(initiallyOpen),[data,setData]=useState<ErrorInsights|null>(null),[error,setError]=useState(""),[character,setCharacter]=useState<string|undefined>(),[all,setAll]=useState(false);
  useEffect(()=>{if(!open||unavailable)return;const controller=new AbortController();let active=true;
  getErrorInsights(caseId,{pipeline_id:pipelineId,field_id:fieldId,mode,character},controller.signal).then(v=>{if(active){setData(v);setError("");}}).catch(e=>{if(active)setError(e instanceof Error?e.message:"โหลดรายละเอียดไม่ได้");});
  return()=>{active=false;controller.abort();};},[caseId,pipelineId,fieldId,mode,character,open,unavailable]);
  const run=data?.pipelines[0],counts=evaluation?.spans?alignmentCounts(evaluation.spans):null;
  const totals=run?.statistics??(counts?{character_edits:counts.substitution+counts.deletion+counts.insertion,...counts}:null);
- return <section aria-label="สรุปข้อผิดพลาดในการอ่านตัวอักษร" className="mt-2 rounded-lg border border-slate-200 bg-white p-3 text-xs">
+ return <section aria-label="สรุปข้อผิดพลาดในการอ่านตัวอักษร" className="mt-2 rounded-lg border border-slate-200 bg-white p-4 text-base leading-7">
  <h3 className="font-semibold">สรุปข้อผิดพลาดในการอ่านตัวอักษร</h3>
  {unavailable?<p className="mt-2 text-amber-800">{unavailable}</p>:<>
  {totals&&<dl className="my-2 grid grid-cols-2 gap-2">{(["character_edits","substitution","deletion","insertion"] as const).map(k=><div key={k}><dt>{({character_edits:"อักขระที่ผิดพลาดทั้งหมด",substitution:"อ่านผิด",deletion:"อ่านขาดหาย",insertion:"อ่านเกิน"})[k]}</dt><dd className="font-semibold">{totals[k]}</dd></div>)}</dl>}
@@ -30,16 +30,9 @@ export default function CharacterErrorSummary({caseId,pipelineId,fieldId,mode,ev
  {run.statistics.characters.length>6&&<button className="text-indigo-700 underline" onClick={()=>setAll(v=>!v)}>{all?"แสดงน้อยลง":"แสดงอักขระทั้งหมด"}</button>}
  {!!run.statistics.confusion_pairs.length&&<p>คู่ตัวอักษรที่อ่านสับสน: {run.statistics.confusion_pairs.slice(0,5).map(p=>`${p.expected} → ${p.predicted} (${p.count})`).join(", ")}</p>}
  {!character&&run.scopes.filter(s=>s.state==="ready").map(s=><div key={s.field_id??"document"}>{s.explanations?.map((text,i)=><p key={i}>{text}</p>)}</div>)}
- {character&&run.scopes.filter(s=>s.state==="ready").map(s=><div key={s.field_id??"document"} className="space-y-2">
- {s.details.map((e,i)=><article key={i} className="rounded border border-red-100 bg-red-50 p-2 break-words">
- <strong>{run.pipeline_name} · Field {s.field_index??"ทั้งเอกสาร"} · {e.line_number?`บรรทัด ${e.line_number}`:"ไม่สามารถระบุบรรทัดได้"}</strong>
- <p>{e.explanation??({substitution:"อ่านผิด",deletion:"อ่านขาดหาย",insertion:"อ่านเกิน"})[e.error_type as "substitution"|"deletion"|"insertion"]}</p><p className="whitespace-pre-wrap">ข้อความจริง (Ground Truth): {e.ground_truth_excerpt}</p><p className="whitespace-pre-wrap">ข้อความที่ OCR อ่านได้: {e.ocr_excerpt}</p>
- <button className="mt-1 text-indigo-700 underline" onClick={()=>setCrop(s)}>ดูภาพต้นฉบับ (Field Crop)</button>
- </article>)}{s.details_truncated&&<p>แสดงตัวอย่างสูงสุด 50 รายการ · ดูรายละเอียดทั้งหมดในรายงานผลการประเมิน</p>}
- </div>)}
+ {character&&data&&<FieldErrorDetails key={`${caseId}:${pipelineId}:${mode}:${character}`} data={data} run={run}/>}
  </>}
  </div>}
  </>}
- {crop&&data&&<SourceCropPreview documentId={data.document_id} page={data.page_number} roi={crop.roi} onClose={()=>setCrop(null)}/>}
  </section>;
 }

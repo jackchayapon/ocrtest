@@ -61,6 +61,59 @@ def safe_csv(value):
     )
 
 
+def attribute_source_fields(scope, globals_, predictions, ground_truth):
+    """Locate canonical document events without changing their alignment or counts."""
+    by_id = {f["global_field_id"]: f for f in predictions}
+
+    def ranges(key):
+        chunks = [normalize_text((g.get("ground_truth_raw") if key == "gt" else
+                    by_id.get(g["id"], {}).get("ocr_text")) or "") for g in globals_]
+        joined = " ".join(c for c in chunks if c)
+        if key == "gt" and joined != normalize_text(ground_truth or ""):
+            return []  # Older independently entered document GT has no reliable field mapping.
+        result, offset = [], 0
+        for g, chunk in zip(globals_, chunks):
+            if chunk:
+                result.append((offset, offset + len(chunk), g))
+                offset += len(chunk) + 1
+        return result
+
+    gt_ranges, ocr_ranges = ranges("gt"), ranges("ocr")
+    for detail in scope["details"]:
+        insertion = detail["error_type"] == "insertion"
+        position = detail["ocr_position" if insertion else "ground_truth_position"]
+        for start, end, field in ocr_ranges if insertion else gt_ranges:
+            if position is not None and start <= position < end:
+                detail["source_field"] = {k: field[k] for k in ("id", "field_index", "roi")}
+                break
+
+
+def contextual_events(events, reference, predicted):
+    """Recover both alignment cursors, including the gap on a missing side.
+
+    Canonical null positions mean no character, not position zero. Walk all
+    events before filtering so previous insertions/deletions remain accounted for.
+    """
+    ref_cursor = pred_cursor = 0
+    for event in events:
+        a, b = event["ground_truth_position"], event["ocr_position"]
+        if a is None:
+            a = ref_cursor + (b - pred_cursor)
+        if b is None:
+            b = pred_cursor + (a - ref_cursor)
+        ref_size = int(event["ground_truth_unit"] is not None)
+        pred_size = int(event["ocr_unit"] is not None)
+        ref_start, pred_start = max(0, a - 32), max(0, b - 32)
+        yield dict(
+            **event,
+            ground_truth_excerpt=reference[ref_start:a + ref_size + 32],
+            ocr_excerpt=predicted[pred_start:b + pred_size + 32],
+            ground_truth_highlight={"start": a - ref_start, "length": ref_size},
+            ocr_highlight={"start": b - pred_start, "length": pred_size},
+        )
+        ref_cursor, pred_cursor = a + ref_size, b + pred_size
+
+
 def csv_bytes(rows, columns):
     output = io.StringIO(newline="")
     writer = csv.writer(output)
@@ -170,6 +223,8 @@ class EvaluationInsightsService:
                         legacy=case["workflow"] != "global",
                     )
                 )
+                if case["workflow"] == "global":
+                    attribute_source_fields(scopes[-1], globals_, fields, case["ground_truth_raw"])
             else:
                 for f in fields:
                     g = globals_by_id.get(f["global_field_id"])
@@ -308,14 +363,13 @@ class EvaluationInsightsService:
         reference, predicted = normalize_text(gt or ""), normalize_text(prediction)
         filtered = [
             e
-            for e in stats["events"]
+            for e in contextual_events(stats["events"], reference, predicted)
             if character is None
             or (e["ocr_unit"] if e["error_type"] == "insertion" else e["ground_truth_unit"])
             == character
         ]
         limit = len(filtered) if export else 50
         for event in filtered[:limit]:
-            a, b = event["ground_truth_position"], event["ocr_position"]
             scope["details"].append(
                 dict(
                     **event,
@@ -323,8 +377,6 @@ class EvaluationInsightsService:
                         event["error_type"], event["ground_truth_unit"], event["ocr_unit"]
                     ),
                     line_number=1 if "\n" not in (gt or "") and "\n" not in prediction else None,
-                    ground_truth_excerpt=reference[max(0, (a or 0) - 32) : (a or 0) + 33],
-                    ocr_excerpt=predicted[max(0, (b or 0) - 32) : (b or 0) + 33],
                 )
             )
         scope["details_truncated"] = len(filtered) > limit

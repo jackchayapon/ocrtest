@@ -90,6 +90,7 @@ class TestCase(Base):
     layout_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     evaluation_mode: Mapped[str] = mapped_column(String(20), default="per_field", server_default="per_field")
     document_gt_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    gt_prefill: Mapped[dict | None] = mapped_column(JSON_TYPE, nullable=True)
     layout_locked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     ground_truth_raw: Mapped[str | None] = mapped_column(Text, nullable=True)
     ground_truth_normalized: Mapped[str | None] = mapped_column(Text, nullable=True)

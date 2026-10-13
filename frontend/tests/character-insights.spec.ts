@@ -8,6 +8,54 @@ const evaluation={cer:.5,wer:1,exact_match:false,character_edits:1,word_edits:1,
 const record={id:"insights",updated_at:"2026-10-01T00:00:00Z",workflow:"global",categories:[],history_status:"success",has_ground_truth:true,created_at:"2026-10-01T00:00:00Z",ground_truth_raw:"ก้",evaluation_mode:"per_field",layout_confirmed_at:"2026-10-01",global_fields:[{id:"field",field_index:1,roi,source:"manual",ground_truth_raw:"ก้",confirmed_at:"2026-10-01"}],page_number:2,document:{id:"doc",filename:"synthetic.pdf",document_type:"pdf",page_count:3,width:300,height:200,page_number:2,image_url:"/api/preview.svg"},runs:["p1","hidden"].map(p=>({id:p,pipeline_id:p,pipeline_name:p==="p1"?"Pipeline One":"Hidden Pipeline",status:"success",document_evaluation:evaluation,final_text:"ก",confidence:.9,metrics:{cer:.5,wer:1,exact_match:false},fields:[{id:p+"field",global_field_id:"field",field_index:1,status:"success",ocr_text:"ก",confidence:.9,evaluation}]}))};
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="1200" height="800" fill="white"/><text x="20" y="40">Synthetic source</text></svg>';
 
+test("detail excerpts highlight extra characters and a missing space at its gap",async({page})=>{
+ const report=structuredClone(insight);
+ report.pipelines[0].scopes[0].details=[
+  {...scope.details[0],ground_truth_unit:" ",ground_truth_excerpt:"Fax: 123",ocr_excerpt:"Fax:123",ground_truth_highlight:{start:4,length:1},ocr_highlight:{start:4,length:0}},
+  {...scope.details[0],error_type:"insertion",ground_truth_unit:null,ocr_unit:"๐",ground_truth_excerpt:"😀www.com",ocr_excerpt:"😀www.c๐om",ground_truth_highlight:{start:6,length:0},ocr_highlight:{start:6,length:1}},
+ ] as unknown as typeof scope.details;
+ await page.route("**/api/**",async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path==="/api/history")return route.fulfill({json:[record]});
+  if(path.endsWith("/analytics/pipelines"))return route.fulfill({json:record.runs.map(r=>({pipeline_id:r.pipeline_id,pipeline_name:r.pipeline_name}))});
+  if(path.endsWith("/error-summary"))return route.fulfill({json:report});
+  return route.fulfill({json:[]});
+ });
+ await page.goto("/history");
+ await page.getByRole("button",{name:"ดูข้อผิดพลาด"}).first().click();
+ await page.getByRole("button",{name:/ไม้โท: 1/}).click();
+ const missing=page.getByText("ข้อความที่ OCR อ่านได้: Fax:[ขาด: ␣]123",{exact:true});
+ await expect(missing.locator("mark")).toHaveText("[ขาด: ␣]");
+ const extra=page.getByText("ข้อความที่ OCR อ่านได้: 😀www.c๐om",{exact:true});
+ await expect(extra.locator("mark")).toHaveText("๐");
+});
+
+test("whole document errors share one inline source crop per field",async({page})=>{
+ const report=structuredClone(insight);
+ const detail={...scope.details[0],source_field:{id:"field",field_index:1,roi}};
+ report.pipelines[0].scopes=[{...scope,field_id:null,global_field_id:null,field_index:null,details:[detail,detail]} as unknown as typeof scope];
+ await page.route("**/api/**",async route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path==="/api/history")return route.fulfill({json:[record]});
+  if(path.endsWith("/analytics/pipelines"))return route.fulfill({json:record.runs.map(r=>({pipeline_id:r.pipeline_id,pipeline_name:r.pipeline_name}))});
+  if(path.endsWith("/error-summary"))return route.fulfill({json:report});
+  if(path.endsWith("/crop")){
+   expect(new URL(route.request().url()).searchParams.get("x1")).toBe("10");
+   return route.fulfill({contentType:"image/svg+xml",body:svg});
+  }
+  return route.fulfill({json:[]});
+ });
+ await page.goto("/history");
+ await page.getByRole("button",{name:"ดูข้อผิดพลาด"}).first().click();
+ await page.getByRole("button",{name:/ไม้โท: 1/}).click();
+ await expect(page.getByText("ข้อความจริง (Ground Truth): ก้",{exact:true})).toHaveCount(2);
+ const toggle=page.getByRole("button",{name:/Field Crop/});
+ await expect(toggle).toHaveCount(1);
+ await toggle.click();
+ await expect(page.getByAltText("ภาพต้นฉบับของ Field")).toBeVisible();
+ await expect(page.getByRole("dialog")).toHaveCount(1);
+});
+
 for(const width of [390,1440])test(`lazy history, PDF crop, focus and pan ${width}`,async({page})=>{
  await page.setViewportSize({width,height:900});
  const details:string[]=[],crops:string[]=[];
@@ -28,11 +76,11 @@ for(const width of [390,1440])test(`lazy history, PDF crop, focus and pan ${widt
  await trigger.click();
  const overlay=page.getByRole("dialog");
  await expect(overlay.getByText("อักขระที่ผิดพลาดทั้งหมด")).toBeVisible();
- expect(details).toHaveLength(1);expect(new URL(details[0]).searchParams.get("pipeline_id")).toBe("p1");
+ expect(new Set(details).size).toBe(1);expect(new URL(details[0]).searchParams.get("pipeline_id")).toBe("p1");
  await overlay.getByRole("button",{name:/ไม้โท: 1/}).click();
  await expect(overlay.getByText("ข้อความจริง (Ground Truth): ก้",{exact:true})).toBeVisible();
- await overlay.getByRole("button",{name:"ดูภาพต้นฉบับ (Field Crop)"}).click();
- const crop=page.getByRole("dialog",{name:"ภาพต้นฉบับตาม ROI ของ Field"});
+ await overlay.getByRole("button",{name:/Field Crop/}).click();
+ const crop=page.getByRole("region",{name:"ภาพต้นฉบับตาม ROI ของ Field"});
  await expect(crop.getByAltText("ภาพต้นฉบับของ Field")).toBeVisible();
  await expect.poll(()=>crops.length).toBe(1);
  const url=new URL(crops[0]);expect(url.searchParams.get("page_number")).toBe("2");
@@ -40,7 +88,9 @@ for(const width of [390,1440])test(`lazy history, PDF crop, focus and pan ${widt
  const before=await crop.getByLabel("ระดับการซูม").textContent();await crop.getByRole("button",{name:"ขยาย",exact:true}).click();
  await expect(crop.getByLabel("ระดับการซูม")).not.toHaveText(before!);
  for(let i=0;i<8;i++)await crop.getByRole("button",{name:"ขยาย",exact:true}).click();
- const pan=crop.getByRole("region",{name:"เลื่อนภาพต้นฉบับ"}),box=(await pan.boundingBox())!;
+ const pan=crop.getByRole("region",{name:"เลื่อนภาพต้นฉบับ"});
+ await pan.scrollIntoViewIfNeeded();
+ const box=(await pan.boundingBox())!;
  await page.mouse.move(box.x+box.width*.8,box.y+200);await page.mouse.down();await page.mouse.move(box.x+30,box.y+40,{steps:8});await page.mouse.up();
  expect(await pan.evaluate(e=>e.scrollLeft+e.scrollTop)).toBeGreaterThan(0);
  await crop.getByRole("button",{name:"พอดีหน้าต่าง",exact:true}).click();
@@ -51,7 +101,7 @@ for(const width of [390,1440])test(`lazy history, PDF crop, focus and pan ${widt
  await crop.getByRole("button",{name:"ดูเอกสารต้นฉบับ"}).click();
  await expect(page.getByLabel("Global Field region")).toBeVisible();
  expect(crops.some(u=>u.includes("/pages/2/image"))).toBe(true);
- await page.keyboard.press("Escape");await expect(page.getByRole("dialog")).toHaveCount(1);
+ await overlay.getByRole("button",{name:/ซ่อนภาพต้นฉบับ/}).click();await expect(page.getByRole("dialog")).toHaveCount(1);
  await page.keyboard.press("Escape");await expect(page.getByRole("dialog")).toHaveCount(0);
  await expect(trigger).toBeFocused();
 });

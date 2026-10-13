@@ -160,6 +160,7 @@ def test_case_json(record, detail=False, *, summary=False):
         "workflow": record.workflow,
         "evaluation_mode": record.evaluation_mode,
         "document_gt_confirmed_at": timestamp(record.document_gt_confirmed_at) if record.document_gt_confirmed_at else None,
+        "gt_prefill": record.gt_prefill,
         "layout_confirmed_at": timestamp(record.layout_confirmed_at) if record.layout_confirmed_at else None,
         "layout_locked_at": timestamp(record.layout_locked_at) if record.layout_locked_at else None,
         "global_fields": [global_field_json(field) for field in record.global_fields],

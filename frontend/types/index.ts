@@ -30,6 +30,7 @@ export type PipelineRun = {
 };
 export type TestCase = { has_ground_truth?: boolean; history_status?: string;
   evaluation_mode?: EvaluationMode; document_gt_confirmed_at?: string | null;
+  gt_prefill?: {status:"pending"|"ready"|"partial"|"unavailable"|"skipped";field_ids?:string[]} | null;
   workflow?: "legacy" | "global"; global_fields?: GlobalField[]; layout_confirmed_at?: string | null; layout_locked_at?: string | null;
   id: string; document_id: string; document: Document; roi: ROI | null;
   roi_source?: ROISource;

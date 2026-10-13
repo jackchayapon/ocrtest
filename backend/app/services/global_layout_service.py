@@ -7,7 +7,18 @@ from app.core.errors import AppError
 from app.db.models import GlobalField, Metric, OCRField, PipelineRun, now
 from app.schemas.contracts import GlobalEvaluation
 from app.services.field_service import compact_comparison, field_summary
-from app.services.global_order import canonical_document_text, reading_order, ordered_detection_boxes
+from app.services.global_order import (
+    canonical_document_text,
+    ordered_detection_boxes,
+    reading_order,
+)
+from app.services.gt_prefill_service import (
+    DETECTION,
+    RECOGNITION,
+    apply_prefill,
+    prefill_pipeline,
+    pristine_gt,
+)
 from app.services.metrics_service import normalize_text
 from app.services.pipeline_manager import PipelineManager
 
@@ -246,6 +257,8 @@ class GlobalLayoutService:
         case.evaluation_mode = data.mode
         for run in case.runs:
             self.aggregate(run, data.mode)
+        if case.gt_prefill is None:
+            case.gt_prefill = {"status": "skipped"}
         case.status, case.updated_at = "confirmed", stamp
         return self.repo.save(case) if persist else case
 
@@ -254,6 +267,11 @@ class GlobalLayoutService:
         if not case.layout_confirmed_at or not case.global_fields:
             raise AppError("Confirm a non-empty Global Layout before running OCR", 409)
         configs = [self.repo.config(p) for p in pipeline_ids]
+        prefill = prefill_pipeline(configs) if case.gt_prefill is None and pristine_gt(case) else None
+        prefill_results = {}
+        if prefill is not None:
+            # Commit the attempt before external requests to avoid duplicate assistance on reruns.
+            case.gt_prefill = {"status": "pending", "det_endpoint": DETECTION, "rec_endpoint": RECOGNITION}
         case.layout_locked_at = now()
         self.cases.logs.add("ocr_run_started", case=case)
         self.session.commit()
@@ -278,11 +296,15 @@ class GlobalLayoutService:
             for start in range(0, len(fields), 8):
                 batch = fields[start:start + 8]
                 results_by_field = await asyncio.gather(*(
-                    manager.run(configs, image, self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
+                    manager.run(configs + ([prefill] if prefill is not None and prefill not in configs else []), image, self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
                     for field in batch
                 ))
                 for field, results in zip(batch, results_by_field):
                     for result in results:
+                        if prefill is not None and result.pipeline_id == prefill.pipeline_id:
+                            prefill_results[field.id] = result
+                        if result.pipeline_id not in parents:
+                            continue
                         parent = parents[result.pipeline_id]
                         lines = reading_lines(result)
                         trace_keys = (
@@ -330,6 +352,11 @@ class GlobalLayoutService:
                             parent.error_message = "One or more fields failed; successful field predictions remain available"
                         if parent.raw_response is None:
                             parent.raw_response = result.raw_response
+        if prefill is not None:
+            self.session.refresh(case, attribute_names=["ground_truth_raw", "document_gt_confirmed_at"], with_for_update=True)
+            for field in case.global_fields:
+                self.session.refresh(field, attribute_names=["ground_truth_raw", "confirmed_at"])
+            apply_prefill(case, prefill_results, reading_lines)
         for parent in parents.values():
             parent.raw_text = "\n".join(raw_parts[parent.pipeline_id])
             parent.final_text = canonical_document_text(case.global_fields, parent.fields)
