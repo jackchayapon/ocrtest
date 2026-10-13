@@ -62,3 +62,29 @@ def test_unmapped_document_gt_does_not_guess_a_crop():
     scope = {"details": [dict(error_type="deletion", ground_truth_position=0, ocr_position=None)]}
     attribute_source_fields(scope, fields, [], "independent document GT")
     assert "source_field" not in scope["details"][0]
+
+
+def test_whole_details_use_same_field_boundaries_and_preserve_lines():
+    fields = [dict(id="a",field_index=14,roi={},ground_truth_raw="Human Resources"),
+              dict(id="b",field_index=15,roi={},ground_truth_raw="Tel : (66)45\n123456"),
+              dict(id="c",field_index=16,roi={},ground_truth_raw="Fax: 654321")]
+    predictions = [dict(global_field_id=f["id"],ocr_text=f["ground_truth_raw"]) for f in fields]
+    predictions[1]["ocr_text"] = "Tel: (66) 45\n123456"
+    gt = "\n".join(f["ground_truth_raw"] for f in fields)
+    ocr = "\n".join(f["ocr_text"] for f in predictions)
+    scope = EvaluationInsightsService.scope(ocr,gt,None,True,"success",None,None,None,{}," ",False,legacy=True)
+    attribute_source_fields(scope,fields,predictions,gt)
+    assert len(scope["details"]) == 2
+    for detail in scope["details"]:
+        assert detail["source_field"]["id"] == "b"
+        assert detail["ground_truth_excerpt"] == "Tel : (66)45\n123456"
+        assert detail["ocr_excerpt"] == "Tel: (66) 45\n123456"
+        assert detail["line_number"] == 1
+        highlight = detail["ocr_highlight"]
+        assert detail["ocr_excerpt"][highlight["start"]:highlight["start"]+highlight["length"]] == (detail["ocr_unit"] or "")
+
+
+def test_default_detail_includes_errors_after_fiftieth_event():
+    scope = EvaluationInsightsService.scope("b" * 60, "a" * 60, None, True, "success", None, None, None, {}, None, False, legacy=True)
+    assert len(scope["details"]) == 60
+    assert scope["details_truncated"] is False

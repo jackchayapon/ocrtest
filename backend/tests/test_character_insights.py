@@ -1,5 +1,6 @@
 import io
 import json
+from datetime import timedelta
 from uuid import uuid4
 from zipfile import ZipFile
 
@@ -97,12 +98,13 @@ def insights_case(client):
         case.global_fields = [g]
         session.add(case)
         session.flush()
-        for name, pred, archived in [
+        created = now() - timedelta(seconds=10)
+        for index, (name, pred, archived) in enumerate([
             ("first", "OLD", False),
             ("first", "ก A\nLine 2", False),
             ("hidden", "ก้ B\nLine 2", False),
             ("archived", "BAD", True),
-        ]:
+        ]):
             field = OCRField(
                 global_field_id=g.id,
                 field_index=1,
@@ -115,6 +117,7 @@ def insights_case(client):
             )
             case.runs.append(
                 PipelineRun(
+                    created_at=created + timedelta(seconds=index),
                     pipeline_id=name,
                     pipeline_name=name,
                     status="success",

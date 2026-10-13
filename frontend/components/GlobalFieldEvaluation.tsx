@@ -1,6 +1,5 @@
 "use client";
 import {useState} from "react";
-import ErrorAnalysisText from "./ErrorAnalysisText";
 import CharacterErrorSummary from "./CharacterErrorSummary";
 import {exportEvaluationReport,exportEvaluationExcel} from "@/lib/api";
 const evaluationDefault:AnalysisMode={highlight:true,details:false};
@@ -26,17 +25,19 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
  return <section aria-label="Evaluation Results" className="panel min-w-0">
   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-5">
    <div><h2>ผลประเมินและเปรียบเทียบ</h2><p className="mt-1 text-sm text-slate-500">ข้อความจริงตรึงด้านซ้าย · เลื่อนแนวนอนเพื่อเทียบ Pipeline และเลื่อนลงเพื่อดูทุก Field</p></div>
+   {exportError&&<p role="alert">{exportError}</p>}
+   <button className="button secondary" disabled={busy} onClick={onEdit}>กลับไปแก้ Ground Truth</button>
+   <div className="flex w-full flex-wrap items-center gap-2" aria-label="Evaluation mode">{(["whole_document","per_field"] as const).map(m=><button key={m} disabled={busy} aria-pressed={m===mode} className={`button ${mode===m?"primary":"secondary"}`} onClick={()=>onMode(m)}>{m==="whole_document"?"Whole Field":"Sub-fields"}</button>)}<PipelineVisibilityFilter runs={runs} hidden={hiddenPipelines} onApply={setHiddenPipelines}/><details className="relative ml-auto shrink-0" data-testid="export-menu" onKeyDown={e=>{if(e.key==="Escape"){e.currentTarget.open=false;e.currentTarget.querySelector("summary")?.focus();}}}>
+<summary className="button primary cursor-pointer list-none">{exporting?"กำลังสร้างรายงาน…":"ส่งออก Excel ▾"}</summary>
+<div className="absolute right-0 top-full z-40 mt-2 flex w-72 max-w-[85vw] flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
    <button className="button primary" disabled={busy||exporting||!visibleRuns.length||rows.some(r=>r.dirty)||visibleRuns.some(run=>whole?run.status==="success"&&!run.document_evaluation:fields.some(f=>{const prediction=run.fields?.find(p=>p.global_field_id===f.id);return prediction?.status==="success"&&!prediction.evaluation;}))} onClick={async()=>{
     setExporting(true);setExportError("");
     try{await exportEvaluationExcel(saved.id,{mode,pipeline_ids:visibleRuns.map(r=>r.pipeline_id),run_ids:visibleRuns.map(r=>r.id),field_ids:whole?[]:rows.map(r=>r.id),revision:saved.updated_at});}
     catch(e){setExportError(e instanceof Error?e.message:"ส่งออก Excel ไม่สำเร็จ");}
     finally{setExporting(false);}
-   }}>ส่งออก Excel (.xlsx)</button>
-   <details><summary className="cursor-pointer text-sm">ตัวเลือกขั้นสูง</summary>
-   <button className="button secondary" disabled={busy||exporting||rows.some(r=>r.dirty)} onClick={async()=>{setExporting(true);setExportError("");try{await exportEvaluationReport(saved.id,mode);}catch(e){setExportError(e instanceof Error?e.message:"ส่งออกรายงานไม่สำเร็จ");}finally{setExporting(false);}}}>{exporting?"กำลังสร้างรายงาน…":"ส่งออกรายงาน ZIP (ทุก Pipeline)"}</button></details>
-   {exportError&&<p role="alert">{exportError}</p>}
-   <button className="button secondary" disabled={busy} onClick={onEdit}>กลับไปแก้ Ground Truth</button>
-   <div className="flex w-full items-center gap-2" aria-label="Evaluation mode">{(["whole_document","per_field"] as const).map(m=><button key={m} disabled={busy} aria-pressed={m===mode} className={`button ${mode===m?"primary":"secondary"}`} onClick={()=>onMode(m)}>{m==="whole_document"?"Whole Field":"Sub-fields"}</button>)}<PipelineVisibilityFilter runs={runs} hidden={hiddenPipelines} onApply={setHiddenPipelines}/></div>
+   }}>เอกสารนี้ — Excel (.xlsx)</button>
+   <button className="button secondary" disabled={busy||exporting||rows.some(r=>r.dirty)} onClick={async()=>{setExporting(true);setExportError("");try{await exportEvaluationReport(saved.id,mode);}catch(e){setExportError(e instanceof Error?e.message:"ส่งออกรายงานไม่สำเร็จ");}finally{setExporting(false);}}}>{exporting?"กำลังสร้างรายงาน…":"ส่งออกรายงาน ZIP (ทุก Pipeline)"}</button>
+</div></details></div>
   </div>
   {!!runs.length&&!visibleRuns.length&&<p className="p-4 text-sm text-slate-500">เลือก Pipeline เพื่อแสดงผลเปรียบเทียบ</p>}
   <div role="region" aria-label="ตารางเปรียบเทียบ Pipeline" tabIndex={0} data-testid="comparison-scroll" className="max-h-[75vh] overflow-auto focus-visible:outline-2 focus-visible:outline-indigo-500">
@@ -78,9 +79,8 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
         <dl className="grid grid-cols-2 gap-2">{[["Confidence",pct(whole?run.confidence:field?.confidence)],["CER",pct(evaluation?.cer)],["WER",pct(evaluation?.wer)],["Exact Match",evaluation?(evaluation.exact_match?"✓ Yes":"✕ No"):"—"]].map(([label,value])=><div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
         {!evaluation&&<p className="mt-2 text-xs text-slate-500">ยังไม่ประเมิน — กลับไปกรอก GT แล้วยืนยันเพื่อคำนวณ</p>}
        </section>
-       <CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation}
+       <CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation} expanded={analysis.details} onExpandedChange={details=>setAnalysisPipelines(old=>({...old,[run.pipeline_id]:{...(old[run.pipeline_id]??evaluationDefault),details}}))}
         unavailable={row.dirty?"แก้ไข GT แล้ว — ต้องยืนยันคำนวณใหม่":failed?"Pipeline ประมวลผลไม่สำเร็จ":!evaluation?"ยังไม่มี GT ที่ยืนยันหรือผลประเมินล้าสมัย":undefined}/>
-       {analysis.details&&evaluation&&<section aria-label="Error Analysis details" className="max-h-96 overflow-y-auto"><ErrorAnalysisText inline evaluation={evaluation} groundTruth={row.gt}/></section>}
       </td>;
      })}
     </tr></tbody>)}

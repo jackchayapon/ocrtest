@@ -3,6 +3,8 @@
 import csv
 import io
 import json
+import re
+import unicodedata
 from collections import Counter
 from datetime import datetime, timezone
 from zipfile import ZIP_DEFLATED, ZipFile
@@ -85,6 +87,31 @@ def attribute_source_fields(scope, globals_, predictions, ground_truth):
         for start, end, field in ocr_ranges if insertion else gt_ranges:
             if position is not None and start <= position < end:
                 detail["source_field"] = {k: field[k] for k in ("id", "field_index", "roi")}
+                detail["source_field"]["ground_truth"] = field.get("ground_truth_raw") or ""
+                detail["source_field"]["ocr_text"] = by_id.get(field["id"], {}).get("ocr_text") or ""
+                # Keep document alignment, but show the complete paired field rather
+                # than overlapping +/-32 character windows from adjacent fields.
+                paired = []
+                for side, spans, raw in (
+                    ("ground_truth", gt_ranges, field.get("ground_truth_raw") or ""),
+                    ("ocr", ocr_ranges, by_id.get(field["id"], {}).get("ocr_text") or ""),
+                ):
+                    span = next((s for s in spans if s[2]["id"] == field["id"]), None)
+                    anchor = detail.get(side + "_anchor")
+                    length = int(detail.get(side + "_unit") is not None)
+                    if span is None or anchor is None or not span[0] <= anchor <= span[1] - length:
+                        break
+                    # Same code-point offsets as normalize_text; retain line breaks
+                    # for display instead of flattening them into spaces.
+                    display = re.sub(r"\s+", lambda m: "\n" if "\n" in m[0] or "\r" in m[0] else " ",
+                                     unicodedata.normalize("NFC", raw)).strip()
+                    paired.append((side, display, anchor - span[0], length))
+                if len(paired) == 2:
+                    for side, display, local, length in paired:
+                        detail[side + "_excerpt"] = display
+                        detail[side + "_highlight"] = {"start": local, "length": length}
+                    source = paired[1] if insertion else paired[0]
+                    detail["line_number"] = source[1][:source[2]].count("\n") + 1
                 break
 
 
@@ -106,6 +133,8 @@ def contextual_events(events, reference, predicted):
         ref_start, pred_start = max(0, a - 32), max(0, b - 32)
         yield dict(
             **event,
+            ground_truth_anchor=a,
+            ocr_anchor=b,
             ground_truth_excerpt=reference[ref_start:a + ref_size + 32],
             ocr_excerpt=predicted[pred_start:b + pred_size + 32],
             ground_truth_highlight={"start": a - ref_start, "length": ref_size},
@@ -350,6 +379,8 @@ class EvaluationInsightsService:
             scope["state"] = "outdated"
         if scope["state"] != "ready":
             return scope
+        scope["display_ground_truth"] = gt or ""
+        scope["display_ocr_text"] = prediction or ""
         stats = character_statistics(prediction, gt or "")
         metrics = snapshot or compact_comparison(prediction, gt or "")
         if any(metrics.get(k) != stats[k] for k in ("character_edits", "gt_characters")):
@@ -368,7 +399,7 @@ class EvaluationInsightsService:
             or (e["ocr_unit"] if e["error_type"] == "insertion" else e["ground_truth_unit"])
             == character
         ]
-        limit = len(filtered) if export else 50
+        limit = len(filtered)
         for event in filtered[:limit]:
             scope["details"].append(
                 dict(

@@ -91,7 +91,9 @@ def test_xlsx_visible_order_metadata_text_and_no_writes(client, insights_case):
     assert sheet["D13"].value == "ก A\nLine 2"
     assert "ไม้โท" in sheet["H13"].value and "อ่านขาดหาย" in sheet["H13"].value
     assert sheet["I13"].number_format == "0.00%" and sheet["G13"].value == 1
-    assert sheet.freeze_panes and sheet.auto_filter.ref
+    assert sheet.freeze_panes is None
+    assert sheet.sheet_view.pane is None
+    assert sheet.auto_filter.ref
     hidden = selection(client, cid, gid, ("first",))
     narrow = workbook(client.post(f"/api/test-cases/{cid}/evaluation-excel", json=hidden))
     assert all(cell.value != "hidden" for row in narrow for cell in row)

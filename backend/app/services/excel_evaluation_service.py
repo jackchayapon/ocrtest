@@ -109,7 +109,8 @@ class ExcelEvaluationService:
             ],
             header=True,
         )
-        sheet.freeze_panes = f"E{detail_header + 1}"
+        # Scroll the entire worksheet together, without fixed rows/columns.
+        sheet.freeze_panes = None
         keys = []
         for run in report["pipelines"]:
             for scope in run["scopes"]:

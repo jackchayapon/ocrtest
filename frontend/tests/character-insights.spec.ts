@@ -8,6 +8,36 @@ const evaluation={cer:.5,wer:1,exact_match:false,character_edits:1,word_edits:1,
 const record={id:"insights",updated_at:"2026-10-01T00:00:00Z",workflow:"global",categories:[],history_status:"success",has_ground_truth:true,created_at:"2026-10-01T00:00:00Z",ground_truth_raw:"ก้",evaluation_mode:"per_field",layout_confirmed_at:"2026-10-01",global_fields:[{id:"field",field_index:1,roi,source:"manual",ground_truth_raw:"ก้",confirmed_at:"2026-10-01"}],page_number:2,document:{id:"doc",filename:"synthetic.pdf",document_type:"pdf",page_count:3,width:300,height:200,page_number:2,image_url:"/api/preview.svg"},runs:["p1","hidden"].map(p=>({id:p,pipeline_id:p,pipeline_name:p==="p1"?"Pipeline One":"Hidden Pipeline",status:"success",document_evaluation:evaluation,final_text:"ก",confidence:.9,metrics:{cer:.5,wer:1,exact_match:false},fields:[{id:p+"field",global_field_id:"field",field_index:1,status:"success",ocr_text:"ก",confidence:.9,evaluation}]}))};
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="1200" height="800" fill="white"/><text x="20" y="40">Synthetic source</text></svg>';
 
+test("Deep detail opens all field errors and character buttons filter and reset",async({page})=>{
+ await page.route("**/api/**",async route=>{
+  const url=new URL(route.request().url());
+  if(url.pathname.endsWith("preview.svg"))return route.fulfill({contentType:"image/svg+xml",body:svg});
+  if(url.pathname.endsWith("/error-summary")){
+   const report=structuredClone(insight);
+   const second={...scope,global_field_id:"field2",field_id:"ocr2",field_index:2,details:[{...scope.details[0],ground_truth_excerpt:"Second field",explanation:"อ่านจุดผิด"}]};
+   report.pipelines[0].scopes=url.searchParams.has("character")?[scope]:[scope,second];
+   return route.fulfill({json:report});
+  }
+  if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
+  return route.fulfill({json:record});
+ });
+ await page.goto("/workflow/insights/ground-truth");
+ await page.getByRole("button",{name:"Error Analysis Pipeline One",exact:true}).click();
+ await page.getByRole("checkbox",{name:"Deep detail",exact:true}).check();
+ await page.keyboard.press("Escape");
+ const summary=page.getByTestId("global-metrics-p1").getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"});
+ await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toBeVisible();
+ await summary.getByRole("button",{name:/ไม้โท: 1/}).click();
+ await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toHaveCount(0);
+ await summary.getByRole("button",{name:"แสดงข้อผิดพลาดทั้งหมด",exact:true}).click();
+ await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toBeVisible();
+ await summary.getByRole("button",{name:/ไม้โท: 1/}).click();
+ await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toHaveCount(0);
+ await summary.getByRole("button",{name:/ไม้โท: 1/}).click();
+ await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toBeVisible();
+ await expect(page.getByRole("region",{name:"Error Analysis details",exact:true})).toHaveCount(0);
+});
+
 test("detail excerpts highlight extra characters and a missing space at its gap",async({page})=>{
  const report=structuredClone(insight);
  report.pipelines[0].scopes[0].details=[
@@ -26,8 +56,10 @@ test("detail excerpts highlight extra characters and a missing space at its gap"
  await page.getByRole("button",{name:/ไม้โท: 1/}).click();
  const missing=page.getByText("ข้อความที่ OCR อ่านได้: Fax:[ขาด: ␣]123",{exact:true});
  await expect(missing.locator("mark")).toHaveText("[ขาด: ␣]");
- const extra=page.getByText("ข้อความที่ OCR อ่านได้: 😀www.c๐om",{exact:true});
- await expect(extra.locator("mark")).toHaveText("๐");
+ const extra=page.getByText("ข้อความที่ OCR อ่านได้: 😀www.c[เกิน: ๐]om",{exact:true});
+ await expect(extra.locator("mark")).toHaveText("[เกิน: ๐]");
+ await expect(page.getByTestId("field-error-ground-truth")).toHaveCount(1);
+ await expect(page.getByTestId("field-error-ground-truth").locator("mark")).toHaveCount(0);
 });
 
 test("whole document errors share one inline source crop per field",async({page})=>{
@@ -48,7 +80,7 @@ test("whole document errors share one inline source crop per field",async({page}
  await page.goto("/history");
  await page.getByRole("button",{name:"ดูข้อผิดพลาด"}).first().click();
  await page.getByRole("button",{name:/ไม้โท: 1/}).click();
- await expect(page.getByText("ข้อความจริง (Ground Truth): ก้",{exact:true})).toHaveCount(2);
+ await expect(page.getByText("ข้อความจริง (Ground Truth): ก้",{exact:true})).toHaveCount(1);
  const toggle=page.getByRole("button",{name:/Field Crop/});
  await expect(toggle).toHaveCount(1);
  await toggle.click();
@@ -139,7 +171,7 @@ test("evaluation highlights, lazy characters, hidden export and GT invalidation"
  await page.getByRole("checkbox",{name:"แสดง Hidden Pipeline",exact:true}).uncheck();
  await page.getByRole("button",{name:"ยืนยันตัวกรอง",exact:true}).click();
  await expect(row.getByTestId("global-result-hidden")).toHaveCount(0);
- const download=page.waitForEvent("download");await page.getByText("ตัวเลือกขั้นสูง",{exact:true}).click();await page.getByRole("button",{name:"ส่งออกรายงาน ZIP (ทุก Pipeline)",exact:true}).click();await download;
+ const download=page.waitForEvent("download");await page.getByTestId("export-menu").locator("summary").click();await page.getByRole("button",{name:"ส่งออกรายงาน ZIP (ทุก Pipeline)",exact:true}).click();await download;
  await page.getByRole("button",{name:"กลับไปแก้ Ground Truth"}).click();
  await page.getByLabel("Ground Truth Field 01",{exact:true}).fill("Changed");
  await page.getByRole("button",{name:"บันทึก GT ฉบับร่าง",exact:true}).click();
@@ -165,20 +197,31 @@ for(const width of [390,1440])test("Thai XLSX selection, mode and stale guards "
  await expect(row.getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"}).first()).toBeVisible();
  await row.getByRole("button",{name:"ดูสถิติอักขระ"}).first().click();
  await expect(row.getByText('อ่านขาดหาย "◌้" (ไม้โท) 1 ครั้ง',{exact:true})).toBeVisible();
+ await row.getByRole("button",{name:"ย่อสถิติอักขระ"}).first().click();
+ await expect(row.getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"}).first()).not.toContainText("CER");
+ await expect(row.getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"}).first()).not.toContainText("WER");
+ if(width===1440){
+  const modeBox=await page.getByRole("button",{name:"Whole Field",exact:true}).boundingBox();
+  const exportBox=await page.getByTestId("export-menu").boundingBox();
+  expect(Math.abs(modeBox!.y-exportBox!.y)).toBeLessThan(5);
+  expect(exportBox!.x).toBeGreaterThan(modeBox!.x+modeBox!.width);
+ }
  await page.getByRole("button",{name:"กรอง Pipeline",exact:true}).click();
  await page.getByRole("checkbox",{name:"แสดง Hidden Pipeline",exact:true}).uncheck();
  await page.getByRole("button",{name:"ยืนยันตัวกรอง",exact:true}).click();
  let download=page.waitForEvent("download");
- await page.getByRole("button",{name:"ส่งออก Excel (.xlsx)",exact:true}).click();
+ await page.getByTestId("export-menu").locator("summary").click();
+ await page.getByRole("button",{name:"เอกสารนี้ — Excel (.xlsx)",exact:true}).click();
  expect((await download).suggestedFilename()).toBe("OCRLab_Evaluation.xlsx");
  expect(exports[0]).toEqual({mode:"per_field",pipeline_ids:["p1"],run_ids:["p1"],field_ids:["field"],revision:current.updated_at});
  await page.getByRole("button",{name:"Whole Field",exact:true}).click();
  download=page.waitForEvent("download");
- await page.getByRole("button",{name:"ส่งออก Excel (.xlsx)",exact:true}).click();await download;
+ await page.getByRole("button",{name:"เอกสารนี้ — Excel (.xlsx)",exact:true}).click();await download;
  expect(exports[1].mode).toBe("whole_document");expect(exports[1].field_ids).toEqual([]);
  await page.getByRole("button",{name:"Sub-fields",exact:true}).click();
  current.runs[0].fields[0].evaluation=null as unknown as typeof evaluation;
  await page.reload();
- await expect(page.getByRole("button",{name:"ส่งออก Excel (.xlsx)",exact:true})).toBeDisabled();
+ await page.getByTestId("export-menu").locator("summary").click();
+ await expect(page.getByRole("button",{name:"เอกสารนี้ — Excel (.xlsx)",exact:true})).toBeDisabled();
  expect(exports).toHaveLength(2);
 });
