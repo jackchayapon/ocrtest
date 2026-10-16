@@ -5,6 +5,7 @@ import json
 from uuid import uuid4
 
 from app.integrations.model_gateway import GatewayError
+from app.core.batching import IMAGE_BATCH_SIZE
 
 
 class BatchGateway:
@@ -33,8 +34,8 @@ class BatchGateway:
             request_ids = [[] for _ in entries]
             duration = 0
             duration_known = True
-            for start in range(0, len(flat), 8):
-                chunk = flat[start:start + 8]
+            for start in range(0, len(flat), IMAGE_BATCH_SIZE):
+                chunk = flat[start:start + IMAGE_BATCH_SIZE]
                 request = dict(entries[0][1])
                 request["headers"] = {**request["headers"], "X-Request-ID": f"batch_{uuid4().hex}"}
                 request["files"] = [("images", (f"crop-{i}.png", part[1][1], part[1][2])) for i, (_, part) in enumerate(chunk)]

@@ -144,8 +144,8 @@ def test_invalid_upstream_never_silently_mispairs_results(settings, gateway, fau
 def test_multiple_recognition_batches_keep_order(settings, gateway):
     det, rec = fixtures()
     row = det["data"]["result"]["results"][0]
-    row["dt_polys"] = row["dt_polys"] * 3
-    row["dt_scores"] = row["dt_scores"] * 3
+    row["dt_polys"] = row["dt_polys"] * 11
+    row["dt_scores"] = row["dt_scores"] * 11
     sent = 0
 
     def handler(request):
@@ -159,8 +159,8 @@ def test_multiple_recognition_batches_keep_order(settings, gateway):
 
     gateway[0]["handler"] = handler
     result, _ = execute(settings)
-    assert result.text == "\n".join(str(i) for i in range(9))
-    assert [len(parts(r)) for r in gateway[1]] == [1, 8, 1]
+    assert result.text == "\n".join(str(i) for i in range(33))
+    assert [len(parts(r)) for r in gateway[1]] == [1, 30, 3]
     assert result.confidence is None and result.diagnostics["gateway_duration_ms"] is None
 
 

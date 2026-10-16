@@ -17,7 +17,9 @@ def test_global_crops_are_batched_and_results_keep_field_identity(client, docume
 
     def upstream(request):
         count = sum(key == "images" for key, _ in parts(request))
-        sizes.append(count)
+        # GT assistance uses a separate model batch; measure the selected baseline.
+        if request.url.params.get("model", "baseline") == "baseline":
+            sizes.append(count)
         if "detection" in request.url.path:
             data = {"contract_version": "leaf-inference-v1", "kind": "text_detection_batch", "count": count, "result": {"results": [{"dt_polys": [[[2, 3], [50, 3], [50, 30], [2, 30]]], "dt_scores": [.95]} for _ in range(count)]}}
         else:
@@ -66,8 +68,8 @@ def test_batch_split_bound_and_count_mismatch(settings):
             return {"data": {"count": 0, "results": []}, "meta": {}}
         gateway.send = send
         batches = BatchGateway()
-        results = await asyncio.gather(*(batches.send(gateway, gateway.build_batch_request(pngs=[b"png"], endpoint="/rec", version=5, request_id=str(i))) for i in range(10)), return_exceptions=True)
-        assert sizes == [8]
+        results = await asyncio.gather(*(batches.send(gateway, gateway.build_batch_request(pngs=[b"png"], endpoint="/rec", version=5, request_id=str(i))) for i in range(31)), return_exceptions=True)
+        assert sizes == [30]
         assert all(isinstance(result, GatewayError) for result in results)
     asyncio.run(scenario())
 
@@ -85,7 +87,7 @@ def test_large_batch_preserves_order_across_chunks_and_query_groups(settings):
             return {"data": {"count": len(request["files"]), "results": [{"text": part[1][1].decode()} for part in request["files"]]}, "meta": {"duration_ms": 10}}
         gateway.send = send
         batches = BatchGateway()
-        responses = await asyncio.gather(*(batches.send(gateway, gateway.build_batch_request(pngs=[str(i).encode()], endpoint="/rec", version=5 if i < 10 else 6, request_id=str(i))) for i in range(12)))
-        assert sorted(calls) == [("5", 2), ("5", 8), ("6", 2)]
-        assert [r["data"]["results"][0]["text"] for r in responses] == [str(i) for i in range(12)]
+        responses = await asyncio.gather(*(batches.send(gateway, gateway.build_batch_request(pngs=[str(i).encode()], endpoint="/rec", version=5 if i < 61 else 6, request_id=str(i))) for i in range(63)))
+        assert sorted(calls) == [("5", 1), ("5", 30), ("5", 30), ("6", 2)]
+        assert [r["data"]["results"][0]["text"] for r in responses] == [str(i) for i in range(63)]
     asyncio.run(scenario())

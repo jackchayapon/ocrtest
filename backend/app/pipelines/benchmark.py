@@ -1,6 +1,7 @@
 """Verified Gateway DET V6 -> ordered line crops -> baseline REC V5 (no model query)."""
 
 import time
+from app.core.batching import IMAGE_BATCH_SIZE
 from uuid import uuid4
 
 from app.integrations.model_gateway import GatewayError
@@ -27,7 +28,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
     detection_version = 6
     engine = "det_v6_rec_v5"  # Internal display/config identifier; never sent as a query.
     detector = "PP-OCRv6_medium_det"
-    recognition_batch_size = 8
+    recognition_batch_size = IMAGE_BATCH_SIZE
     recognition_version = 5
     model_variant = None
 

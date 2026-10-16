@@ -4,6 +4,7 @@ import asyncio
 from statistics import fmean
 
 from app.core.errors import AppError
+from app.core.batching import IMAGE_BATCH_SIZE
 from app.db.models import GlobalField, Metric, OCRField, PipelineRun, now
 from app.schemas.contracts import GlobalEvaluation
 from app.services.field_service import compact_comparison, field_summary
@@ -293,8 +294,8 @@ class GlobalLayoutService:
             manager = PipelineManager(self.cases.settings)
             fields = sorted(case.global_fields, key=lambda field: field.field_index)
             # Process bounded groups; the manager combines matching DET/REC requests.
-            for start in range(0, len(fields), 8):
-                batch = fields[start:start + 8]
+            for start in range(0, len(fields), IMAGE_BATCH_SIZE):
+                batch = fields[start:start + IMAGE_BATCH_SIZE]
                 results_by_field = await asyncio.gather(*(
                     manager.run(configs + ([prefill] if prefill is not None and prefill not in configs else []), image, self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
                     for field in batch
