@@ -57,6 +57,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.storage = storage
     app.state.ocr_lock = asyncio.Lock()
     logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.basicConfig(level=logging.WARNING)
+    logging.getLogger("app.integrations.model_gateway").setLevel(logging.INFO)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[

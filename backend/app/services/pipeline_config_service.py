@@ -68,11 +68,24 @@ class PipelineConfigService:
                 return {"status": "missing_key", "message": "Configure MODEL_GATEWAY_API_KEY first"}
             result = await ModelGatewayClient(self.settings).status()
             status = "gateway_connected" if result["gateway"] == "connected" else "unavailable"
+            # Official dynamic selections still call integrated Paddle, even det_rec/rec mode.
+            service_key = "hutch_crop" if config.source == "official" else "mint" if config.execution_mode == "integrated" else None
+            if service_key and result.get(service_key) == "unavailable":
+                status = "unavailable"
+            if config.source == "custom" and config.execution_mode in {"det_rec", "rec"}:
+                needed = ("det", "rec") if config.execution_mode == "det_rec" else ("rec",)
+                if any(result.get("services", {}).get(name) == "unavailable" for name in needed):
+                    status = "unavailable"
             if "not_authenticated" in result.values():
                 status = "not_authenticated"
             config.last_connection_status = status
             self.repository.save(config)
-            return {"status": status, "message": "เชื่อมต่อ Gateway สำเร็จ — ทดสอบ OCR เพื่อยืนยันโมเดลที่เลือก" if status == "gateway_connected" else "เชื่อมต่อ Gateway ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อและ API Key"}
+            message = ("เชื่อมต่อ Gateway สำเร็จ — ทดสอบ OCR เพื่อยืนยันโมเดลที่เลือก"
+                       if status == "gateway_connected" else
+                       "เชื่อมต่อ Gateway ได้ แต่บริการที่ Pipeline นี้ต้องใช้ยังไม่พร้อมใช้งาน"
+                       if result["gateway"] == "connected" and status == "unavailable" else
+                       "เชื่อมต่อ Gateway ไม่สำเร็จ กรุณาตรวจการเชื่อมต่อและ API Key")
+            return {"status": status, "message": message}
         if pipeline_id not in PipelineManager.adapter_classes:
             return {"status": "not_configured", "message": "No adapter is registered for this pipeline"}
         if not self.settings.api_key(pipeline_id):

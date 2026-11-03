@@ -36,7 +36,7 @@ class OCRPipelineAdapter(ABC):
         self.config = config
         self.settings = settings
         self.images = ImageService(settings)
-        self.gateway = ModelGatewayClient(settings)
+        self.gateway = ModelGatewayClient(settings, pipeline_id=config.pipeline_id)
         self.diagnostics = {}
 
     @abstractmethod
