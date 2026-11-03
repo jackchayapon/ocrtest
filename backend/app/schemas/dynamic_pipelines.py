@@ -1,9 +1,11 @@
 import re
+from typing import Literal
 from urllib.parse import parse_qsl, unquote, urlsplit
 from uuid import UUID
-from typing import Literal
 
 from pydantic import Field, field_validator, model_validator
+
+from app.integrations.gateway_routes import safe_path
 from app.schemas.contracts import InputModel
 
 
@@ -32,10 +34,11 @@ class OCRModelInput(InputModel):
             return value
         parts = urlsplit(value)
         decoded = unquote(parts.path)
-        if (parts.scheme or parts.netloc or parts.fragment or not value.startswith("/api/")
+        if (parts.scheme or parts.netloc or parts.fragment or not re.search(r"/api/v\d+/", parts.path)
                 or "\\" in decoded or "//" in decoded or ".." in decoded.split("/")
                 or any(ord(c) < 32 for c in value)):
             raise ValueError("Use a relative /api/ path without credentials or fragments")
+        safe_path(parts.path)
         pairs = parse_qsl(parts.query, keep_blank_values=True)
         if len({k for k, _ in pairs}) != len(pairs):
             raise ValueError("Duplicate query parameters are not supported")

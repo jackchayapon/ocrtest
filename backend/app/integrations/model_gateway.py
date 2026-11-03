@@ -2,20 +2,33 @@
 
 import base64
 import json
+import logging
 import math
 import re
+import time
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
 
 from app.core.config import Settings
+from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
+
+logger = logging.getLogger(__name__)
 
 
 class GatewayError(Exception):
-    def __init__(self, message: str, code: str = "GATEWAY_ERROR", request_id: str | None = None):
+    def __init__(
+        self,
+        message: str,
+        code: str = "GATEWAY_ERROR",
+        request_id: str | None = None,
+        http_status=None,
+    ):
         super().__init__(message)
         self.code = code
         self.request_id = request_id
+        self.http_status = http_status
 
 
 def safe_response(value, secrets=()):
@@ -57,12 +70,35 @@ def safe_response(value, secrets=()):
 
 
 class ModelGatewayClient:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, pipeline_id=None):
         self.settings = settings
-        self.base_url = (
-            settings.model_gateway_base_url
-        ).rstrip("/")
-        self.key = settings.model_gateway_api_key.get_secret_value()
+        self.pipeline_id = pipeline_id
+        self.base_url = (settings.model_gateway_base_url).rstrip("/")
+        self.key = settings.model_gateway_api_key.get_secret_value().strip()
+
+    def resolve_endpoint(self, endpoint, service=None):
+        try:
+            return resolve_endpoint(
+                self.base_url, endpoint, self.settings.model_gateway_service_prefixes, service
+            )
+        except UnavailableService:
+            raise GatewayError(
+                "This Gateway service is unavailable",
+                "GATEWAY_SERVICE_UNAVAILABLE",
+            ) from None
+        except ValueError:
+            raise GatewayError(
+                "Invalid Gateway URL, endpoint or service prefix", "INVALID_GATEWAY_ROUTE"
+            ) from None
+
+    @staticmethod
+    def service_for(endpoint, params):
+        path = urlsplit(str(endpoint)).path
+        if path.endswith(("/health", "/readiness")):
+            return "status"
+        if path.endswith("/document-layouts"):
+            return "layout"
+        return {"paddle": "paddle", "custom": "custom"}.get(params.get("engine"), "det_rec")
 
     def _client(self, timeout=None):
         return httpx.AsyncClient(
@@ -72,6 +108,10 @@ class ModelGatewayClient:
         )
 
     def headers(self, request_id: str):
+        if self.key and (
+            not self.key.isascii() or any(ord(c) < 33 or ord(c) == 127 for c in self.key)
+        ):
+            raise GatewayError("Gateway API Key has invalid characters", "INVALID_GATEWAY_KEY")
         headers = {"X-Request-ID": request_id, "Accept": "application/json"}
         if self.key:
             headers["Authorization"] = f"Bearer {self.key}"
@@ -91,7 +131,7 @@ class ModelGatewayClient:
             raise GatewayError("Not Configured: set the Gateway URL and endpoint", "NOT_CONFIGURED")
         request = {
             "method": "POST",
-            "url": self.base_url + endpoint,
+            "url": self.resolve_endpoint(endpoint, self.service_for(endpoint, query_params)),
             "params": query_params,
             "headers": self.headers(request_id),
         }
@@ -114,23 +154,121 @@ class ModelGatewayClient:
         return request
 
     async def send(self, request: dict):
+        started, status, code = time.perf_counter(), None, None
+        try:
+            if origin(request["url"]) != origin(self.base_url):
+                raise ValueError("Unapproved host")
+            service = self.service_for(request["url"], request.get("params", {}))
+            if (
+                service in self.settings.model_gateway_service_prefixes
+                and self.settings.model_gateway_service_prefixes[service] is None
+            ):
+                raise GatewayError(
+                    "This Gateway service is unavailable",
+                    "GATEWAY_SERVICE_UNAVAILABLE",
+                )
+            # A base ending in /paddle also works without the optional prefix map.
+            # Integrated inference on this deployment must be explicitly ready.
+            if service in {"paddle", "custom"} and urlsplit(str(request["url"])).path.startswith(
+                "/paddle/api/v1/"
+            ):
+                readiness = await self.status()
+                key = "hutch_crop" if service == "paddle" else "mint"
+                if readiness.get(key) != "available":
+                    raise GatewayError(
+                        "The integrated OCR service is not ready",
+                        "GATEWAY_SERVICE_UNAVAILABLE",
+                    )
+            result = await self._send(request)
+            status = 200
+            return result
+        except ValueError:
+            code = "INVALID_GATEWAY_ROUTE"
+            raise GatewayError(
+                "Gateway request must remain on its configured origin", code
+            ) from None
+        except GatewayError as exc:
+            status, code = exc.http_status, exc.code
+            raise
+        finally:
+            self.log_request(request, started, status, code)
+
+    def log_request(self, request, started, status, code):
+        categories = {
+            401: "authentication",
+            403: "authorization",
+            404: "route_not_found",
+            422: "request_contract",
+            429: "rate_limit",
+            502: "upstream",
+            503: "upstream",
+        }
+        category = categories.get(
+            status,
+            "response_schema"
+            if code == "INVALID_RESPONSE"
+            else "timeout"
+            if code == "GATEWAY_TIMEOUT"
+            else "connection"
+            if code == "GATEWAY_UNAVAILABLE"
+            else "gateway"
+            if code
+            else None,
+        )
+        # Never log queries, headers, exception text, request bodies or OCR responses.
+        if code == "GATEWAY_SERVICE_UNAVAILABLE":
+            category = "availability"  # Locally blocked; no inference HTTP status exists.
+        event = dict(
+            request_id=str(request.get("headers", {}).get("X-Request-ID", ""))[:100],
+            pipeline_id=self.pipeline_id,
+            service=self.service_for(request.get("url", ""), request.get("params", {})),
+            endpoint_path=urlsplit(str(request.get("url", ""))).path,
+            http_status=status,
+            duration_ms=round((time.perf_counter() - started) * 1000, 2),
+            error_code=code,
+            failure_category=category,
+        )
+        logger.log(
+            logging.WARNING if code else logging.INFO,
+            "%s",
+            json.dumps(
+                safe_response(event, (self.key, self.settings.database_url.get_secret_value()))
+            ),
+        )
+
+    async def _send(self, request: dict):
         if not self.key:
             raise GatewayError("ยังไม่ได้ตั้งค่า API Key สำหรับ Gateway", "MISSING_GATEWAY_KEY")
         try:
             async with self._client() as client:
                 async with client.stream(**request) as response:
+                    if response.is_redirect:
+                        raise GatewayError(
+                            "Gateway redirect was blocked",
+                            "GATEWAY_REDIRECT_BLOCKED",
+                            http_status=response.status_code,
+                        )
                     body = bytearray()
                     async for chunk in response.aiter_bytes():
                         body.extend(chunk)
                         if len(body) > self.settings.model_gateway_max_response_mb * 1024 * 1024:
                             raise GatewayError(
-                                f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB", "RESPONSE_TOO_LARGE"
+                                f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB",
+                                "RESPONSE_TOO_LARGE",
                             )
                     try:
                         payload = json.loads(body)
                     except (ValueError, UnicodeDecodeError):
+                        if response.is_error:
+                            raise GatewayError(
+                                f"Gateway request failed (HTTP {response.status_code})",
+                                f"HTTP_{response.status_code}",
+                                http_status=response.status_code,
+                            ) from None
                         raise GatewayError(
-                            "Gateway returned invalid JSON", "INVALID_RESPONSE"
+                            "Gateway returned invalid JSON",
+                            "INVALID_RESPONSE",
+                            http_status=response.status_code,
                         ) from None
                     if response.is_error or isinstance(payload, dict) and "error" in payload:
                         error = payload.get("error", {}) if isinstance(payload, dict) else {}
@@ -160,6 +298,7 @@ class ModelGatewayClient:
                             ),
                             code,
                             str(rid)[:100] if rid else None,
+                            http_status=response.status_code,
                         )
                     if (
                         not isinstance(payload, dict)
@@ -167,7 +306,9 @@ class ModelGatewayClient:
                         or not isinstance(payload.get("meta"), dict)
                     ):
                         raise GatewayError(
-                            "Gateway response is missing its data/meta envelope", "INVALID_RESPONSE"
+                            "Gateway response is missing its data/meta envelope",
+                            "INVALID_RESPONSE",
+                            http_status=response.status_code,
                         )
                     return safe_response(
                         payload, (self.key, self.settings.database_url.get_secret_value())
@@ -182,14 +323,18 @@ class ModelGatewayClient:
     def build_batch_request(self, *, pngs, endpoint, version, request_id):
         """Verified leaf batch contract: repeated multipart `images` parts, in order."""
         if not self.base_url or not pngs:
-            raise GatewayError("A Gateway URL and image batch are required", "INVALID_PIPELINE_INPUT")
+            raise GatewayError(
+                "A Gateway URL and image batch are required", "INVALID_PIPELINE_INPUT"
+            )
         return {
             "method": "POST",
-            "url": self.base_url + endpoint,
+            "url": self.resolve_endpoint(endpoint, "det_rec"),
             "params": {"version": str(version)},
             "headers": self.headers(request_id),
-            "files": [("images", (f"line-{index}.png", png, "image/png"))
-                      for index, png in enumerate(pngs)],
+            "files": [
+                ("images", (f"line-{index}.png", png, "image/png"))
+                for index, png in enumerate(pngs)
+            ],
         }
 
     async def status(self):
@@ -203,21 +348,31 @@ class ModelGatewayClient:
             "thai_ft_v2": "unknown",  # No variant-specific readiness is reported upstream.
             "auto_roi": "unknown",
             "api_key_configured": bool(self.key),
+            "services": {},  # Deployment readiness, not per-model/variant readiness.
         }
         if not self.base_url:
             return {**output, "gateway": "not_configured"}
-        headers = self.headers(f"status_{uuid4().hex}")
         try:
+            headers = self.headers(f"status_{uuid4().hex}")
             async with self._client(timeout=10) as client:
-                health = await client.get(self.base_url + "/api/v1/health", headers=headers)
+                health = await self.status_get(client, "/api/v1/health", headers)
                 if health.is_success:
                     output["gateway"] = "connected"
-                response = await client.get(self.base_url + "/api/v1/readiness", headers=headers)
+                response = await self.status_get(client, "/api/v1/readiness", headers)
                 if response.status_code in (401, 403):
                     return {
                         **output,
                         **dict.fromkeys(
-                            ("mint", "hutch_crop", "hutch_full", "benchmark", "thai_ft_v2", "hutch_fine_tune_v2", "auto_roi"), "not_authenticated"
+                            (
+                                "mint",
+                                "hutch_crop",
+                                "hutch_full",
+                                "benchmark",
+                                "thai_ft_v2",
+                                "hutch_fine_tune_v2",
+                                "auto_roi",
+                            ),
+                            "not_authenticated",
                         ),
                         "message": "Readiness requires valid Gateway authentication.",
                     }
@@ -233,16 +388,56 @@ class ModelGatewayClient:
                     "ocr-paddle": ("hutch_crop", "hutch_full"),
                     "layout": ("auto_roi",),
                 }
+                inventory = {
+                    "text-detection": "det",
+                    "text-recognition": "rec",
+                    "layout-model": "layout_leaf",
+                    "layout": "layout_pipeline",
+                    "table-model": "table_v2",
+                }
                 for service in services:
+                    if service.get("name") in inventory:
+                        output["services"][inventory[service["name"]]] = (
+                            "available" if service.get("status") == "ready" else "unavailable"
+                        )
                     for key in names.get(service.get("name"), ()):
                         output[key] = (
                             "available" if service.get("status") == "ready" else "unavailable"
                         )
+                for name, keys in {
+                    "paddle": ("hutch_crop", "hutch_full"),
+                    "custom": ("mint",),
+                }.items():
+                    if (
+                        name in self.settings.model_gateway_service_prefixes
+                        and self.settings.model_gateway_service_prefixes[name] is None
+                    ):
+                        for key in keys:
+                            output[key] = "unavailable"
                 if response.is_success:
                     output["gateway"] = "connected"
                 output["message"] = (
                     "Readiness reports deployed services; unknown services were not reported."
                 )
                 return output
-        except (httpx.HTTPError, ValueError, AttributeError, TypeError):
+        except (httpx.HTTPError, GatewayError, ValueError, AttributeError, TypeError):
             return {**output, "message": "Gateway readiness could not be verified."}
+
+    async def status_get(self, client, endpoint, headers):
+        request = dict(url=self.resolve_endpoint(endpoint, "status"), headers=headers)
+        started, response, code = time.perf_counter(), None, None
+        try:
+            response = await client.get(**request)
+            if not response.is_success:
+                code = f"HTTP_{response.status_code}"
+            return response
+        except httpx.TimeoutException:
+            code = "GATEWAY_TIMEOUT"
+            raise
+        except httpx.HTTPError:
+            code = "GATEWAY_UNAVAILABLE"
+            raise
+        finally:
+            self.log_request(
+                request, started, response.status_code if response is not None else None, code
+            )

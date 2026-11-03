@@ -84,4 +84,4 @@ export type TestCaseInput = { workflow?: "legacy" | "global"; document_id: strin
 export type RunResponse = { test_case_id: string; runs: PipelineRun[] };
 export type AutoROISuggestion = { id: string; roi: ROI; score: number | null; source: string };
 export type AutoROIResponse = { regions: AutoROISuggestion[]; request_id?: string | null };
-export type GatewayStatus = { gateway: string; mint: string; hutch_crop: string; hutch_full: string; benchmark: string; thai_ft_v2: string; hutch_fine_tune_v2?: string; auto_roi: string; api_key_configured: boolean; message?: string };
+export type GatewayStatus = { gateway: string; mint: string; hutch_crop: string; hutch_full: string; benchmark: string; thai_ft_v2: string; hutch_fine_tune_v2?: string; auto_roi: string; api_key_configured: boolean; message?: string; services?: Partial<Record<"det"|"rec"|"layout_leaf"|"layout_pipeline"|"table_v2", "available"|"unavailable">> };

@@ -56,3 +56,9 @@ Reference Compose map host 8080 → container 8000; nginx ฟัง 80/443 → 1
 Thai FT v2 เลือก `model_selection.version=v6`, `variant=thai_ft_v2`; `results[*].model` อาจเป็นชื่อ V5 เก่าที่เจ้าของโมเดลยืนยันว่า stale metadata ต้องเก็บตามจริงและไม่ใช้ routing. Readiness ยังไม่ยืนยันสถานะแยกรุ่น DET/REC จึงต้องทดสอบ inference เพื่อยืนยัน
 
 ทุก OCR Pipeline และ Auto ROI ใช้ MODEL_GATEWAY_API_KEY ตัวเดียว ไม่รองรับ secret fallback ราย Pipeline API ส่งเพียง api_key_configured boolean และไม่ส่งค่า/ส่วนของ key ออกไป
+# CDGS deployment
+
+For the verified CDGS route prefix, optional per-service routing, live upstream
+limitations and release/rollback steps, see [CDGS Gateway](cdgs-gateway.md).
+The endpoint tables below describe logical API paths; the shared resolver applies
+deployment prefixes without rewriting model records.

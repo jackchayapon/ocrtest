@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     max_pdf_pages: int = Field(default=500, ge=1, le=5000)
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     model_gateway_base_url: str = "http://107.129.186.30:62051"
+    # Optional same-origin API prefixes, independently verified per service.
+    model_gateway_service_prefixes: dict[str, str | None] = Field(default_factory=dict)
     model_gateway_api_key: SecretStr = SecretStr("")
     model_gateway_timeout_seconds: float = Field(default=240, gt=0, le=600)
     model_gateway_max_response_mb: int = Field(default=64, ge=1, le=256)

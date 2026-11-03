@@ -1,0 +1,320 @@
+{
+  "base_commit": "32cc1af86c05518bc128420d0c45d41ba88047a6",
+  "current": "53 failed, 425 passed, 6 skipped, 2 warnings in 70.12s (0:01:10)",
+  "baseline": "53 failed, 382 passed, 6 skipped, 2 warnings in 72.30s (0:01:12)",
+  "new_failures": [],
+  "baseline_only": [],
+  "failure_ids": [
+    "tests/test_api.py::test_auto_roi_and_failure_do_not_block_manual",
+    "tests/test_api.py::test_config_validation_and_secret_status",
+    "tests/test_api.py::test_failure_isolation_real_mode_and_trace",
+    "tests/test_api.py::test_http_fixture_workflow_and_metrics_update",
+    "tests/test_api.py::test_matrix_latest_runs_filters_and_categories",
+    "tests/test_api.py::test_no_ground_truth_and_empty_ground_truth",
+    "tests/test_api.py::test_roi_changes_preserve_old_predictions",
+    "tests/test_batch_logs_delete.py::test_batch_order_failure_independence_and_safe_logs",
+    "tests/test_batch_logs_delete.py::test_delete_cascades_preserves_shared_document_and_audit",
+    "tests/test_batch_logs_delete.py::test_log_never_accepts_secret_identifiers_or_arbitrary_payload",
+    "tests/test_benchmark_pipeline.py::test_additive_seed_and_fixed_benchmark_settings",
+    "tests/test_benchmark_pipeline.py::test_benchmark_failure_isolated_from_existing_pipelines",
+    "tests/test_benchmark_pipeline.py::test_benchmark_persistence_metrics_error_analysis_and_dynamic_views",
+    "tests/test_document_dataset_management.py::test_recent_dataset_exclusion_preserves_gt_source_history",
+    "tests/test_error_analysis_dataset.py::test_error_replacement_filters_latest_and_historical_recompute",
+    "tests/test_error_analysis_dataset.py::test_future_config_is_iterable_without_invented_adapter",
+    "tests/test_fields_roi.py::test_explicit_roi_origin_pipeline_inputs[auto]",
+    "tests/test_fields_roi.py::test_explicit_roi_origin_pipeline_inputs[manual]",
+    "tests/test_fields_roi.py::test_explicit_roi_origin_pipeline_inputs[none]",
+    "tests/test_fields_roi.py::test_fields_lifecycle_scoping_preview_replacement_and_history",
+    "tests/test_fields_roi.py::test_roi_source_validation_and_no_roi_full_page",
+    "tests/test_global_layout.py::test_detector_order_is_not_global_identity_and_failure_isolation",
+    "tests/test_global_layout.py::test_field_alignment[per_field-ABD-insertion]",
+    "tests/test_global_layout.py::test_field_alignment[per_field-ABXCD-deletion]",
+    "tests/test_global_layout.py::test_field_alignment[per_field-ABXD-substitution]",
+    "tests/test_global_layout.py::test_field_alignment[whole_document-ABD-insertion]",
+    "tests/test_global_layout.py::test_field_alignment[whole_document-ABXCD-deletion]",
+    "tests/test_global_layout.py::test_field_alignment[whole_document-ABXD-substitution]",
+    "tests/test_global_layout.py::test_field_dataset_exact_source_crop_confirmed_gt_and_missing_source",
+    "tests/test_global_layout.py::test_field_edit_invalidates_only_its_evaluation_and_modes_remain_independent",
+    "tests/test_global_layout.py::test_geometry_order_reorder_identity_and_historical_lock",
+    "tests/test_global_layout.py::test_layout_identity_confirmation_history_and_crop_fairness",
+    "tests/test_global_layout.py::test_shared_gt_explicit_evaluation_persistence_and_invalidation[per_field]",
+    "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[False-False]",
+    "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[False-True]",
+    "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[True-False]",
+    "tests/test_global_layout.py::test_smart_calculation_data_presence_and_persistence[True-True]",
+    "tests/test_global_layout.py::test_synchronized_gt_requires_all_fields_and_matching_document",
+    "tests/test_global_layout.py::test_whole_document_explicit_evaluation_invalidation_and_no_dataset_labels",
+    "tests/test_hutch_fine_tune_v2.py::test_global_identity_order_shared_gt_history_and_partial_failure",
+    "tests/test_hutch_fine_tune_v2.py::test_registration_fixed_route_unknown_readiness",
+    "tests/test_pdf.py::test_pdf_page_roi_persistence_and_three_real_adapter_contracts",
+    "tests/test_privacy_and_database.py::test_bad_metadata_cannot_cancel_other_runs",
+    "tests/test_privacy_and_database.py::test_private_upstream_fields_never_reach_storage_or_frontend",
+    "tests/test_real_boundaries.py::test_archived_history_excluded_without_deleting_data",
+    "tests/test_real_boundaries.py::test_missing_key_has_no_fake_fallback",
+    "tests/test_real_boundaries.py::test_one_shared_key_and_boolean_only_status[]",
+    "tests/test_real_boundaries.py::test_one_shared_key_and_boolean_only_status[shared-test-only-credential]",
+    "tests/test_real_boundaries.py::test_shared_gateway_ignores_stale_pipeline_hosts",
+    "tests/test_thai_ft_v2.py::test_multiple_batches_unicode_order_and_missing_selection",
+    "tests/test_thai_ft_v2.py::test_registration_fixed_settings_and_unknown_readiness",
+    "tests/test_thai_ft_v2.py::test_roi_fields_persistence_and_dynamic_views[auto]",
+    "tests/test_thai_ft_v2.py::test_roi_fields_persistence_and_dynamic_views[manual]"
+  ],
+  "live_contracts": [
+    {
+      "service": "rec",
+      "path": "/paddle/api/v1/text-recognition-batches",
+      "params": {
+        "version": "5",
+        "model": "baseline"
+      },
+      "status": 200,
+      "data_keys": [
+        "contract_version",
+        "kind",
+        "result",
+        "raw_output",
+        "results",
+        "predictions",
+        "count",
+        "model_selection"
+      ],
+      "error_code": null,
+      "meta": {
+        "request_id": "ocrlab-audit-rec",
+        "service": "model-api-gateway",
+        "model": "pipeline-router-v1",
+        "duration_ms": 497.4
+      },
+      "count": 1,
+      "result_keys": [
+        "rec_text",
+        "rec_score"
+      ],
+      "model_selection": {
+        "kind": "recognition",
+        "version": "v5",
+        "variant": "baseline",
+        "model_name": "th_PP-OCRv5_mobile_rec",
+        "local_weights": false
+      },
+      "regions_count": null,
+      "polygon_count": null,
+      "first_polygon": null,
+      "confidence": 0.3303467631340027,
+      "text_length": 5
+    },
+    {
+      "service": "det",
+      "path": "/paddle/api/v1/text-detection-batches",
+      "params": {
+        "version": "6"
+      },
+      "status": 200,
+      "data_keys": [
+        "contract_version",
+        "kind",
+        "result",
+        "raw_output",
+        "results",
+        "predictions",
+        "count",
+        "model_selection"
+      ],
+      "error_code": null,
+      "meta": {
+        "request_id": "ocrlab-audit-det",
+        "service": "model-api-gateway",
+        "model": "pipeline-router-v1",
+        "duration_ms": 26.43
+      },
+      "count": 1,
+      "result_keys": [
+        "dt_polys",
+        "dt_scores"
+      ],
+      "model_selection": {
+        "kind": "detection",
+        "version": "v6",
+        "variant": "baseline",
+        "model_name": "PP-OCRv6_medium_det",
+        "local_weights": false
+      },
+      "regions_count": null,
+      "polygon_count": 1,
+      "first_polygon": [
+        [
+          24,
+          52
+        ],
+        [
+          458,
+          52
+        ],
+        [
+          458,
+          78
+        ],
+        [
+          24,
+          78
+        ]
+      ],
+      "confidence": null,
+      "text_length": 0
+    },
+    {
+      "service": "layout_pipeline",
+      "path": "/paddle/api/v1/document-layouts",
+      "params": {},
+      "status": 200,
+      "data_keys": [
+        "image",
+        "mode",
+        "expand_text_rois",
+        "regions",
+        "counts",
+        "text_lines",
+        "auto_roi_expansion",
+        "raw",
+        "timing"
+      ],
+      "error_code": null,
+      "meta": {
+        "request_id": "ocrlab-audit-layout_pipeline",
+        "service": "model-api-gateway",
+        "model": "pipeline-router-v1",
+        "duration_ms": 940.08
+      },
+      "count": null,
+      "result_keys": [],
+      "model_selection": null,
+      "regions_count": 1
+    }
+  ],
+  "git_comparison": {
+    "original_branch": "optimize/neon-network-transfer",
+    "original_head": "fbc4f037cb1c49e55f6452f960544e2e89dca6cc",
+    "origin_main": "32cc1af86c05518bc128420d0c45d41ba88047a6",
+    "ahead_behind_main": "0\t8",
+    "original_status": [
+      "M .env.example",
+      " M backend/app/core/config.py",
+      " M backend/app/integrations/model_gateway.py",
+      " M backend/app/main.py",
+      " M backend/app/pipelines/base.py",
+      " M backend/app/schemas/dynamic_pipelines.py",
+      " M docker-compose.yml",
+      " M docs/model-gateway.md",
+      "?? backend/app/integrations/gateway_routes.py",
+      "?? backend/tests/test_cdgs_gateway.py",
+      "?? docs/cdgs-gateway-validation.json",
+      "?? docs/cdgs-gateway.md"
+    ],
+    "original_tracked_endpoint_diff": [
+      ".env.example",
+      "README.md",
+      "backend/alembic/versions/0011_gt_prefill.py",
+      "backend/app/api/routes/benchmark.py",
+      "backend/app/api/routes/test_cases.py",
+      "backend/app/core/batching.py",
+      "backend/app/core/config.py",
+      "backend/app/db/models.py",
+      "backend/app/integrations/batch_gateway.py",
+      "backend/app/integrations/model_gateway.py",
+      "backend/app/main.py",
+      "backend/app/pipelines/base.py",
+      "backend/app/pipelines/benchmark.py",
+      "backend/app/repositories/benchmark_repository.py",
+      "backend/app/repositories/evaluation_insights_repository.py",
+      "backend/app/schemas/contracts.py",
+      "backend/app/schemas/dynamic_pipelines.py",
+      "backend/app/schemas/evaluation_export.py",
+      "backend/app/services/character_statistics.py",
+      "backend/app/services/evaluation_insights_service.py",
+      "backend/app/services/excel_evaluation_service.py",
+      "backend/app/services/field_service.py",
+      "backend/app/services/global_layout_service.py",
+      "backend/app/services/gt_prefill_service.py",
+      "backend/app/services/metrics_service.py",
+      "backend/app/services/serializers.py",
+      "backend/app/services/thai_error_explanations.py",
+      "backend/requirements-runtime-lock.txt",
+      "backend/requirements.txt",
+      "backend/tests/test_benchmark_pipeline.py",
+      "backend/tests/test_character_insights.py",
+      "backend/tests/test_error_analysis_dataset.py",
+      "backend/tests/test_excel_evaluation.py",
+      "backend/tests/test_fields_roi.py",
+      "backend/tests/test_global_batch.py",
+      "backend/tests/test_gt_prefill.py",
+      "backend/tests/test_insight_source_fields.py",
+      "backend/tests/test_layout_gt_identity.py",
+      "backend/tests/test_metrics.py",
+      "docker-compose.yml",
+      "docs/character-insights-baseline-failures.txt",
+      "docs/character-insights-traffic.json",
+      "docs/character-insights-validation.md",
+      "docs/character-insights.md",
+      "docs/model-gateway.md",
+      "docs/thai-excel-regression-evidence.json",
+      "docs/thai-excel-traffic.json",
+      "docs/thai-excel-validation.md",
+      "frontend/app/history/page.tsx",
+      "frontend/components/AnalysisMenu.tsx",
+      "frontend/components/CharacterErrorSummary.tsx",
+      "frontend/components/DocumentViewer.tsx",
+      "frontend/components/ErrorAnalysisText.tsx",
+      "frontend/components/FieldErrorDetails.tsx",
+      "frontend/components/GlobalFieldEvaluation.tsx",
+      "frontend/components/GlobalWorkspace.tsx",
+      "frontend/components/InsightDialog.tsx",
+      "frontend/components/InteractiveErrorText.tsx",
+      "frontend/components/PipelineResultPreview.tsx",
+      "frontend/components/SourceCropPreview.tsx",
+      "frontend/components/WorkflowPage.tsx",
+      "frontend/components/WorkflowSteps.tsx",
+      "frontend/lib/api.ts",
+      "frontend/lib/character-description.ts",
+      "frontend/lib/error-analysis-lines.ts",
+      "frontend/lib/highlight-units.ts",
+      "frontend/tests/character-description.spec.ts",
+      "frontend/tests/character-insights.spec.ts",
+      "frontend/tests/error-analysis-lines.spec.ts",
+      "frontend/tests/global-comparison.spec.ts",
+      "frontend/tests/global-selection.spec.ts",
+      "frontend/tests/highlight-units.spec.ts",
+      "frontend/tests/zz-network-live.spec.ts",
+      "frontend/types/evaluation-insights.ts",
+      "frontend/types/index.ts",
+      "scripts/measure_character_insights.py"
+    ],
+    "original_unpushed_commits": [],
+    "patch_application": "git apply --check and git apply succeeded on 32cc1af; no conflicts",
+    "pr_branch": "fix/cdgs-gateway-routing"
+  },
+  "targeted_after_final_guard_change": "72 passed",
+  "frontend": "typecheck, ESLint, production build passed; unchanged package lock, npm audit reports23 existing findings",
+  "playwright": {
+    "pr": "3 passed /2 failed",
+    "main": "3 passed /2 failed",
+    "failure_ids": [
+      "tests\\global-comparison.spec.ts › comparison scroll, pinned GT, modes and explicit recalculation at 1440px",
+      "tests\\global-comparison.spec.ts › comparison scroll, pinned GT, modes and explicit recalculation at 390px"
+    ],
+    "new_failures": []
+  },
+  "release_preflight": {
+    "rotation": "user confirmed revoked/rotated and Railway secret updated; value not retrieved",
+    "railway_source": {
+      "repo": "jackchayapon/ocrtest",
+      "branch": "main",
+      "rootDirectory": "/backend",
+      "watchPatterns": [
+        "/backend/**"
+      ]
+    },
+    "attached_volumes": [],
+    "production_release": "blocked pending uploads persistence/recovery evidence",
+    "database_mutations": false
+  }
+}
