@@ -1,6 +1,7 @@
 import asyncio
 from uuid import uuid4
 
+from app.core.concurrency import ordered_map
 from app.db.models import PipelineRun
 from app.integrations.batch_gateway import BatchGateway, BatchingClient
 from app.integrations.model_gateway import GatewayError
@@ -18,6 +19,7 @@ class PipelineManager:
     def __init__(self, settings):
         self.settings = settings
         self.batches = BatchGateway()
+        self.task_slots = asyncio.Semaphore(settings.ocr_max_concurrent_tasks)
 
     @classmethod
     def requires_crop(cls, pipeline_id):
@@ -87,4 +89,8 @@ class PipelineManager:
                     **adapter.diagnostics,
                 )
 
-        return await asyncio.gather(*(run_one(config) for config in configs))
+        async def bounded(config):
+            async with self.task_slots:
+                return await run_one(config)
+
+        return await ordered_map(configs, bounded, self.settings.ocr_max_concurrent_tasks)

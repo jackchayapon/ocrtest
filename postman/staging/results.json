@@ -1,0 +1,6025 @@
+{
+  "environment": "LOCAL ISOLATED DOCKER \u2014 MOCK GATEWAY",
+  "source_commit": "67df434dabed0eeb70a38009fc33fde0e12eba41",
+  "staging_url": "http://127.0.0.1:18080",
+  "railway_staging_deployment": null,
+  "stages": [
+    {
+      "profile": "compact",
+      "stage": "A",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "02bc1c21-218b-4719-b9d1-39ad0ceed0a8"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:22.111609+00:00",
+      "start_epoch": 1793795302.111609,
+      "http": [
+        {
+          "test_case_id": "02bc1c21-218b-4719-b9d1-39ad0ceed0a8",
+          "start": 1793795302.1469493,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "49f4fb71-db8d-48fa-9d83-14338a8a9dde",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_5e54cfd9424f46459a2f49cc58c2ae25",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795302.5438015,
+          "duration_ms": 396.85
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795302.544318,
+      "finished_at": "2026-11-04T12:28:22.544318+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 13,
+        "peak_rss_bytes": 151683072,
+        "peak_cgroup_bytes": 145498112,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.0492969999999997,
+        "cpu_system_seconds": 0.012301000000000006,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_5e54cfd9424f46459a2f49cc58c2ae25",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795302.1743538
+          },
+          {
+            "request_id": "batch_2b368caad47a49f69a37e9183955b0ff",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795302.373427
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_5e54cfd9424f46459a2f49cc58c2ae25",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795302.2055128,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795302.356098,
+          "end": 1793795302.3562806
+        },
+        {
+          "request_id": "batch_2b368caad47a49f69a37e9183955b0ff",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795302.3797355,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795302.5303245,
+          "end": 1793795302.5305247
+        }
+      ],
+      "gateway_calls": 2,
+      "batch_image_counts": [
+        1,
+        1
+      ],
+      "gateway_response_bytes": 974,
+      "p95_ms": 396.85,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.06159799999999971,
+      "average_cpu_cores_sampled": 0.14235433753133003
+    },
+    {
+      "profile": "compact",
+      "stage": "B",
+      "pipelines": 2,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "bfdebe38-c126-4c1a-af39-d8ed6d25a131"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:22.625866+00:00",
+      "start_epoch": 1793795302.625866,
+      "http": [
+        {
+          "test_case_id": "bfdebe38-c126-4c1a-af39-d8ed6d25a131",
+          "start": 1793795302.6606548,
+          "status": 200,
+          "response_bytes": 5794,
+          "runs": [
+            {
+              "id": "88710de7-7c93-415b-ab0c-2d36e1ee67b4",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6eba6f3a22984be9a491c8a162b83178",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "0f4ca1f2-677c-4aad-a9f2-320ecef348cf",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6eba6f3a22984be9a491c8a162b83178",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795303.03379,
+          "duration_ms": 373.14
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795303.0343103,
+      "finished_at": "2026-11-04T12:28:23.034310+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 14,
+        "peak_rss_bytes": 153260032,
+        "peak_cgroup_bytes": 147206144,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.04273500000000041,
+        "cpu_system_seconds": 0.005580999999999947,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_6eba6f3a22984be9a491c8a162b83178",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795302.6796234
+          },
+          {
+            "request_id": "batch_8b378fa8ffa44aa09fa176b688d9b647",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795302.8540885
+          },
+          {
+            "request_id": "batch_372c3ab9e20d495ab7d86d20bb32291f",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795302.859048
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_6eba6f3a22984be9a491c8a162b83178",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795302.684821,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 643,
+          "handler_end": 1793795302.8364856,
+          "end": 1793795302.8366938
+        },
+        {
+          "request_id": "batch_8b378fa8ffa44aa09fa176b688d9b647",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795302.8651602,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795303.015992,
+          "end": 1793795303.016248
+        },
+        {
+          "request_id": "batch_372c3ab9e20d495ab7d86d20bb32291f",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795302.8653815,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793795303.016108,
+          "end": 1793795303.0163326
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        2,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 1579,
+      "p95_ms": 373.14,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.04831600000000036,
+      "average_cpu_cores_sampled": 0.11829272100587314
+    },
+    {
+      "profile": "compact",
+      "stage": "C",
+      "pipelines": 4,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "e1914c86-3ef7-4f12-875d-8240a107805b"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:23.117427+00:00",
+      "start_epoch": 1793795303.1174278,
+      "http": [
+        {
+          "test_case_id": "e1914c86-3ef7-4f12-875d-8240a107805b",
+          "start": 1793795303.1527412,
+          "status": 200,
+          "response_bytes": 11536,
+          "runs": [
+            {
+              "id": "5ce90c64-0c65-44ef-9eb6-d6981b4ad445",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2203fef28df846f1b5491c116d25a318",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "0d0421b3-9030-416d-98d2-2383caa568f0",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2203fef28df846f1b5491c116d25a318",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "1847c41f-9c42-4c9d-b8fc-90988b936708",
+              "pipeline_id": "dynamic_e8a46368f3c54f9685eed2059c0845c6",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_176616e06f4d41a991704d5d15774a0d",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "b612edfa-892c-49f0-8793-d6de27cd4b2b",
+              "pipeline_id": "dynamic_ca0532959656421fa4c7fb96f769c60a",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2203fef28df846f1b5491c116d25a318",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795303.5773115,
+          "duration_ms": 424.57
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795303.577824,
+      "finished_at": "2026-11-04T12:28:23.577823+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 21,
+        "peak_rss_bytes": 157298688,
+        "peak_cgroup_bytes": 151912448,
+        "max_gateway_inflight": 4,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.06788999999999978,
+        "cpu_system_seconds": 0.011193000000000008,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_2203fef28df846f1b5491c116d25a318",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 3,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795303.1736414
+          },
+          {
+            "request_id": "batch_176616e06f4d41a991704d5d15774a0d",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795303.1781988
+          },
+          {
+            "request_id": "batch_91b0bbee891147e0bae9fac40232d85d",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795303.370602
+          },
+          {
+            "request_id": "batch_c7447ac276934edcb3f7e56ec0f1f0e7",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795303.375371
+          },
+          {
+            "request_id": "batch_c9a7c7cd0ea0456fa6b0c3a4b65aefa2",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795303.379739
+          },
+          {
+            "request_id": "batch_f0e368bdea1d43bb80042857f8c1533c",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795303.3841856
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_176616e06f4d41a991704d5d15774a0d",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793795303.183834,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 509,
+          "handler_end": 1793795303.335697,
+          "end": 1793795303.335944
+        },
+        {
+          "request_id": "batch_2203fef28df846f1b5491c116d25a318",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795303.1840217,
+          "active_on_start": 2,
+          "count": 3,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 779,
+          "handler_end": 1793795303.3358042,
+          "end": 1793795303.3360445
+        },
+        {
+          "request_id": "batch_c7447ac276934edcb3f7e56ec0f1f0e7",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795303.39112,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793795303.5423193,
+          "end": 1793795303.5426524
+        },
+        {
+          "request_id": "batch_91b0bbee891147e0bae9fac40232d85d",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795303.391244,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795303.5424402,
+          "end": 1793795303.5427518
+        },
+        {
+          "request_id": "batch_f0e368bdea1d43bb80042857f8c1533c",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793795303.3916178,
+          "active_on_start": 3,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793795303.542485,
+          "end": 1793795303.5428038
+        },
+        {
+          "request_id": "batch_c9a7c7cd0ea0456fa6b0c3a4b65aefa2",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793795303.3915262,
+          "active_on_start": 4,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793795303.542521,
+          "end": 1793795303.5428476
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 3162,
+      "p95_ms": 424.57,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.07908299999999979,
+      "average_cpu_cores_sampled": 0.17177158406290444
+    },
+    {
+      "profile": "compact",
+      "stage": "D",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 1,
+      "dataset": "medium",
+      "test_case_ids": [
+        "21b419e6-7b7a-45f2-8bbc-3bfe644e147c"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:23.703450+00:00",
+      "start_epoch": 1793795303.7034502,
+      "http": [
+        {
+          "test_case_id": "21b419e6-7b7a-45f2-8bbc-3bfe644e147c",
+          "start": 1793795303.7387934,
+          "status": 200,
+          "response_bytes": 8864,
+          "runs": [
+            {
+              "id": "5534eb0a-97c1-42b3-bd0b-e6216a9b6365",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_823c62d50de54ee1ad661e1b79d21062",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_823c62d50de54ee1ad661e1b79d21062",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "beb8ad59-7ca1-4704-8922-e7abb310d5b1",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_823c62d50de54ee1ad661e1b79d21062",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_823c62d50de54ee1ad661e1b79d21062",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795304.2691543,
+          "duration_ms": 530.36
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795304.2701836,
+      "finished_at": "2026-11-04T12:28:24.270183+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 17,
+        "peak_rss_bytes": 191963136,
+        "peak_cgroup_bytes": 186531840,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.19661099999999987,
+        "cpu_system_seconds": 0.013071999999999973,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_823c62d50de54ee1ad661e1b79d21062",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795303.790084
+          },
+          {
+            "request_id": "batch_3ec02ea6467948e88e1bd4fa6be9cb25",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795304.0914161
+          },
+          {
+            "request_id": "batch_f0bd4772c0da473d8a43684dd6b34bfe",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795304.0964465
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_823c62d50de54ee1ad661e1b79d21062",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795303.7955728,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795303.946375,
+          "end": 1793795303.946566
+        },
+        {
+          "request_id": "batch_3ec02ea6467948e88e1bd4fa6be9cb25",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795304.102717,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793795304.2536235,
+          "end": 1793795304.2538943
+        },
+        {
+          "request_id": "batch_f0bd4772c0da473d8a43684dd6b34bfe",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795304.1029236,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793795304.2537315,
+          "end": 1793795304.2539907
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 2051,
+      "p95_ms": 530.36,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.20968299999999984,
+      "average_cpu_cores_sampled": 0.36998527824885585
+    },
+    {
+      "profile": "compact",
+      "stage": "E",
+      "pipelines": 4,
+      "fields": 4,
+      "http_concurrency": 1,
+      "dataset": "large",
+      "test_case_ids": [
+        "92fa99a4-6eaf-407f-8870-70ebe42a1774"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            4000,
+            2400
+          ],
+          "sha256": "379838a2ab38537136784cbfbf4e540d56dac51e2f864dd9829265b6c4dd3f57"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:24.548478+00:00",
+      "start_epoch": 1793795304.5484781,
+      "http": [
+        {
+          "test_case_id": "92fa99a4-6eaf-407f-8870-70ebe42a1774",
+          "start": 1793795304.582478,
+          "status": 200,
+          "response_bytes": 30112,
+          "runs": [
+            {
+              "id": "c3feca94-e646-41f8-b322-e7ca94cfc0ab",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "9b1e34de-d49e-4e95-b9b2-71da9c55d485",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "f856edf9-e6f3-444a-98b4-72dbfbf49a47",
+              "pipeline_id": "dynamic_e8a46368f3c54f9685eed2059c0845c6",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_cb3a523bbc474626abaec1e54cfc78f6",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_cb3a523bbc474626abaec1e54cfc78f6",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_cb3a523bbc474626abaec1e54cfc78f6",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_cb3a523bbc474626abaec1e54cfc78f6",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "70ea69e6-dbbe-4bdc-9c64-bba046a27991",
+              "pipeline_id": "dynamic_ca0532959656421fa4c7fb96f769c60a",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9620af85f33242e29927964e114c1551",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795306.2529569,
+          "duration_ms": 1670.48
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795306.2539568,
+      "finished_at": "2026-11-04T12:28:26.253956+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 47,
+        "peak_rss_bytes": 364843008,
+        "peak_cgroup_bytes": 360140800,
+        "max_gateway_inflight": 4,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 1.2492360000000002,
+        "cpu_system_seconds": 0.08022300000000004,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_9620af85f33242e29927964e114c1551",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 12,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793795304.762678
+          },
+          {
+            "request_id": "batch_cb3a523bbc474626abaec1e54cfc78f6",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793795304.8005161
+          },
+          {
+            "request_id": "batch_a9c403efcb8440f8893a8dd3e8a3146d",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795305.2459073
+          },
+          {
+            "request_id": "batch_721ffa7354f84ad4bb0b9dac4337c4e8",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795306.0538974
+          },
+          {
+            "request_id": "batch_0a611f077ed44f9baa81f6786967849f",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795306.0585642
+          },
+          {
+            "request_id": "batch_86bb3ca270344f0599e548e8a955c878",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795306.063024
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_cb3a523bbc474626abaec1e54cfc78f6",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793795304.806755,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 949,
+          "handler_end": 1793795304.9591064,
+          "end": 1793795304.959418
+        },
+        {
+          "request_id": "batch_9620af85f33242e29927964e114c1551",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795304.8064158,
+          "active_on_start": 2,
+          "count": 12,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 2100,
+          "handler_end": 1793795304.9592755,
+          "end": 1793795304.9595096
+        },
+        {
+          "request_id": "batch_a9c403efcb8440f8893a8dd3e8a3146d",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793795306.0689805,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 745,
+          "handler_end": 1793795306.2215936,
+          "end": 1793795306.221998
+        },
+        {
+          "request_id": "batch_721ffa7354f84ad4bb0b9dac4337c4e8",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795306.0691583,
+          "active_on_start": 2,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 743,
+          "handler_end": 1793795306.2216918,
+          "end": 1793795306.2220843
+        },
+        {
+          "request_id": "batch_0a611f077ed44f9baa81f6786967849f",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795306.0694866,
+          "active_on_start": 3,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 745,
+          "handler_end": 1793795306.2217324,
+          "end": 1793795306.222134
+        },
+        {
+          "request_id": "batch_86bb3ca270344f0599e548e8a955c878",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793795306.0695922,
+          "active_on_start": 4,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 745,
+          "handler_end": 1793795306.2218695,
+          "end": 1793795306.2221897
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        4,
+        12,
+        4,
+        4,
+        4,
+        4
+      ],
+      "gateway_response_bytes": 6027,
+      "p95_ms": 1670.48,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 1.3294590000000004,
+      "average_cpu_cores_sampled": 0.7795225028484773
+    },
+    {
+      "profile": "compact",
+      "stage": "F",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 2,
+      "dataset": "small",
+      "test_case_ids": [
+        "e813b71d-d4c9-4518-8131-a820ff4e5808",
+        "7510dd49-3dce-45a3-8574-c0266c4d8f67"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        },
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:26.365977+00:00",
+      "start_epoch": 1793795306.3659775,
+      "http": [
+        {
+          "test_case_id": "e813b71d-d4c9-4518-8131-a820ff4e5808",
+          "start": 1793795306.4006083,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "4164cce7-a169-4e4f-b33d-debd81605652",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_36988e19699247b68046b6423eac7be8",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795306.7776942,
+          "duration_ms": 377.09
+        },
+        {
+          "test_case_id": "7510dd49-3dce-45a3-8574-c0266c4d8f67",
+          "start": 1793795306.4011428,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "bd1afe5c-bac8-4abf-8a60-6160f2a80d40",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_0abf9714b7da49209bf7017575ff2f9c",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795307.1106565,
+          "duration_ms": 709.51
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795307.1122053,
+      "finished_at": "2026-11-04T12:28:27.112205+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 22,
+        "peak_rss_bytes": 155639808,
+        "peak_cgroup_bytes": 150519808,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.06659099999999984,
+        "cpu_system_seconds": 0.0009239999999999249,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_36988e19699247b68046b6423eac7be8",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795306.4210255
+          },
+          {
+            "request_id": "batch_87698f06e7c84cafad7679d1c7430601",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795306.587237
+          },
+          {
+            "request_id": "batch_0abf9714b7da49209bf7017575ff2f9c",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795306.777384
+          },
+          {
+            "request_id": "batch_16a5b0ef87c34f619144fe2ee5c8ce80",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795306.9433753
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_36988e19699247b68046b6423eac7be8",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795306.4262197,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795306.5767796,
+          "end": 1793795306.5769653
+        },
+        {
+          "request_id": "batch_87698f06e7c84cafad7679d1c7430601",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795306.5928328,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795306.7444084,
+          "end": 1793795306.74461
+        },
+        {
+          "request_id": "batch_0abf9714b7da49209bf7017575ff2f9c",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795306.7832983,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795306.9339604,
+          "end": 1793795306.9341412
+        },
+        {
+          "request_id": "batch_16a5b0ef87c34f619144fe2ee5c8ce80",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795306.9487348,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795307.1003802,
+          "end": 1793795307.1005528
+        }
+      ],
+      "gateway_calls": 4,
+      "batch_image_counts": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 1948,
+      "p95_ms": 709.51,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.06751499999999977,
+      "average_cpu_cores_sampled": 0.09047506045229442
+    },
+    {
+      "profile": "compact",
+      "stage": "G",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 2,
+      "dataset": "medium",
+      "test_case_ids": [
+        "cee9d0c4-e05d-4269-b10e-15ecd5b821ae",
+        "34902bc8-0207-4328-a4e4-7e1e7a0ff8a5"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        },
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:27.305232+00:00",
+      "start_epoch": 1793795307.305233,
+      "http": [
+        {
+          "test_case_id": "34902bc8-0207-4328-a4e4-7e1e7a0ff8a5",
+          "start": 1793795307.3411152,
+          "status": 200,
+          "response_bytes": 8864,
+          "runs": [
+            {
+              "id": "6522ed57-738f-48df-b425-27e7261fd9d4",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6e28db94216a462f8107641f96425335",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6e28db94216a462f8107641f96425335",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "e56da50d-e9d8-4a19-bee6-2bc7d9faabe7",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6e28db94216a462f8107641f96425335",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6e28db94216a462f8107641f96425335",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795307.9042463,
+          "duration_ms": 563.13
+        },
+        {
+          "test_case_id": "cee9d0c4-e05d-4269-b10e-15ecd5b821ae",
+          "start": 1793795307.3405926,
+          "status": 200,
+          "response_bytes": 8864,
+          "runs": [
+            {
+              "id": "e0677205-43c4-4a54-ad93-30cc62b18d49",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_67c831879f4f41ffbc6fb6c72d917b23",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_67c831879f4f41ffbc6fb6c72d917b23",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "29d3bc5a-20ff-485a-8e1b-a8a1cda8475c",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_67c831879f4f41ffbc6fb6c72d917b23",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_67c831879f4f41ffbc6fb6c72d917b23",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795308.370237,
+          "duration_ms": 1029.64
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795308.3718097,
+      "finished_at": "2026-11-04T12:28:28.371809+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 33,
+        "peak_rss_bytes": 192200704,
+        "peak_cgroup_bytes": 187469824,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.3813569999999995,
+        "cpu_system_seconds": 0.007828999999999975,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_6e28db94216a462f8107641f96425335",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795307.3898206
+          },
+          {
+            "request_id": "batch_e3fb5880771443bbb19592c21e1e6430",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795307.6797738
+          },
+          {
+            "request_id": "batch_1816518eef3d453d98e6fd8723dd5c60",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795307.684739
+          },
+          {
+            "request_id": "batch_67c831879f4f41ffbc6fb6c72d917b23",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795307.9051027
+          },
+          {
+            "request_id": "batch_929c4dc0c21a44f0b9a2753b43e2abab",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795308.1919937
+          },
+          {
+            "request_id": "batch_7a7b19ef8da140c38950a2ed504dabdc",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795308.1967072
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_6e28db94216a462f8107641f96425335",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795307.3952353,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795307.5460255,
+          "end": 1793795307.5462
+        },
+        {
+          "request_id": "batch_e3fb5880771443bbb19592c21e1e6430",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795307.6908734,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793795307.8428638,
+          "end": 1793795307.8430843
+        },
+        {
+          "request_id": "batch_1816518eef3d453d98e6fd8723dd5c60",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795307.6911526,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793795307.8429608,
+          "end": 1793795307.8431792
+        },
+        {
+          "request_id": "batch_67c831879f4f41ffbc6fb6c72d917b23",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795307.9112551,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795308.0630546,
+          "end": 1793795308.0632656
+        },
+        {
+          "request_id": "batch_929c4dc0c21a44f0b9a2753b43e2abab",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795308.2042105,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793795308.3552706,
+          "end": 1793795308.3555007
+        },
+        {
+          "request_id": "batch_7a7b19ef8da140c38950a2ed504dabdc",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795308.2045267,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793795308.3553646,
+          "end": 1793795308.3555858
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        4,
+        2,
+        2,
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 4102,
+      "p95_ms": 1029.64,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.3891859999999995,
+      "average_cpu_cores_sampled": 0.3648926448171882
+    },
+    {
+      "profile": "sized",
+      "stage": "A",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "332cc51d-2626-4071-859c-b62f856ae7fb"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:28.457953+00:00",
+      "start_epoch": 1793795308.4579532,
+      "http": [
+        {
+          "test_case_id": "332cc51d-2626-4071-859c-b62f856ae7fb",
+          "start": 1793795308.4942338,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "19ee93dd-1b89-4818-a42f-789408b2ecf1",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_fe21a11c7e8143e2b4f81817a7359aff",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795308.9503498,
+          "duration_ms": 456.12
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795308.952349,
+      "finished_at": "2026-11-04T12:28:28.952349+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 16,
+        "peak_rss_bytes": 202854400,
+        "peak_cgroup_bytes": 198414336,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.12597799999999992,
+        "cpu_system_seconds": 0.001574999999999993,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_fe21a11c7e8143e2b4f81817a7359aff",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795308.5115533
+          },
+          {
+            "request_id": "batch_5e2706360e6246d58187ddd278c300dc",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795308.679059
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795308.8393908,
+            "response_bytes": 3330500,
+            "VmRSS": 192200704,
+            "cgroup_current": 187666432
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795308.8631067,
+            "response_bytes": 3330500,
+            "VmRSS": 202854400,
+            "cgroup_current": 198414336
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_fe21a11c7e8143e2b4f81817a7359aff",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795308.5169141,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795308.6685522,
+          "end": 1793795308.6687407
+        },
+        {
+          "request_id": "batch_5e2706360e6246d58187ddd278c300dc",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795308.684379,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793795308.8350444,
+          "end": 1793795308.8364375
+        }
+      ],
+      "gateway_calls": 2,
+      "batch_image_counts": [
+        1,
+        1
+      ],
+      "gateway_response_bytes": 3331007,
+      "p95_ms": 456.12,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.12755299999999992,
+      "average_cpu_cores_sampled": 0.25799777691659986
+    },
+    {
+      "profile": "sized",
+      "stage": "B",
+      "pipelines": 2,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "6fade39c-f482-41da-b902-ed7c02d42f7a"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:29.036380+00:00",
+      "start_epoch": 1793795309.0363808,
+      "http": [
+        {
+          "test_case_id": "6fade39c-f482-41da-b902-ed7c02d42f7a",
+          "start": 1793795309.074912,
+          "status": 200,
+          "response_bytes": 5794,
+          "runs": [
+            {
+              "id": "1136c7e9-12a7-4dc5-9f80-cb0140a8290b",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6577ec7b2fa745b7aab5c1b3d38116ae",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "c0f11451-6472-4999-a749-4e9ab6248ead",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6577ec7b2fa745b7aab5c1b3d38116ae",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795309.671246,
+          "duration_ms": 596.33
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795309.6733,
+      "finished_at": "2026-11-04T12:28:29.673300+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 21,
+        "peak_rss_bytes": 213557248,
+        "peak_cgroup_bytes": 209350656,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.2396969999999996,
+        "cpu_system_seconds": 0.016953999999999914,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_6577ec7b2fa745b7aab5c1b3d38116ae",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795309.0944288
+          },
+          {
+            "request_id": "batch_61486a5477d2403bb1df3b8634b927f1",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795309.2677872
+          },
+          {
+            "request_id": "batch_bc0688298535438f9eb38a8a1641d0dc",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795309.2725198
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795309.4377546,
+            "response_bytes": 3330502,
+            "VmRSS": 193433600,
+            "cgroup_current": 189165568
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795309.4614215,
+            "response_bytes": 3330502,
+            "VmRSS": 202858496,
+            "cgroup_current": 198602752
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795309.500731,
+            "response_bytes": 3330500,
+            "VmRSS": 202858496,
+            "cgroup_current": 198602752
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795309.525105,
+            "response_bytes": 3330500,
+            "VmRSS": 213553152,
+            "cgroup_current": 209350656
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_6577ec7b2fa745b7aab5c1b3d38116ae",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795309.099882,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 643,
+          "handler_end": 1793795309.2514966,
+          "end": 1793795309.2516818
+        },
+        {
+          "request_id": "batch_bc0688298535438f9eb38a8a1641d0dc",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795309.278663,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793795309.4295616,
+          "end": 1793795309.4319675
+        },
+        {
+          "request_id": "batch_61486a5477d2403bb1df3b8634b927f1",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795309.2787888,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793795309.429681,
+          "end": 1793795309.431549
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        2,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 6661645,
+      "p95_ms": 596.33,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.2566509999999995,
+      "average_cpu_cores_sampled": 0.40295688340452407
+    },
+    {
+      "profile": "sized",
+      "stage": "C",
+      "pipelines": 4,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "b65c4873-541a-4fe9-a024-fc580b4ffb6e"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:29.762323+00:00",
+      "start_epoch": 1793795309.7623231,
+      "http": [
+        {
+          "test_case_id": "b65c4873-541a-4fe9-a024-fc580b4ffb6e",
+          "start": 1793795309.7986445,
+          "status": 200,
+          "response_bytes": 11536,
+          "runs": [
+            {
+              "id": "5e610012-b4be-4f38-ab0a-c5d149eca9e8",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_435737fe989a46579acb0ad829ef672d",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "42e24607-5a29-4e0f-abcd-49aee8a176b5",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_435737fe989a46579acb0ad829ef672d",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "696a5d70-5c67-483a-9b9e-b56322499e54",
+              "pipeline_id": "dynamic_e8a46368f3c54f9685eed2059c0845c6",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e41e6e788e0d43ca8460a4f19a8733d6",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "d3879bbd-2aa1-4b9b-b092-2b56fcaded5a",
+              "pipeline_id": "dynamic_ca0532959656421fa4c7fb96f769c60a",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_435737fe989a46579acb0ad829ef672d",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795310.6347587,
+          "duration_ms": 836.11
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795310.6369257,
+      "finished_at": "2026-11-04T12:28:30.636925+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 35,
+        "peak_rss_bytes": 228216832,
+        "peak_cgroup_bytes": 223780864,
+        "max_gateway_inflight": 4,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.4485809999999999,
+        "cpu_system_seconds": 0.01925499999999991,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_435737fe989a46579acb0ad829ef672d",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 3,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795309.8209815
+          },
+          {
+            "request_id": "batch_e41e6e788e0d43ca8460a4f19a8733d6",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795309.825631
+          },
+          {
+            "request_id": "batch_e2217141b128460db9fcd2333cb61955",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795310.0202053
+          },
+          {
+            "request_id": "batch_f81cd9caa3e04737bdb8e9b2f9dc8c8d",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795310.0248969
+          },
+          {
+            "request_id": "batch_b7df3b8a75e143ebbf9fcec93b543157",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795310.0293005
+          },
+          {
+            "request_id": "batch_e461956fcb4f419d89d995df39ba49a1",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795310.033739
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795310.2100081,
+            "response_bytes": 3330502,
+            "VmRSS": 196808704,
+            "cgroup_current": 192323584
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795310.2389107,
+            "response_bytes": 3330502,
+            "VmRSS": 202993664,
+            "cgroup_current": 198615040
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795310.2748501,
+            "response_bytes": 3330502,
+            "VmRSS": 202993664,
+            "cgroup_current": 198615040
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795310.3036551,
+            "response_bytes": 3330502,
+            "VmRSS": 213688320,
+            "cgroup_current": 209362944
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795310.338672,
+            "response_bytes": 3330502,
+            "VmRSS": 213692416,
+            "cgroup_current": 209362944
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795310.3686888,
+            "response_bytes": 3330502,
+            "VmRSS": 228212736,
+            "cgroup_current": 223780864
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795310.522995,
+            "response_bytes": 3330500,
+            "VmRSS": 204115968,
+            "cgroup_current": 199680000
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795310.5458717,
+            "response_bytes": 3330500,
+            "VmRSS": 206815232,
+            "cgroup_current": 202301440
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_e41e6e788e0d43ca8460a4f19a8733d6",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793795309.8313575,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 509,
+          "handler_end": 1793795309.9821596,
+          "end": 1793795309.9823952
+        },
+        {
+          "request_id": "batch_435737fe989a46579acb0ad829ef672d",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795309.831232,
+          "active_on_start": 2,
+          "count": 3,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 779,
+          "handler_end": 1793795309.9822643,
+          "end": 1793795309.9824903
+        },
+        {
+          "request_id": "batch_b7df3b8a75e143ebbf9fcec93b543157",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793795310.0408964,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793795310.1930563,
+          "end": 1793795310.1974666
+        },
+        {
+          "request_id": "batch_f81cd9caa3e04737bdb8e9b2f9dc8c8d",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795310.041051,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793795310.1931503,
+          "end": 1793795310.196745
+        },
+        {
+          "request_id": "batch_e461956fcb4f419d89d995df39ba49a1",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793795310.0411143,
+          "active_on_start": 3,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793795310.1931882,
+          "end": 1793795310.197125
+        },
+        {
+          "request_id": "batch_e2217141b128460db9fcd2333cb61955",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795310.0413454,
+          "active_on_start": 4,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793795310.1932216,
+          "end": 1793795310.19787
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 13323294,
+      "p95_ms": 836.11,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.4678359999999998,
+      "average_cpu_cores_sampled": 0.5349126831018529
+    },
+    {
+      "profile": "sized",
+      "stage": "D",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 1,
+      "dataset": "medium",
+      "test_case_ids": [
+        "52e6071d-e660-42bf-94ec-bc54441b82ca"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:30.761989+00:00",
+      "start_epoch": 1793795310.7619896,
+      "http": [
+        {
+          "test_case_id": "52e6071d-e660-42bf-94ec-bc54441b82ca",
+          "start": 1793795310.796989,
+          "status": 200,
+          "response_bytes": 8869,
+          "runs": [
+            {
+              "id": "5e1d6ecf-3168-4258-9a70-2fda19bbb154",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_96682a5b8eea45d2956dd4b3252e169c",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_96682a5b8eea45d2956dd4b3252e169c",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "5f58c249-447e-4d41-abf5-27ff367c34c5",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_96682a5b8eea45d2956dd4b3252e169c",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_96682a5b8eea45d2956dd4b3252e169c",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795311.8979504,
+          "duration_ms": 1100.96
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795311.9000149,
+      "finished_at": "2026-11-04T12:28:31.900014+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 28,
+        "peak_rss_bytes": 266604544,
+        "peak_cgroup_bytes": 262070272,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.7182650000000006,
+        "cpu_system_seconds": 0.011068999999999996,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_96682a5b8eea45d2956dd4b3252e169c",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795310.8452594
+          },
+          {
+            "request_id": "batch_4529e78ecd9348b1803a00642b7ba2b3",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795311.1376677
+          },
+          {
+            "request_id": "batch_eb780a26fa374f8a87f6fdbf2a1a7544",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795311.1426766
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795311.3173082,
+            "response_bytes": 6660596,
+            "VmRSS": 209653760,
+            "cgroup_current": 205185024
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795311.3694196,
+            "response_bytes": 6660596,
+            "VmRSS": 232693760,
+            "cgroup_current": 228253696
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795311.443067,
+            "response_bytes": 6660598,
+            "VmRSS": 232697856,
+            "cgroup_current": 228253696
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795311.5023315,
+            "response_bytes": 6660598,
+            "VmRSS": 266088448,
+            "cgroup_current": 261545984
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_96682a5b8eea45d2956dd4b3252e169c",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795310.8507912,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795311.001535,
+          "end": 1793795311.0017173
+        },
+        {
+          "request_id": "batch_4529e78ecd9348b1803a00642b7ba2b3",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795311.149212,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660596,
+          "handler_end": 1793795311.300514,
+          "end": 1793795311.3038
+        },
+        {
+          "request_id": "batch_eb780a26fa374f8a87f6fdbf2a1a7544",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795311.1493664,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660598,
+          "handler_end": 1793795311.3006084,
+          "end": 1793795311.3043017
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 13322125,
+      "p95_ms": 1100.96,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.7293340000000006,
+      "average_cpu_cores_sampled": 0.6408767980585035
+    },
+    {
+      "profile": "sized",
+      "stage": "E",
+      "pipelines": 4,
+      "fields": 4,
+      "http_concurrency": 1,
+      "dataset": "large",
+      "test_case_ids": [
+        "6ffbce8c-77f3-4983-a6c4-33ad31990b25"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            4000,
+            2400
+          ],
+          "sha256": "379838a2ab38537136784cbfbf4e540d56dac51e2f864dd9829265b6c4dd3f57"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:32.167734+00:00",
+      "start_epoch": 1793795312.167734,
+      "http": [
+        {
+          "test_case_id": "6ffbce8c-77f3-4983-a6c4-33ad31990b25",
+          "start": 1793795312.2035787,
+          "status": 200,
+          "response_bytes": 30116,
+          "runs": [
+            {
+              "id": "0e263e67-7d20-4dae-8a68-5dcb52de46da",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "b6f862fe-5737-4813-8534-48dd4a838935",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "852fa0e0-4836-49a8-a954-d283f7c7c58f",
+              "pipeline_id": "dynamic_e8a46368f3c54f9685eed2059c0845c6",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_af43fd86d42c400ebd0375fbc6fd8b33",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_af43fd86d42c400ebd0375fbc6fd8b33",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_af43fd86d42c400ebd0375fbc6fd8b33",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_af43fd86d42c400ebd0375fbc6fd8b33",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "32ed5129-4414-48ef-be0e-6f031a662150",
+              "pipeline_id": "dynamic_ca0532959656421fa4c7fb96f769c60a",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795317.1977193,
+          "duration_ms": 4994.14
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795317.2008076,
+      "finished_at": "2026-11-04T12:28:37.200807+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 81,
+        "peak_rss_bytes": 540258304,
+        "peak_cgroup_bytes": 511897600,
+        "max_gateway_inflight": 4,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 4.334014999999999,
+        "cpu_system_seconds": 0.22189900000000007,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 12,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793795312.381394
+          },
+          {
+            "request_id": "batch_af43fd86d42c400ebd0375fbc6fd8b33",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793795312.3863358
+          },
+          {
+            "request_id": "batch_844ddf2ca59d426e851135abb9bb416f",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795312.837638
+          },
+          {
+            "request_id": "batch_ff63bb360e354c3b8525b0a29b3ce678",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795313.645212
+          },
+          {
+            "request_id": "batch_d5307d59a965474991dfdb4d121f89e9",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795313.6534226
+          },
+          {
+            "request_id": "batch_ffe852ff91be4d84bd00004f90204f66",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793795313.6618006
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795313.929965,
+            "response_bytes": 13320790,
+            "VmRSS": 468987904,
+            "cgroup_current": 465211392
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795314.0323122,
+            "response_bytes": 13320790,
+            "VmRSS": 499507200,
+            "cgroup_current": 495882240
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795314.6905704,
+            "response_bytes": 13320790,
+            "VmRSS": 499572736,
+            "cgroup_current": 495874048
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795314.8300612,
+            "response_bytes": 13320790,
+            "VmRSS": 536940544,
+            "cgroup_current": 511815680
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795315.5815759,
+            "response_bytes": 13320790,
+            "VmRSS": 509739008,
+            "cgroup_current": 482283520
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795315.6783018,
+            "response_bytes": 13320790,
+            "VmRSS": 540143616,
+            "cgroup_current": 511897600
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795315.8335693,
+            "response_bytes": 13320788,
+            "VmRSS": 500412416,
+            "cgroup_current": 472051712
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795315.930645,
+            "response_bytes": 13320788,
+            "VmRSS": 540258304,
+            "cgroup_current": 511893504
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 202\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_af43fd86d42c400ebd0375fbc6fd8b33",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793795312.3920238,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 949,
+          "handler_end": 1793795312.5438666,
+          "end": 1793795312.5441291
+        },
+        {
+          "request_id": "batch_e1286deae39c4a0c8e4332c60f70086a",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795312.3919013,
+          "active_on_start": 2,
+          "count": 12,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 2100,
+          "handler_end": 1793795312.5439992,
+          "end": 1793795312.5442197
+        },
+        {
+          "request_id": "batch_844ddf2ca59d426e851135abb9bb416f",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793795313.6678216,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320790,
+          "handler_end": 1793795313.8205595,
+          "end": 1793795313.8736794
+        },
+        {
+          "request_id": "batch_d5307d59a965474991dfdb4d121f89e9",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795313.6683502,
+          "active_on_start": 2,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320790,
+          "handler_end": 1793795313.8206563,
+          "end": 1793795313.8701
+        },
+        {
+          "request_id": "batch_ffe852ff91be4d84bd00004f90204f66",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793795313.6685262,
+          "active_on_start": 3,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320790,
+          "handler_end": 1793795313.820706,
+          "end": 1793795313.8635921
+        },
+        {
+          "request_id": "batch_ff63bb360e354c3b8525b0a29b3ce678",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795313.6686232,
+          "active_on_start": 4,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320788,
+          "handler_end": 1793795313.8208082,
+          "end": 1793795313.8653612
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        4,
+        12,
+        4,
+        4,
+        4,
+        4
+      ],
+      "gateway_response_bytes": 53286207,
+      "p95_ms": 4994.14,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 4.555914,
+      "average_cpu_cores_sampled": 0.9051951758322417
+    },
+    {
+      "profile": "sized",
+      "stage": "F",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 2,
+      "dataset": "small",
+      "test_case_ids": [
+        "2290ed32-cb0e-48dc-8e6c-109757dd255e",
+        "a09dc670-5246-4da9-b78c-3ddff2322278"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        },
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:37.334771+00:00",
+      "start_epoch": 1793795317.3347719,
+      "http": [
+        {
+          "test_case_id": "2290ed32-cb0e-48dc-8e6c-109757dd255e",
+          "start": 1793795317.3715382,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "25bbe25a-44a2-4e8d-b036-48f872be5055",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_d2753db77a5447039b1ed6b03ef2495b",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795317.8586965,
+          "duration_ms": 487.16
+        },
+        {
+          "test_case_id": "a09dc670-5246-4da9-b78c-3ddff2322278",
+          "start": 1793795317.3720565,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "e9b5588a-6e41-4f24-a37c-204f7e1cc72d",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_1a91e783feac40eea5b75decfb58a9e7",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795318.2981024,
+          "duration_ms": 926.05
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795318.302635,
+      "finished_at": "2026-11-04T12:28:38.302635+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 29,
+        "peak_rss_bytes": 172740608,
+        "peak_cgroup_bytes": 140648448,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.23733000000000004,
+        "cpu_system_seconds": 0.008343999999999907,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_d2753db77a5447039b1ed6b03ef2495b",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795317.39587
+          },
+          {
+            "request_id": "batch_8e312b9762c54a60afb6e2b0159c0937",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795317.5711942
+          },
+          {
+            "request_id": "batch_1a91e783feac40eea5b75decfb58a9e7",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795317.8590176
+          },
+          {
+            "request_id": "batch_8b009ee16e2d4aecb3cf13e139dc0162",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795318.0251973
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795317.731916,
+            "response_bytes": 3330500,
+            "VmRSS": 166502400,
+            "cgroup_current": 134303744
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795317.7595983,
+            "response_bytes": 3330500,
+            "VmRSS": 172670976,
+            "cgroup_current": 140595200
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795318.1854837,
+            "response_bytes": 3330500,
+            "VmRSS": 172670976,
+            "cgroup_current": 140648448
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795318.21256,
+            "response_bytes": 3330500,
+            "VmRSS": 172740608,
+            "cgroup_current": 140648448
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 202\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_d2753db77a5447039b1ed6b03ef2495b",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795317.407999,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795317.5600605,
+          "end": 1793795317.5602498
+        },
+        {
+          "request_id": "batch_8e312b9762c54a60afb6e2b0159c0937",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795317.5765595,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793795317.7271402,
+          "end": 1793795317.728194
+        },
+        {
+          "request_id": "batch_1a91e783feac40eea5b75decfb58a9e7",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795317.8648338,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795318.0154347,
+          "end": 1793795318.0156214
+        },
+        {
+          "request_id": "batch_8b009ee16e2d4aecb3cf13e139dc0162",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795318.0304453,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793795318.1811867,
+          "end": 1793795318.182188
+        }
+      ],
+      "gateway_calls": 4,
+      "batch_image_counts": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 6662014,
+      "p95_ms": 926.05,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 0.24567399999999995,
+      "average_cpu_cores_sampled": 0.2538313572902358
+    },
+    {
+      "profile": "sized",
+      "stage": "G",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 2,
+      "dataset": "medium",
+      "test_case_ids": [
+        "50358a5d-fc5c-404d-a873-b3d318373119",
+        "a36bbae7-3778-4089-8d0e-0004f7a74fb9"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        },
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T12:28:38.501766+00:00",
+      "start_epoch": 1793795318.5017664,
+      "http": [
+        {
+          "test_case_id": "a36bbae7-3778-4089-8d0e-0004f7a74fb9",
+          "start": 1793795318.539269,
+          "status": 200,
+          "response_bytes": 8866,
+          "runs": [
+            {
+              "id": "e3527bcb-5a91-4eef-84d2-5eb266aaddb1",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_be5e16fbf7e9497e99993dc748c981c8",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_be5e16fbf7e9497e99993dc748c981c8",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "94288fad-7f4c-4f2e-bd8f-5ec8c47b34c7",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_be5e16fbf7e9497e99993dc748c981c8",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_be5e16fbf7e9497e99993dc748c981c8",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795319.6402085,
+          "duration_ms": 1100.94
+        },
+        {
+          "test_case_id": "50358a5d-fc5c-404d-a873-b3d318373119",
+          "start": 1793795318.5381515,
+          "status": 200,
+          "response_bytes": 8866,
+          "runs": [
+            {
+              "id": "2bc8985a-eb56-43f6-b42b-1bcb8dafe981",
+              "pipeline_id": "dynamic_9a43e901763644938936598d2f5c2f98",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_216e2fef2f234f32a8b5950e4a42b14f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_216e2fef2f234f32a8b5950e4a42b14f",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "80eb48a0-59a4-49ea-89bf-13d45e8299cc",
+              "pipeline_id": "dynamic_65e291b8fe0c43469b938ef241de67fe",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_216e2fef2f234f32a8b5950e4a42b14f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_216e2fef2f234f32a8b5950e4a42b14f",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795320.6262846,
+          "duration_ms": 2088.13
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795320.6289153,
+      "finished_at": "2026-11-04T12:28:40.628915+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 907,
+          "StartedAt": "2026-11-04T12:25:28.433632132Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 51,
+        "peak_rss_bytes": 221421568,
+        "peak_cgroup_bytes": 190472192,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 1.3510169999999988,
+        "cpu_system_seconds": 0.05215799999999993,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_be5e16fbf7e9497e99993dc748c981c8",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795318.5889385
+          },
+          {
+            "request_id": "batch_a00ab616f86843c3a10abd0c49b7f432",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795318.8779156
+          },
+          {
+            "request_id": "batch_1b07914313744019b009cc2b1415d7f3",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795318.8827326
+          },
+          {
+            "request_id": "batch_216e2fef2f234f32a8b5950e4a42b14f",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795319.6405103
+          },
+          {
+            "request_id": "batch_676a7c526d13434a8bfa044ec7852c52",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795319.9255152
+          },
+          {
+            "request_id": "batch_9ca0b9b4e9224a39b7a0d01a8d16e089",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795319.9303784
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793795319.0538294,
+            "response_bytes": 6660596,
+            "VmRSS": 203083776,
+            "cgroup_current": 171806720
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795319.108387,
+            "response_bytes": 6660596,
+            "VmRSS": 220946432,
+            "cgroup_current": 189894656
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795319.3211432,
+            "response_bytes": 6660598,
+            "VmRSS": 215941120,
+            "cgroup_current": 183672832
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795319.3693688,
+            "response_bytes": 6660598,
+            "VmRSS": 221163520,
+            "cgroup_current": 188653568
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795320.1013844,
+            "response_bytes": 6660598,
+            "VmRSS": 215945216,
+            "cgroup_current": 184979456
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795320.1449769,
+            "response_bytes": 6660598,
+            "VmRSS": 221421568,
+            "cgroup_current": 190222336
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793795320.3694942,
+            "response_bytes": 6660596,
+            "VmRSS": 218275840,
+            "cgroup_current": 185819136
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793795320.412048,
+            "response_bytes": 6660596,
+            "VmRSS": 221417472,
+            "cgroup_current": 188964864
+          }
+        ],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 202\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_be5e16fbf7e9497e99993dc748c981c8",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795318.5947423,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795318.7459052,
+          "end": 1793795318.7460935
+        },
+        {
+          "request_id": "batch_a00ab616f86843c3a10abd0c49b7f432",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795318.8891616,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660596,
+          "handler_end": 1793795319.040066,
+          "end": 1793795319.041884
+        },
+        {
+          "request_id": "batch_1b07914313744019b009cc2b1415d7f3",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795318.889281,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660598,
+          "handler_end": 1793795319.040178,
+          "end": 1793795319.0443711
+        },
+        {
+          "request_id": "batch_216e2fef2f234f32a8b5950e4a42b14f",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795319.646482,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795319.7972405,
+          "end": 1793795319.7974343
+        },
+        {
+          "request_id": "batch_9ca0b9b4e9224a39b7a0d01a8d16e089",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795319.9376364,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660598,
+          "handler_end": 1793795320.0885344,
+          "end": 1793795320.0903347
+        },
+        {
+          "request_id": "batch_676a7c526d13434a8bfa044ec7852c52",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795319.9375167,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660596,
+          "handler_end": 1793795320.088628,
+          "end": 1793795320.0917952
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        4,
+        2,
+        2,
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 26644250,
+      "p95_ms": 2088.13,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0,
+      "cpu_seconds": 1.4031749999999987,
+      "average_cpu_cores_sampled": 0.6596505876937317
+    }
+  ],
+  "gateway_only": [
+    {
+      "kind": "det",
+      "version": "6",
+      "model": "baseline",
+      "status": 200,
+      "response_bytes": 501
+    },
+    {
+      "kind": "det",
+      "version": "6",
+      "model": "thai_ft_v2",
+      "status": 200,
+      "response_bytes": 503
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "baseline",
+      "status": 200,
+      "response_bytes": 3330494
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "thai_ft_v3",
+      "status": 200,
+      "response_bytes": 3330496
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "thai_ft_v4",
+      "status": 200,
+      "response_bytes": 3330496
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "thai_ft_v6",
+      "status": 200,
+      "response_bytes": 3330496
+    },
+    {
+      "kind": "rec",
+      "version": "6",
+      "model": "thai_ft_v1",
+      "status": 200,
+      "response_bytes": 3330496
+    }
+  ],
+  "stopped": false,
+  "started_at": "2026-11-04T12:28:20.490609+00:00",
+  "initial_container": {
+    "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+    "state": {
+      "Status": "running",
+      "Running": true,
+      "OOMKilled": false,
+      "ExitCode": 0,
+      "Pid": 907,
+      "StartedAt": "2026-11-04T12:25:28.433632132Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "restart_count": 0,
+    "memory_limit": 512000000,
+    "nano_cpus": 1000000000
+  },
+  "synthetic_pipeline_ids": [
+    "dynamic_9a43e901763644938936598d2f5c2f98",
+    "dynamic_65e291b8fe0c43469b938ef241de67fe",
+    "dynamic_e8a46368f3c54f9685eed2059c0845c6",
+    "dynamic_ca0532959656421fa4c7fb96f769c60a"
+  ],
+  "finished_at": "2026-11-04T12:28:40.682322+00:00",
+  "supplemental_task_counter_probes": [
+    {
+      "profile": "compact",
+      "stage": "D",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 1,
+      "dataset": "medium",
+      "test_case_ids": [
+        "b0669219-c5fd-4a2c-be12-a2954c7f2e87"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T12:31:44.964753+00:00",
+      "start_epoch": 1793795504.9647539,
+      "http": [
+        {
+          "test_case_id": "b0669219-c5fd-4a2c-be12-a2954c7f2e87",
+          "start": 1793795505.0014322,
+          "status": 200,
+          "response_bytes": 8865,
+          "runs": [
+            {
+              "id": "104e362c-5685-4796-8ccb-407885246693",
+              "pipeline_id": "dynamic_66c0dd0dc8744a1b94515e2285075455",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2924cf1e55464da9846ae399cde10838",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2924cf1e55464da9846ae399cde10838",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "f096ca73-9b0a-497c-9bda-f667867fae59",
+              "pipeline_id": "dynamic_c1929e4f755d4520979803b5b5f97747",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2924cf1e55464da9846ae399cde10838",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2924cf1e55464da9846ae399cde10838",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795505.6132004,
+          "duration_ms": 611.77
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 4432,
+          "StartedAt": "2026-11-04T12:30:55.03611856Z",
+          "FinishedAt": "2026-11-04T12:30:54.897076092Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795505.6137137,
+      "finished_at": "2026-11-04T12:31:45.613713+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 4432,
+          "StartedAt": "2026-11-04T12:30:55.03611856Z",
+          "FinishedAt": "2026-11-04T12:30:54.897076092Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 32,
+        "peak_rss_bytes": 187990016,
+        "peak_cgroup_bytes": 265527296,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.20909100000000014,
+        "cpu_system_seconds": 0.020594,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_2924cf1e55464da9846ae399cde10838",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793795505.084095
+          },
+          {
+            "request_id": "batch_519743b0bdc84179b7e5d16a3b5e0d5c",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795505.3994427
+          },
+          {
+            "request_id": "batch_2316e1410256464e96272dda805c3f1c",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793795505.4045506
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_2924cf1e55464da9846ae399cde10838",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795505.1119695,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793795505.2631037,
+          "end": 1793795505.263294
+        },
+        {
+          "request_id": "batch_519743b0bdc84179b7e5d16a3b5e0d5c",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795505.4107592,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793795505.5617971,
+          "end": 1793795505.562023
+        },
+        {
+          "request_id": "batch_2316e1410256464e96272dda805c3f1c",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793795505.4109046,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793795505.5618904,
+          "end": 1793795505.5621154
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 2051,
+      "p95_ms": 611.77,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0,
+      "actual_task_counters": {
+        "active_http": 1,
+        "active_fields": 2,
+        "active_pipelines": 4,
+        "active_gateway_tasks": 2
+      }
+    },
+    {
+      "profile": "compact",
+      "stage": "F",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 2,
+      "dataset": "small",
+      "test_case_ids": [
+        "5a4fd496-ebb8-40ad-8014-0d568cbfc606",
+        "bf20d77f-cff2-42d2-aa32-c2960e1be77c"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        },
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T12:31:45.737801+00:00",
+      "start_epoch": 1793795505.737802,
+      "http": [
+        {
+          "test_case_id": "5a4fd496-ebb8-40ad-8014-0d568cbfc606",
+          "start": 1793795505.7725685,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "3c2fd20d-ea0a-4607-8c98-9c8a7e001d73",
+              "pipeline_id": "dynamic_66c0dd0dc8744a1b94515e2285075455",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_34dcbbda80d54bce8cc98b2102080026",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795506.1770153,
+          "duration_ms": 404.45
+        },
+        {
+          "test_case_id": "bf20d77f-cff2-42d2-aa32-c2960e1be77c",
+          "start": 1793795505.7730865,
+          "status": 200,
+          "response_bytes": 2920,
+          "runs": [
+            {
+              "id": "736ab703-1f97-496f-9cba-5a1d57ecb90e",
+              "pipeline_id": "dynamic_66c0dd0dc8744a1b94515e2285075455",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_2701bf1846ce48c88a131fe33ca67948",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793795506.5361392,
+          "duration_ms": 763.05
+        }
+      ],
+      "container_before": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 4432,
+          "StartedAt": "2026-11-04T12:30:55.03611856Z",
+          "FinishedAt": "2026-11-04T12:30:54.897076092Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793795506.5366542,
+      "finished_at": "2026-11-04T12:31:46.536654+00:00",
+      "container_after": {
+        "id": "3fc8b75757708b28e02ac2d6e333a7584264d674109dec0250a1ef353ff01802",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 4432,
+          "StartedAt": "2026-11-04T12:30:55.03611856Z",
+          "FinishedAt": "2026-11-04T12:30:54.897076092Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 35,
+        "peak_rss_bytes": 165699584,
+        "peak_cgroup_bytes": 243146752,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.07111800000000001,
+        "cpu_system_seconds": 0.010441000000000034,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_34dcbbda80d54bce8cc98b2102080026",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795505.8051612
+          },
+          {
+            "request_id": "batch_e50932ea6b424a96a223bb1ad226c856",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795505.9723496
+          },
+          {
+            "request_id": "batch_2701bf1846ce48c88a131fe33ca67948",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793795506.179072
+          },
+          {
+            "request_id": "batch_276fbc7c61d54977b73f119989a49ebc",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793795506.3469265
+          }
+        ],
+        "json_decode_phases": [],
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_34dcbbda80d54bce8cc98b2102080026",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795505.8106217,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795505.9623835,
+          "end": 1793795505.9625819
+        },
+        {
+          "request_id": "batch_e50932ea6b424a96a223bb1ad226c856",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795505.9776766,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795506.128224,
+          "end": 1793795506.1283996
+        },
+        {
+          "request_id": "batch_2701bf1846ce48c88a131fe33ca67948",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793795506.1861618,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793795506.3367133,
+          "end": 1793795506.336927
+        },
+        {
+          "request_id": "batch_276fbc7c61d54977b73f119989a49ebc",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793795506.3527265,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793795506.5034766,
+          "end": 1793795506.5036654
+        }
+      ],
+      "gateway_calls": 4,
+      "batch_image_counts": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 1948,
+      "p95_ms": 763.05,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0,
+      "actual_task_counters": {
+        "active_http": 2,
+        "active_fields": 1,
+        "active_pipelines": 1,
+        "active_gateway_tasks": 1
+      }
+    }
+  ],
+  "local_startup_race_evidence": ".runtime/staging-diagnostics/targeted-startup-race.json",
+  "isolation_verification": {
+    "backend_networks": [
+      "ocrlab-isolated-diagnostics_isolated"
+    ],
+    "internal_network": true,
+    "memory_limit_bytes": 512000000,
+    "nano_cpus": 1000000000,
+    "db_revision": "0011_gt_prefill",
+    "db_documents": 21,
+    "db_test_cases": 21,
+    "db_pipeline_runs": 42,
+    "production_database_used": false,
+    "production_data_cloned": false,
+    "production_api_key_used": false
+  },
+  "final_local_state": {
+    "Status": "running",
+    "OOMKilled": false,
+    "ExitCode": 0,
+    "Pid": 4432
+  },
+  "cloud_status": "NOT CREATED ? cost approval pending; no shared CDGS load-test permission verified",
+  "newman": {
+    "scope": "LOCAL MOCK STAGING",
+    "runner_error": null,
+    "assertions": {
+      "total": 6,
+      "pending": 0,
+      "failed": 0
+    },
+    "requests": {
+      "total": 3,
+      "pending": 0,
+      "failed": 0
+    }
+  },
+  "cleanup": {
+    "action": "intentional local compose stop after evidence collection; volumes retained",
+    "state": {
+      "Status": "exited",
+      "Running": false,
+      "OOMKilled": false,
+      "ExitCode": 0
+    },
+    "local_url_currently_serving": false,
+    "production_touched": false
+  },
+  "validation": {
+    "syntax": "PASS",
+    "app_source_sha256": "6c86beab1f00440f51f9aec353801951dc6885e7acc9a4ae7bd7d65f4d67b300",
+    "pinned_source_match": true,
+    "secret_matches": [],
+    "trailing_whitespace_files": []
+  }
+}

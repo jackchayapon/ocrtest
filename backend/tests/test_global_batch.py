@@ -8,6 +8,9 @@ from tests.test_global_layout import layout
 @pytest.mark.parametrize("mode", ["det_rec", "rec"])
 @pytest.mark.parametrize("contract", ["legacy", "leaf_aliases"])
 def test_global_crops_are_batched_and_results_keep_field_identity(client, document, gateway, mode, contract):
+    # This test deliberately exercises a single 3-image batch; defaults are tested separately.
+    client.app.state.settings.ocr_max_concurrent_fields = 3
+    client.app.state.settings.ocr_max_concurrent_tasks = 8
     case, fields = layout(client, document, count=3)
     models = client.get("/api/pipelines/models").json()
     selected = {kind: next(m["id"] for m in models if m["kind"] == kind and m["source"] == "custom" and m["version"] == "5" and m["weight"] == "baseline") for kind in ("det", "rec")}
@@ -57,8 +60,9 @@ def test_global_crops_are_batched_and_results_keep_field_identity(client, docume
 
 def test_batch_split_bound_and_count_mismatch(settings):
     import asyncio
+
     from app.integrations.batch_gateway import BatchGateway
-    from app.integrations.model_gateway import ModelGatewayClient, GatewayError
+    from app.integrations.model_gateway import GatewayError, ModelGatewayClient
 
     async def scenario():
         gateway = ModelGatewayClient(settings)
@@ -76,6 +80,7 @@ def test_batch_split_bound_and_count_mismatch(settings):
 
 def test_large_batch_preserves_order_across_chunks_and_query_groups(settings):
     import asyncio
+
     from app.integrations.batch_gateway import BatchGateway
     from app.integrations.model_gateway import ModelGatewayClient
 

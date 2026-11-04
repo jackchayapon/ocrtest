@@ -1,0 +1,62 @@
+{
+  "percentile": "nearest-rank, ceil(0.95*n), small samples; not capacity evidence",
+  "groups": [
+    {
+      "name": "baseline",
+      "requests": 10,
+      "success_2xx": 10,
+      "http_422": 0,
+      "http_502": 0,
+      "latency_p95_ms": 1758,
+      "assertions": {
+        "total": 20,
+        "pending": 0,
+        "failed": 0
+      },
+      "stopped": false
+    },
+    {
+      "name": "baseline_gateway_only",
+      "requests": 7,
+      "success_2xx": 7,
+      "http_422": 0,
+      "http_502": 0,
+      "latency_p95_ms": 1741,
+      "assertions": null,
+      "stopped": false
+    },
+    {
+      "name": "single",
+      "requests": 3,
+      "success_2xx": 3,
+      "http_422": 0,
+      "http_502": 0,
+      "latency_p95_ms": 1632,
+      "assertions": {
+        "total": 6,
+        "pending": 0,
+        "failed": 0
+      },
+      "stopped": false
+    },
+    {
+      "name": "backend",
+      "requests": 8,
+      "success_2xx": 8,
+      "http_422": 0,
+      "http_502": 0,
+      "latency_p95_ms": 8079,
+      "assertions": {
+        "total": 13,
+        "pending": 0,
+        "failed": 0
+      },
+      "stopped": false
+    }
+  ],
+  "synthetic_ids": {
+    "document_id": "95aca14d-50e3-4f28-88b4-27117f8b0c27",
+    "test_case_id": "95dfa481-cdd7-4e2f-b13c-0c703ab7d065",
+    "run_id": "7945c848-86ef-4e8f-9cf9-aef5819bb976"
+  }
+}

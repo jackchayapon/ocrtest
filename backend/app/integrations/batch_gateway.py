@@ -1,11 +1,11 @@
 """Combine concurrent leaf requests, then restore each caller's ordered result slice."""
 import asyncio
-from copy import deepcopy
 import json
+from copy import deepcopy
 from uuid import uuid4
 
-from app.integrations.model_gateway import GatewayError
 from app.core.batching import IMAGE_BATCH_SIZE
+from app.integrations.model_gateway import GatewayError
 
 
 class BatchGateway:
@@ -59,16 +59,28 @@ class BatchGateway:
                 for (owner, _), item in zip(chunk, items):
                     collected[owner].append(item)
             for index, (_, _, future) in enumerate(entries):
-                response = deepcopy(template)
+                # Copy each owner's result slice, never the entire combined results/raw tensor.
+                response = {
+                    "meta": deepcopy(template["meta"]),
+                    "data": {
+                        k: deepcopy(v) for k, v in template["data"].items()
+                        if k not in {"result", "results", "predictions", "raw_output"}
+                    },
+                }
                 data = response["data"]
                 data["count"] = len(collected[index])
-                if isinstance(data.get("result"), dict):
-                    data["result"]["results"] = collected[index]
+                owned = deepcopy(collected[index])
+                if isinstance(template["data"].get("result"), dict):
+                    data["result"] = {
+                        k: deepcopy(v) for k, v in template["data"]["result"].items()
+                        if k != "results"
+                    }
+                    data["result"]["results"] = owned
                 # Leaf adapters expose aliases of the same result list. REC reads
                 # the top-level alias; leaving it unsliced breaks multi-image calls.
-                data["results"] = collected[index]
-                if "predictions" in data:
-                    data["predictions"] = collected[index]
+                data["results"] = owned
+                if "predictions" in template["data"]:
+                    data["predictions"] = owned
                 response["meta"]["duration_ms"] = duration / len(entries) if duration_known else None
                 response["meta"]["combined_input_count"] = len(flat)
                 response["meta"]["batch_request_ids"] = request_ids[index]

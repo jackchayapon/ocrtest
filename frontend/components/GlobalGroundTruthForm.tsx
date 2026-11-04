@@ -7,13 +7,13 @@ const name=(f:GlobalField)=>`Field ${String(f.field_index).padStart(2,"0")}`;
 export default function GlobalGroundTruthForm({mode,fields,documentGT,lineCounts,busy,onMode,onLineCounts,onDocument,onField,onSave,onActivateField}:Props){
  const ordered=orderedGTFields(fields),whole=mode==="whole_document",ready=completeGT(fields,documentGT);
  const missing=ordered.filter(f=>!f.ground_truth_raw?.trim());
- const conflict=!!documentGT.trim()&&fields.some(f=>f.ground_truth_raw?.trim())&&joinFieldGT(fields)!==documentGT;
+ const conflict=(!!documentGT.trim()||fields.some(f=>f.ground_truth_raw?.trim()))&&joinFieldGT(fields)!==documentGT;
  const card="block rounded-xl border border-slate-300 bg-slate-50 p-4 space-y-3 focus-within:border-sky-600 focus-within:ring-2 focus-within:ring-sky-600/25";
  const input="textarea w-full rounded-lg border border-slate-300 bg-white p-3 focus:border-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-600/30";
  return <section className="panel panel-body space-y-5">
   <div className="flex gap-2" aria-label="Evaluation mode">{(["whole_document","per_field"] as const).map(m=><button key={m} disabled={busy} aria-pressed={m===mode} className={`button ${mode===m?"primary":"secondary"}`} onClick={()=>onMode(m)}>{m==="whole_document"?"Whole Field":"Sub-fields"}</button>)}</div>
   <p className="text-sm text-slate-600">กรอกในโหมดใดก็ได้ ข้อความจะซิงก์กันตามลำดับกรอบ ROI ต้องกรอกครบทั้ง {fields.length} Fields ก่อนยืนยันคำนวณ</p>
-  {conflict&&<div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2" role="alert"><p>GT เดิมสองโหมดไม่ตรงกัน เลือกข้อความที่จะใช้ซิงก์ก่อนคำนวณ</p><div className="flex flex-wrap gap-2"><button disabled={busy} className="button secondary" onClick={()=>onDocument(documentGT)}>ใช้ข้อความ Whole Field</button><button disabled={busy} className="button secondary" onClick={()=>onField(ordered[0])}>ใช้ข้อความ Sub-fields</button></div></div>}
+  {conflict&&<div className="rounded-lg border border-amber-300 bg-amber-50 p-3 space-y-2" role="alert"><p>GT เดิมสองโหมดไม่ตรงกัน เลือกข้อความที่จะใช้ซิงก์ก่อนคำนวณ</p><div className="flex flex-wrap gap-2"><button disabled={busy||!documentGT.trim()} className="button secondary" onClick={()=>onDocument(documentGT)}>ใช้ข้อความ Whole Field</button><button disabled={busy||!fields.some(f=>f.ground_truth_raw?.trim())} className="button secondary" onClick={()=>onField(ordered[0])}>ใช้ข้อความ Sub-fields</button></div></div>}
   {whole?<>
    <label className={card} data-testid="whole-gt-card">Ground Truth ทั้งเอกสาร<textarea className={input} rows={10} aria-label="Ground Truth ทั้งเอกสาร" placeholder={ordered.map(f=>`${name(f)}: ข้อความในกรอบนี้`).join("\n")} disabled={busy} value={documentGT} onChange={e=>onDocument(e.target.value)}/></label>
    <div className="space-y-3 rounded-lg border border-slate-200 p-4" aria-label="แบ่งบรรทัดตาม ROI">

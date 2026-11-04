@@ -96,6 +96,8 @@ export const metricHelp: Record<string, string> = {
 export function userError(message: unknown, status?: number): string {
   if (typeof message === "string") {
     if (/[ก-๙]/.test(message)) return message;
+    if (/Gateway model worker failed|UPSTREAM_MODEL_ERROR/.test(message)) return "บริการโมเดลเกิดข้อผิดพลาด กรุณาแจ้งทีมดูแลโมเดลพร้อม Gateway Request ID ในรายละเอียดผลทดสอบ";
+    if (/One or more fields failed/.test(message)) return "บางพื้นที่ประมวลผลไม่สำเร็จ ผลของพื้นที่ที่สำเร็จยังถูกบันทึกไว้ ตรวจสอบ Gateway Request ID ของพื้นที่ที่มีปัญหา";
     if (/Auto ROI/i.test(message)) return "ไม่สามารถตรวจหาพื้นที่อัตโนมัติได้ในขณะนี้ คุณยังสามารถเลือกพื้นที่ด้วยตนเองได้ตามปกติ";
     if (/auth|API key|401|403/i.test(message)) return "ยังไม่สามารถใช้งานโมเดลจริงได้ เนื่องจากยังไม่ได้ตั้งค่า API Key ที่ใช้งานได้";
     if (/limit|exceed|too large/i.test(message)) return "ไฟล์หรือข้อมูลมีขนาดใหญ่เกินกำหนด";

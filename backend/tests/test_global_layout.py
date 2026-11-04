@@ -492,7 +492,7 @@ def test_postgresql_0007_upgrade_preserves_history_and_has_no_drift():
         command.upgrade(cfg, "head")
         assert (
             connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
-            == "0009_document_types_dataset"
+            == "0011_gt_prefill"
         )
         assert connection.execute(
             text("SELECT workflow,ground_truth_raw FROM test_cases")

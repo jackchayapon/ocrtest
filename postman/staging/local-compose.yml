@@ -1,0 +1,68 @@
+name: ocrlab-isolated-diagnostics
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: diagnostics
+      POSTGRES_USER: diagnostics
+      POSTGRES_PASSWORD: ${DIAG_DB_PASSWORD:?private local password required}
+    networks: [isolated]
+    mem_limit: 256000000
+    cpus: 1
+    volumes: [db-data:/var/lib/postgresql/data]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U diagnostics -d diagnostics"]
+      interval: 2s
+      retries: 20
+  mock:
+    image: ocrlab-staging-diagnostics:67df434
+    command: [python, -m, uvicorn, mock_gateway:app, --host, 0.0.0.0, --port, '8000', --no-access-log]
+    working_dir: /diagnostics
+    volumes: ["./mock_gateway.py:/diagnostics/mock_gateway.py:ro"]
+    ports: ["127.0.0.1:18081:8000"]
+    networks: [isolated, ingress]
+    mem_limit: 512000000
+    cpus: 1
+  backend:
+    image: ocrlab-staging-diagnostics:67df434
+    command: [python, /diagnostics/observe.py]
+    environment:
+      DATABASE_URL: postgresql+psycopg://diagnostics:${DIAG_DB_PASSWORD}@db:5432/diagnostics
+      MODEL_GATEWAY_BASE_URL: http://mock:8000/paddle
+      MODEL_GATEWAY_API_KEY: synthetic-mock-credential-only
+      MODEL_GATEWAY_SERVICE_PREFIXES: '{"det_rec":"/paddle/api/v1","layout":null,"paddle":null,"custom":null}'
+      MODEL_GATEWAY_MAX_RESPONSE_MB: '64'
+      MODEL_GATEWAY_TIMEOUT_SECONDS: '240'
+      STORAGE_PATH: /app/storage/uploads
+      CORS_ORIGINS: http://localhost:18080
+      PYTHONPATH: /app
+    volumes:
+      - ./observe.py:/diagnostics/observe.py:ro
+      - ../../.runtime/staging-diagnostics/evidence:/evidence
+      - uploads:/app/storage/uploads
+    depends_on:
+      db: {condition: service_healthy}
+      mock: {condition: service_started}
+    networks: [isolated]
+    mem_limit: 512000000
+    cpus: 1
+    restart: 'no'
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health',timeout=2)"]
+      interval: 2s
+      start_period: 10s
+      retries: 20
+  proxy:
+    image: nginx:alpine
+    volumes: ["./proxy.conf:/etc/nginx/nginx.conf:ro"]
+    ports: ["127.0.0.1:18080:8080"]
+    depends_on: [backend]
+    networks: [isolated, ingress]
+    mem_limit: 64000000
+    cpus: 0.25
+networks:
+  isolated: {internal: true}
+  ingress: {}
+volumes:
+  db-data:
+  uploads:
