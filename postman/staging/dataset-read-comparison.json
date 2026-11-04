@@ -1,0 +1,18 @@
+{
+  "scope": "LOCAL SYNTHETIC SQLITE, 50 field samples, shared document; estimates are not wire bytes",
+  "measurements": {
+    "before": {
+      "sql_queries": 352,
+      "estimated_db_fetched_bytes": 1072484,
+      "http_response_bytes": 27962,
+      "local_elapsed_ms": 178.06
+    },
+    "after": {
+      "sql_queries": 6,
+      "estimated_db_fetched_bytes": 20415,
+      "http_response_bytes": 27962,
+      "local_elapsed_ms": 20.0
+    }
+  },
+  "response_semantics_equal": true
+}
