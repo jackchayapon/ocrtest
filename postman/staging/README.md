@@ -62,7 +62,7 @@ docker compose --env-file .runtime/staging-diagnostics/compose.env -f postman/st
 เก็บ baseline results.json ไว้ก่อน และหยุด baseline containers เพื่อคืน localhost ports จากนั้นรัน candidate ด้วย DB/storage คนละ Compose project:
 
 ```powershell
-docker build -t ocrlab-recovery:candidate backend
+docker build -t ocrlab-recovery:final backend
 New-Item -ItemType Directory -Force .runtime/recovery/evidence
 docker compose -p ocrlab-recovery-after --env-file .runtime/staging-diagnostics/compose.env -f postman/staging/local-compose.yml -f postman/staging/recovery-compose.yml up -d --wait
 backend/.venv/Scripts/python.exe postman/staging/concurrency-test.py --after
@@ -72,6 +72,18 @@ backend/.venv/Scripts/python.exe postman/staging/concurrency-test.py --after
 
 ## Cloud / real CDGS gate ที่ยังค้าง
 
-การอนุมัติ temporary usage มีแล้ว แต่ต้องแก้ Free plan provisioning quota ก่อน โดยไม่ upgrade subscription อัตโนมัติ อัตรา CPU/RAM อยู่ที่ [Railway pricing](https://docs.railway.com/pricing/plans) เมื่อสร้างได้ให้ใช้ database/storage ใหม่ ห้ามอ้างอิง production DATABASE_URL หรือ clone ข้อมูลผู้ใช้
+การอนุมัติ temporary usage มีแล้ว แต่ Railway ปฏิเสธ provisioning quota ห้าม upgrade subscription อัตโนมัติ คำสั่งล่าสุดอนุญาตใช้ local isolated acceptance ตามด้วย bounded production canary โดย quota เพียงอย่างเดียวไม่เป็น release blocker เมื่อมี cloud staging ได้ภายหลังให้ใช้ database/storage ใหม่ ห้ามอ้างอิง production DATABASE_URL หรือ clone ข้อมูลผู้ใช้
 
 ก่อน concurrent test กับ CDGS จริง ต้องยืนยัน credential/load-test permission และขอบเขต shared Gateway ก่อน การมี key ที่เรียก single request ได้ไม่ใช่หลักฐานสิทธิ์ทำ load test
+
+## Full-scale 30 Fields × 12 Pipelines
+
+หลังเริ่ม candidate ตามคำสั่งด้านบน ค่าเริ่มต้น tasks4/fields8/batch4 จะถูกใช้โดย backend:
+
+```powershell
+backend/.venv/Scripts/python.exe postman/staging/full-scale.py warmup 1
+backend/.venv/Scripts/python.exe postman/staging/full-scale.py final-repeat 3
+backend/.venv/Scripts/python.exe postman/staging/full-scale.py injected-failure 1 --failure
+```
+
+ทุกคำสั่งข้างต้นใช้เฉพาะ127.0.0.1, mock Gateway และ DB/storage ของ Compose ไม่ยิง CDGS ผลบันทึกใน full-scale-results.json แบบต่อท้าย; เก็บหลักฐานเดิมก่อนเริ่มรอบใหม่ ตัวทดสอบสร้าง10DET/REC combinationsและ2REC-only pipelinesจาก7model selections ตรวจfield/model identityจากpixels, text,order,confidence,geometry,trace,360persistedrecordsและduplicates พร้อมRSS/cgroup/working-set/HTTPwalltime ไม่สร้างpolygonให้recognition-only

@@ -1,6 +1,6 @@
 # ผลแก้ไข OCR resource management — candidate release
 
-สถานะ: **FIXED WITH RESIDUAL RISK / PRODUCTION RELEASE BLOCKED** ไม่ได้ประกาศว่าปัญหา422/502เดิมได้รับการแก้ที่productionแล้ว
+สถานะล่าสุด: **FINAL CANDIDATE — รอผล Playwright/Release Gate สุดท้าย** ข้อมูลด้านล่างส่วนแรกเป็นหลักฐาน PR รุ่นแรก ไม่ใช่ค่าของ candidate สุดท้าย ไม่ได้ประกาศว่าปัญหา422/502เดิมได้รับการแก้ถาวรที่productionแล้ว
 
 ## สิ่งที่แก้จริง
 
@@ -64,3 +64,23 @@ Backend รวม PostgreSQL: 436 ผ่าน / 55 ไม่ผ่าน (basel
 Browser ที่ต่อ CDGS จริงผ่าน OCR, ซิงก์ GT, Confirm, CER/WER/Exact Match, reload, History และ Comparison หลังแก้ GT ฝั่งเดียว ไม่มี console/API errors การรัน backend ซ้ำครั้งแรกติด permission ของ pytest temp แล้วรันใหม่บน temp แยกสำเร็จ ผลโหลดจำลองเก็บก่อนเพิ่มการปกปิด secret ใน error code/type ขั้นสุดท้าย โดยไม่เปลี่ยนการทำ OCR
 
 สถานะ release: NO-GO; เตรียม Draft PR เท่านั้น ยังไม่ merge/deploy และ production เดิมยังอยู่ Railway ปิดเฉพาะ local diagnostic containers/process หลังเก็บหลักฐาน โดยเก็บ volumes ไว้
+
+## Candidate สุดท้าย — 5 พฤศจิกายน 2569
+
+เลือกค่า tasks4 / fields8 / batch4 หลังเทียบ2/4/4,4/8/4,8/8/4: ค่า4/8/4 ช้ากว่า8/8/4เล็กน้อยแต่ Gateway inflight ใน30x12ต่ำกว่า A–Gสำเร็จ18/18 ใช้64calls เทียบ132ของPRแรกและ60baseline Sized E3766.94ms/RSS324.8MB/cgroup284.4MB
+
+30Fields×12Pipelines จากimageสุดท้ายผ่าน3รอบ รอบละ360/360ผลและ12/12pipelines ข้อมูลconfidence/trace360รายการ, DET/REC geometry300รายการอยู่ในROI (recognition-only60รายการไม่สร้างpolygonปลอม) ทั้ง360recordsบันทึกครบ ไม่มีซ้ำ Wall48.058/48.796/47.644วินาที รอบละ195calls PeakRSS315.2MB/cgroup340.4MB ไม่มี502/OOM/restart แยกฉีดfailureได้300success+60expected errorsโดยไม่สูญเสียrecords
+
+Source productionเดิม67df434ในlocalcontrol30x12เดียวกันเกิด502และDockerOOMKilled=true/exit137ที่cgroup512MB นี่ไม่ใช่การพิสูจน์สาเหตุ502ย้อนหลังบนRailwayจริง
+
+เวลาใหม่เก็บwall_clock_v1: processing_time_ms=wall_time_ms เป็นช่วงตั้งแต่fieldแรกถึงfieldสุดท้ายของpipelineรวมเวลารอคิวระหว่างกลุ่ม total_field_compute_msเป็นผลรวมเวลาfields และrun_wall_time_msเป็นเวลารวมก่อนDBsave/HTTPserialization ไม่เปลี่ยนค่าประวัติเดิม Gatewaydurationใช้attributionเดิม SummaryHistoryไม่โหลดrawprovenanceเพิ่ม
+
+Backend447ผ่าน/55failureเดิม ไม่มีfailureใหม่ CDGS7คู่โมเดลผ่าน10HTTP/20assertionsจริง Browsercandidateต่อCDGSผ่านAuto+ManualROI,OCR2fields,GT,CER/WER0,ExactMatchtrue,wall805msกับcompute1608ms,refresh,History,Detail,Comparison,ZIP/Excel/PDF ไม่พบconsole/APIerrors DatasetPNG2ภาพbytesตรงcanonicalcropและlabelเป็นconfirmedThaiGTเท่านั้น rollback/forwardlocalรักษาเคสและไฟล์ครบ
+
+คำสั่งล่าสุดยอมรับความเสี่ยงuploadsแบบephemeral และอนุญาตใช้localstagingตามด้วยproductioncanary ไม่ซื้อแพ็กเกจ ไม่mountvolume ไม่ลบrecords รอผลPlaywrightครบและproviderreleaseก่อนเปลี่ยนสถานะเป็นreleased
+
+## Release gate ก่อน Merge
+
+Playwrightครบ160:126ผ่าน/34failureเดิม ไม่พบfailureIDsใหม่ ทั้ง3timingtestsและGTbrowser2casesผ่าน รวมถึงDatasetpagination200รายการทั้ง2viewports Backend447/55เดิม ไม่มีregressionใหม่ TypeScript/ESLint/buildผ่าน Ruffไฟล์ที่เปลี่ยนผ่าน Alembic0011/no drift ไม่มีmigrationใหม่
+
+Decision: GO WITH DOCUMENTED RESIDUAL RISK สำหรับworkloadที่ระบุ รอGitHubchecks/auto-deploy/canaryจริง ความเสี่ยงhistorical422/502ยังไม่ยืนยัน uploadsยังephemeralตามที่ผู้ใช้ยอมรับ ไม่ถือว่าbackupหรือrestartdurabilityผ่าน

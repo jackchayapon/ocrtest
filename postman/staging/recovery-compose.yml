@@ -1,6 +1,6 @@
 # Combine with local-compose.yml; use a separate project name so DB/storage stay isolated.
 services:
   backend:
-    image: ocrlab-recovery:candidate
+    image: ocrlab-recovery:final
     volumes:
       - ../../.runtime/recovery/evidence:/evidence

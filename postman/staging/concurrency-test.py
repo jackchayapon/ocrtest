@@ -46,6 +46,8 @@ def summarize(start,end):
   'cpu_system_seconds':max((x['cpu_system'] for x in rows),default=0)-min((x['cpu_system'] for x in rows),default=0),
   'gateway_dispatches':[{'request_id':x['request_id'],'params':x['params'],'count':x['input_count'],'dimensions':x['dimensions'],'time':x['time']} for x in starts],
   'json_decode_phases':[{k:x.get(k) for k in ['event','time','response_bytes','VmRSS','cgroup_current']} for x in rows if x['event'].startswith('json_decode_')],
+  'peak_working_set_bytes':max((x.get('cgroup_working_set',0) for x in rows),default=0),
+  'peak_anon_bytes':max((x.get('cgroup_anon',0) for x in rows),default=0),
   'cgroup_events_last':rows[-1].get('cgroup_events') if rows else None}
 async def checked(client,method,path,**kw):
  r=await client.request(method,BASE+path,**kw)

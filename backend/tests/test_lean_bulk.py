@@ -108,7 +108,11 @@ def test_compact_global_and_requested_detail(client, document, gateway, whole):
     assert evaluation["events"] and evaluation["spans"]
     with client.app.state.database.session_factory() as s:
         run = s.get(PipelineRun, result["id"])
-        assert not run.raw_response or set(run.raw_response) == {"composition"}
+        assert not run.raw_response or set(run.raw_response) == {"composition", "timing"}
+        timing = run.raw_response["timing"]
+        assert set(timing) == {"semantics", "wall_time_ms", "run_wall_time_ms", "total_field_compute_ms"}
+        assert timing["semantics"] == "wall_clock_v1"
+        assert all(isinstance(timing[k], int) for k in timing if k != "semantics")
         assert "global_fields" not in (run.raw_response or {})
         for f in run.fields:
             assert not {"raw_response", "raw_text", "reading_lines"} & f.diagnostics.keys()

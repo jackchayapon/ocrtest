@@ -38,5 +38,7 @@ for (const populated of ["subfields", "whole"] as const) {
     const saved = await (await request.get(`${api}/api/test-cases/${record.id}`)).json();
     expect(saved.ground_truth_raw).toBe(text);expect(saved.global_fields[0].ground_truth_raw).toBe(text);
     expect(saved.runs[0].fields[0].evaluation).toBeTruthy();
+    await expect(page.getByTestId("run-timing")).toContainText("เวลาที่ผ่านไปจริง");
+    expect(saved.runs[0].processing_time_ms).toBe(saved.runs[0].wall_time_ms);
   });
 }

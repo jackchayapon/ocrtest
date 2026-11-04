@@ -1,6 +1,6 @@
 """Canonical layout/GT identities and explicitly evaluated prediction snapshots."""
 
-import asyncio
+import time
 from statistics import fmean
 
 from app.core.batching import IMAGE_BATCH_SIZE
@@ -264,6 +264,7 @@ class GlobalLayoutService:
         return self.repo.save(case) if persist else case
 
     async def run(self, case_id, pipeline_ids):
+        started = time.perf_counter()
         case = self.case(case_id)
         if not case.layout_confirmed_at or not case.global_fields:
             raise AppError("Confirm a non-empty Global Layout before running OCR", 409)
@@ -297,10 +298,12 @@ class GlobalLayoutService:
             field_limit = min(IMAGE_BATCH_SIZE, self.cases.settings.ocr_max_concurrent_fields)
             for start in range(0, len(fields), field_limit):
                 batch = fields[start:start + field_limit]
-                results_by_field = await asyncio.gather(*(
-                    manager.run(configs + ([prefill] if prefill is not None and prefill not in configs else []), image, self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
-                    for field in batch
-                ))
+                results_by_field = await manager.run_fields(
+                    configs + ([prefill] if prefill is not None and prefill not in configs else []),
+                    image,
+                    [(self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
+                     for field in batch],
+                )
                 for field, results in zip(batch, results_by_field):
                     for result in results:
                         if prefill is not None and result.pipeline_id == prefill.pipeline_id:
@@ -359,6 +362,7 @@ class GlobalLayoutService:
             for field in case.global_fields:
                 self.session.refresh(field, attribute_names=["ground_truth_raw", "confirmed_at"])
             apply_prefill(case, prefill_results, reading_lines)
+        run_wall_time_ms = round((time.perf_counter() - started) * 1000)
         for parent in parents.values():
             parent.raw_text = "\n".join(raw_parts[parent.pipeline_id])
             parent.final_text = canonical_document_text(case.global_fields, parent.fields)
@@ -367,9 +371,17 @@ class GlobalLayoutService:
             parent.normalized_text = normalize_text(parent.final_text)
             confidences = [f.confidence for f in parent.fields if f.confidence is not None]
             parent.confidence = fmean(confidences) if confidences else None
-            parent.processing_time_ms = sum(
+            total_field_compute_ms = sum(
                 f.diagnostics.get("processing_time_ms") or 0 for f in parent.fields
             )
+            start, end = manager.windows[parent.pipeline_id]
+            parent.processing_time_ms = round((end - start) * 1000)
+            parent.raw_response = {**(parent.raw_response or {}), "timing": {
+                "semantics": "wall_clock_v1",
+                "wall_time_ms": parent.processing_time_ms,
+                "run_wall_time_ms": run_wall_time_ms,
+                "total_field_compute_ms": total_field_compute_ms,
+            }}
             durations = [
                 f.diagnostics["gateway_duration_ms"]
                 for f in parent.fields

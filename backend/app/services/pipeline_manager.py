@@ -1,4 +1,5 @@
 import asyncio
+import time
 from uuid import uuid4
 
 from app.core.concurrency import ordered_map
@@ -18,8 +19,27 @@ from app.services.metrics_service import normalize_text
 class PipelineManager:
     def __init__(self, settings):
         self.settings = settings
-        self.batches = BatchGateway()
+        self.batches = BatchGateway(settings.ocr_gateway_batch_size)
         self.task_slots = asyncio.Semaphore(settings.ocr_max_concurrent_tasks)
+        self.windows = {}
+
+    async def run_fields(self, configs, original_image, inputs):
+        """Pipeline-major admission coalesces equal queries without unbounded tasks.
+
+        Inputs are a bounded group of (canonical crop, ROI, source). Return field-major
+        results in the caller's original config order, including isolated failures.
+        """
+        async def one(pair):
+            config, field = pair
+            crop, roi, source = field
+            return (await self.run([config], original_image, crop, roi, source))[0]
+
+        results = await ordered_map(
+            [(config, field) for config in configs for field in inputs],
+            one, self.settings.ocr_max_concurrent_tasks,
+        )
+        return [[results[c * len(inputs) + f] for c in range(len(configs))]
+                for f in range(len(inputs))]
 
     @classmethod
     def requires_crop(cls, pipeline_id):
@@ -91,6 +111,14 @@ class PipelineManager:
 
         async def bounded(config):
             async with self.task_slots:
-                return await run_one(config)
+                start = time.perf_counter()
+                window = self.windows.setdefault(config.pipeline_id, [start, start])
+                try:
+                    result = await run_one(config)
+                    if result.processing_time_ms is None:
+                        result.processing_time_ms = round((time.perf_counter() - start) * 1000)
+                    return result
+                finally:
+                    window[1] = time.perf_counter()
 
         return await ordered_map(configs, bounded, self.settings.ocr_max_concurrent_tasks)

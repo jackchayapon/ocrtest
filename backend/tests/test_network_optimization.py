@@ -263,6 +263,8 @@ def test_history_summary_matches_full_except_explicit_details_and_preserves_pagi
     for c in expected:
         for run in c["runs"]:
             run.update(boxes=[], raw_response=None)
+            run.update(timing_semantics="not_loaded", wall_time_ms=None,
+                       run_wall_time_ms=None, total_field_compute_ms=None)
             for field in run["fields"]:
                 field["diagnostics"] = None
     assert compact == expected

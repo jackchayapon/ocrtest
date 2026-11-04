@@ -13,6 +13,10 @@ def usage():
   status=Path('/proc/self/status').read_text().splitlines()
   result.update({x.split(':')[0]:int(x.split()[1])*1024 for x in status if x.startswith(('VmRSS:','VmHWM:'))})
   result['cgroup_current']=int(Path('/sys/fs/cgroup/memory.current').read_text())
+  stats=dict(line.split() for line in Path('/sys/fs/cgroup/memory.stat').read_text().splitlines())
+  result['cgroup_inactive_file']=int(stats.get('inactive_file',0))
+  result['cgroup_anon']=int(stats.get('anon',0))
+  result['cgroup_working_set']=max(0,result['cgroup_current']-result['cgroup_inactive_file'])
   result['cgroup_max']=Path('/sys/fs/cgroup/memory.max').read_text().strip()
   result['cgroup_events']=Path('/sys/fs/cgroup/memory.events').read_text().strip()
  except (OSError,ValueError):pass

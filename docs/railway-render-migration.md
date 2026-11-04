@@ -22,11 +22,11 @@ For cost review only, current [Render pricing](https://render.com/pricing) lists
 
 No schema migration is required: head0011_gt_prefill, clean isolated PostgreSQL upgrade and Alembic check pass. Production records must remain untouched. Before cutover, verify the live revision read-only, available Neon recovery/PITR metadata, connection limits and compatibility of old/new writers. No recovery window has been newly certified by this candidate work.
 
-Railway currently has no uploads volume; no durable storage credentials were available. No old files are claimed recovered. Do not mount over an existing path or replace a container before exporting any recoverable files and a SHA256 manifest. A production volume/object-storage choice and any associated costs/access must be approved and restore-tested before claiming restart persistence. Local Docker volume preservation is not proof of production durability.
+Railway currently has no uploads volume; no durable storage credentials were available. No old files are claimed recovered. The latest user instruction accepts loss of disposable ephemeral uploads during deployment, so recovering those files is not a release prerequisite. This does not authorize intentional deletion of files/records or mounting over an existing path. A future volume/object-storage choice and its costs/access must be approved and restore-tested before claiming restart persistence. Local Docker volume preservation is not proof of production durability.
 
 ## Release and rollback
 
-1. Finish candidate regression and resolve release gates; push a review branch/PR without merging while cloud/storage gates remain.
+1. Finish candidate regression and specified local acceptance, verify checks and rollback compatibility, then release under the latest accepted ephemeral-storage risk. Extra cloud staging quota is not an automatic blocker; no subscription upgrade is authorized.
 2. Test accepted code against isolated DB/storage with safe resource headroom; verify live supported DET/REC and ROI flow with synthetic data.
 3. Before deployment, record provider deployment IDs, source SHA, Vercel API target, database revision, recovery metadata and storage backup/restore evidence.
 4. For Railway, merge only after acceptance and observe Git auto-deploy; do not create duplicate deploys. Validate health/DB/storage and real GUI smoke.

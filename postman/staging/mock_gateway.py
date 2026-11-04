@@ -3,10 +3,10 @@ import asyncio,json,time
 from io import BytesIO
 from uuid import uuid4
 from fastapi import FastAPI,Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse,StreamingResponse
 from PIL import Image
 
-app=FastAPI();active=0;profile='sized';events=[]
+app=FastAPI();active=0;profile='sized';events=[];identity=False;failure_model='none'
 # ~3.33 MB numeric JSON per REC input. Size-matched surrogate, not captured CDGS content.
 numeric=b'['+b'0.1234567,'*333_000+b'0]'
 @app.get('/diagnostics')
@@ -16,6 +16,14 @@ def set_profile(value:str):
  global profile
  if value not in {'compact','sized'}:return {'error':'unsupported profile'}
  profile=value;return {'profile':profile}
+@app.post('/diagnostics/identity/{enabled}')
+def set_identity(enabled:bool):
+ global identity
+ identity=enabled;return {'identity':identity}
+@app.post('/diagnostics/failure/{model}')
+def set_failure(model:str):
+ global failure_model
+ failure_model=model;return {'failure_model':failure_model}
 @app.get('/paddle/api/v1/health')
 @app.get('/paddle/api/v1/readiness')
 def health():return {'data':{'status':'ok','services':[{'name':s,'status':'ready'} for s in ['text-detection','text-recognition']]},'meta':{}}
@@ -23,16 +31,20 @@ def health():return {'data':{'status':'ok','services':[{'name':s,'status':'ready
 async def infer(stage:str,request:Request):
  global active
  started=time.time();rid=request.headers.get('x-request-id',uuid4().hex)
- form=await request.form();files=form.getlist('images');dims=[]
+ form=await request.form();files=form.getlist('images');dims=[];tags=[]
  for file in files:
   data=await file.read()
-  with Image.open(BytesIO(data)) as im:dims.append([im.width,im.height])
+  with Image.open(BytesIO(data)) as im:
+   dims.append([im.width,im.height]);tags.append(im.convert('RGB').getpixel((im.width//2,im.height//2))[0])
  det=stage=='text-detection-batches';active+=1
  e={'request_id':rid,'stage':'det' if det else 'rec','params':dict(request.query_params),'start':started,'active_on_start':active,'count':len(files),'dimensions':dims,'profile':profile}
  events.append(e)
  try:
   await asyncio.sleep(.15)
-  rows=[{'dt_polys':[[[1,1],[w-2,1],[w-2,h-2],[1,h-2]]],'dt_scores':[.95]} if det else {'rec_text':'SYNTHETIC 123','rec_score':.95} for w,h in dims]
+  if not det and failure_model!='none' and request.query_params.get('model','baseline')==failure_model:
+   active-=1;e.update(status=422,end=time.time())
+   return JSONResponse(status_code=422,content={'error':{'code':'UPSTREAM_MODEL_ERROR','request_id':rid,'details':[{'type':'synthetic_worker_failure'}]}})
+  rows=[{'dt_polys':[[[1,1],[w-2,1],[w-2,h-2],[1,h-2]]],'dt_scores':[.95]} if det else {'rec_text':f'SYNTHETIC {tags[i]:02d} v{request.query_params.get("version")} {request.query_params.get("model","baseline")}' if identity else 'SYNTHETIC 123','rec_score':.95} for i,(w,h) in enumerate(dims)]
   selection={'kind':'detection' if det else 'recognition','version':'v'+request.query_params.get('version','6'),'variant':request.query_params.get('model','baseline'),'model_name':'SYNTHETIC_MOCK_ONLY'}
   data={'kind':'text_detection_batch' if det else 'text_recognition_batch','contract_version':'leaf-inference-v1','count':len(rows),'results':rows,'result':{'results':rows},'model_selection':selection}
   meta={'request_id':rid,'duration_ms':150,'service':'isolated-mock','model':'SYNTHETIC_MOCK_ONLY'}
