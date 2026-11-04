@@ -17,6 +17,8 @@ export type PipelineRun = {
   id: string; pipeline_id: string; pipeline_name: string; status: "success" | "error";
   raw_text: string | null; final_text: string | null; text: string | null; normalized_text: string | null;
   confidence: number | null; processing_time_ms: number | null; boxes: OCRBox[];
+  timing_semantics?: "wall_clock_v1" | "legacy_recorded" | "not_loaded";
+  wall_time_ms?: number | null; run_wall_time_ms?: number | null; total_field_compute_ms?: number | null;
   raw_response: Record<string, unknown> | null; error_message: string | null; created_at: string;
   metrics: Metrics | null; raw_metrics: Metrics | null;
   fields?: OCRField[]; field_summary?: FieldSummary;

@@ -1,0 +1,6331 @@
+{
+  "environment": "LOCAL ISOLATED DOCKER \u2014 MOCK GATEWAY",
+  "source_commit": "recovery working-tree candidate; verify source_tree_sha256",
+  "staging_url": "http://127.0.0.1:18080",
+  "railway_staging_deployment": null,
+  "stages": [
+    {
+      "profile": "compact",
+      "stage": "A",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "07c14ee9-f890-44e7-8918-800eab90f4a2"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:15.928418+00:00",
+      "start_epoch": 1793812695.9284184,
+      "http": [
+        {
+          "test_case_id": "07c14ee9-f890-44e7-8918-800eab90f4a2",
+          "start": 1793812695.9664488,
+          "status": 200,
+          "response_bytes": 3136,
+          "runs": [
+            {
+              "id": "373ec634-2cc1-4aed-ba2f-a39f7a42fc0d",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_102b900d69e34b3db604ab8df8727712",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812696.3689969,
+          "duration_ms": 402.55
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812696.3689969,
+      "finished_at": "2026-11-04T17:18:16.368996+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 18,
+        "peak_rss_bytes": 151433216,
+        "peak_cgroup_bytes": 110686208,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.06214799999999987,
+        "cpu_system_seconds": 0.001817000000000013,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_102b900d69e34b3db604ab8df8727712",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812696.0007536
+          },
+          {
+            "request_id": "batch_b06528176714492499483f640fee0b84",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812696.182994
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 110678016,
+        "peak_anon_bytes": 101453824,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_102b900d69e34b3db604ab8df8727712",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812696.0197186,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793812696.1711576,
+          "end": 1793812696.1713479
+        },
+        {
+          "request_id": "batch_b06528176714492499483f640fee0b84",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812696.1892893,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793812696.3417072,
+          "end": 1793812696.3418984
+        }
+      ],
+      "gateway_calls": 2,
+      "batch_image_counts": [
+        1,
+        1
+      ],
+      "gateway_response_bytes": 974,
+      "p95_ms": 402.55,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "compact",
+      "stage": "B",
+      "pipelines": 2,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "99ca6a30-3b45-4988-b382-9d7e11497b7a"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:16.812292+00:00",
+      "start_epoch": 1793812696.8122923,
+      "http": [
+        {
+          "test_case_id": "99ca6a30-3b45-4988-b382-9d7e11497b7a",
+          "start": 1793812696.8501642,
+          "status": 200,
+          "response_bytes": 6226,
+          "runs": [
+            {
+              "id": "8cdad308-6caa-433a-87fe-7d5e21f7906a",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_d0e114f2d20b4e8ba017ceba44ebe31b",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "58adbbc6-7dd8-4f3f-a907-a14b7c85e749",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_d0e114f2d20b4e8ba017ceba44ebe31b",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812697.2792296,
+          "duration_ms": 429.07
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812697.2797496,
+      "finished_at": "2026-11-04T17:18:17.279749+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 25,
+        "peak_rss_bytes": 152981504,
+        "peak_cgroup_bytes": 112328704,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.05417899999999998,
+        "cpu_system_seconds": 0.01039699999999999,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_d0e114f2d20b4e8ba017ceba44ebe31b",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812696.8978434
+          },
+          {
+            "request_id": "batch_97e3bfcee5d94e41ba74325f939697d3",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812697.0730047
+          },
+          {
+            "request_id": "batch_ea4427d9ab784c5d8954dc32e86f67a9",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812697.078367
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 112316416,
+        "peak_anon_bytes": 102891520,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_d0e114f2d20b4e8ba017ceba44ebe31b",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812696.903527,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 643,
+          "handler_end": 1793812697.0557172,
+          "end": 1793812697.0559094
+        },
+        {
+          "request_id": "batch_97e3bfcee5d94e41ba74325f939697d3",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812697.085378,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793812697.2369115,
+          "end": 1793812697.2371328
+        },
+        {
+          "request_id": "batch_ea4427d9ab784c5d8954dc32e86f67a9",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812697.085249,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793812697.237958,
+          "end": 1793812697.2380512
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        2,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 1579,
+      "p95_ms": 429.07,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "compact",
+      "stage": "C",
+      "pipelines": 4,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "5c405e34-b2dc-474e-8c41-b06dc711207c"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:17.733657+00:00",
+      "start_epoch": 1793812697.7336578,
+      "http": [
+        {
+          "test_case_id": "5c405e34-b2dc-474e-8c41-b06dc711207c",
+          "start": 1793812697.7706099,
+          "status": 200,
+          "response_bytes": 12400,
+          "runs": [
+            {
+              "id": "3a12ae42-9e31-46ab-8475-e1a7c42e42c4",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_799403f01ff9462597a2f4b0749f5812",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "805ba7af-d387-46b1-b616-14481937f95e",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_799403f01ff9462597a2f4b0749f5812",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "42128069-812e-4b71-aadc-b9b3650d7703",
+              "pipeline_id": "dynamic_5e40df94d297404fb7f1f39e48f50ab3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_4a398ecd96364b1c8ae03c2a1b1469ec",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "313af511-9549-4c1e-abb5-694388d8e5d5",
+              "pipeline_id": "dynamic_e1d881b554914cf495e84ae5a88f29d3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_799403f01ff9462597a2f4b0749f5812",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812698.2935357,
+          "duration_ms": 522.93
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812698.2945359,
+      "finished_at": "2026-11-04T17:18:18.294535+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 40,
+        "peak_rss_bytes": 157044736,
+        "peak_cgroup_bytes": 116563968,
+        "max_gateway_inflight": 4,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.08889199999999997,
+        "cpu_system_seconds": 0.01767799999999997,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_799403f01ff9462597a2f4b0749f5812",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 3,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812697.8341017
+          },
+          {
+            "request_id": "batch_4a398ecd96364b1c8ae03c2a1b1469ec",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812697.8433657
+          },
+          {
+            "request_id": "batch_3a4d27ac45384b63b279d068c4f56df2",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812698.0130296
+          },
+          {
+            "request_id": "batch_c7e8d7ecf8b04d228b01cc144203dcf9",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812698.0432062
+          },
+          {
+            "request_id": "batch_826c293a92524640a0e2fbbf2bd9f354",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812698.0537539
+          },
+          {
+            "request_id": "batch_6c8a7cb9340e4d169fad584fe4ee5f2c",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812698.0587354
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 116551680,
+        "peak_anon_bytes": 106905600,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_4a398ecd96364b1c8ae03c2a1b1469ec",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793812697.8498707,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 509,
+          "handler_end": 1793812698.001849,
+          "end": 1793812698.0020566
+        },
+        {
+          "request_id": "batch_799403f01ff9462597a2f4b0749f5812",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812697.8500028,
+          "active_on_start": 2,
+          "count": 3,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 779,
+          "handler_end": 1793812698.0043895,
+          "end": 1793812698.0045056
+        },
+        {
+          "request_id": "batch_3a4d27ac45384b63b279d068c4f56df2",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793812698.0672462,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793812698.2192886,
+          "end": 1793812698.219489
+        },
+        {
+          "request_id": "batch_6c8a7cb9340e4d169fad584fe4ee5f2c",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793812698.0685773,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793812698.2196422,
+          "end": 1793812698.2197158
+        },
+        {
+          "request_id": "batch_826c293a92524640a0e2fbbf2bd9f354",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812698.0695548,
+          "active_on_start": 3,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 469,
+          "handler_end": 1793812698.2213993,
+          "end": 1793812698.2215145
+        },
+        {
+          "request_id": "batch_c7e8d7ecf8b04d228b01cc144203dcf9",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812698.0706687,
+          "active_on_start": 4,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793812698.22274,
+          "end": 1793812698.2228653
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 3162,
+      "p95_ms": 522.93,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "compact",
+      "stage": "D",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 1,
+      "dataset": "medium",
+      "test_case_ids": [
+        "8ecc7c41-71a3-4f52-b732-a27fdbfcf436"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:18.790646+00:00",
+      "start_epoch": 1793812698.7906466,
+      "http": [
+        {
+          "test_case_id": "8ecc7c41-71a3-4f52-b732-a27fdbfcf436",
+          "start": 1793812698.8286269,
+          "status": 200,
+          "response_bytes": 9300,
+          "runs": [
+            {
+              "id": "61621f4a-5bdf-4d8d-b367-240063efa2af",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6918d211c1894dfdb6a66e068e751e36",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6918d211c1894dfdb6a66e068e751e36",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "d9d401f7-0ea2-431c-823c-88abbc4dc9d0",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6918d211c1894dfdb6a66e068e751e36",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6918d211c1894dfdb6a66e068e751e36",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812699.4892318,
+          "duration_ms": 660.6
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812699.489749,
+      "finished_at": "2026-11-04T17:18:19.489749+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 37,
+        "peak_rss_bytes": 196575232,
+        "peak_cgroup_bytes": 156155904,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.20884999999999998,
+        "cpu_system_seconds": 0.020884000000000014,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_6918d211c1894dfdb6a66e068e751e36",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793812698.9239745
+          },
+          {
+            "request_id": "batch_38dacdc2cc4145d1aa13f1fdd6bbdb02",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812699.246083
+          },
+          {
+            "request_id": "batch_61081d0c02ca42fab32ac72648acb9a1",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812699.2552588
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 156147712,
+        "peak_anon_bytes": 146542592,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_6918d211c1894dfdb6a66e068e751e36",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812698.9297888,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793812699.1009538,
+          "end": 1793812699.1014104
+        },
+        {
+          "request_id": "batch_38dacdc2cc4145d1aa13f1fdd6bbdb02",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812699.2620168,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793812699.423573,
+          "end": 1793812699.4237702
+        },
+        {
+          "request_id": "batch_61081d0c02ca42fab32ac72648acb9a1",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812699.2622287,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793812699.4347868,
+          "end": 1793812699.4352894
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 2051,
+      "p95_ms": 660.6,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "compact",
+      "stage": "E",
+      "pipelines": 4,
+      "fields": 4,
+      "http_concurrency": 1,
+      "dataset": "large",
+      "test_case_ids": [
+        "c2b3ff7b-50df-45e8-929f-5f2f76e63614"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            4000,
+            2400
+          ],
+          "sha256": "379838a2ab38537136784cbfbf4e540d56dac51e2f864dd9829265b6c4dd3f57"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:20.126599+00:00",
+      "start_epoch": 1793812700.1266,
+      "http": [
+        {
+          "test_case_id": "c2b3ff7b-50df-45e8-929f-5f2f76e63614",
+          "start": 1793812700.1658547,
+          "status": 200,
+          "response_bytes": 30972,
+          "runs": [
+            {
+              "id": "39efdcbc-66dc-4a60-9c3e-04aae3d333ec",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8135ebf3078245a9a8b3b65fc0fe4d6f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8135ebf3078245a9a8b3b65fc0fe4d6f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8135ebf3078245a9a8b3b65fc0fe4d6f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8135ebf3078245a9a8b3b65fc0fe4d6f",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "7ac89aab-0b28-4f43-92b6-38deefaf328c",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_fbaa6ab2e651442c9edf7ce74f2de047",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_fbaa6ab2e651442c9edf7ce74f2de047",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_fbaa6ab2e651442c9edf7ce74f2de047",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_fbaa6ab2e651442c9edf7ce74f2de047",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "5cebfb9a-1240-4817-b643-a43035618d53",
+              "pipeline_id": "dynamic_5e40df94d297404fb7f1f39e48f50ab3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8b43e065d3254592986454986ead8b3c",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8b43e065d3254592986454986ead8b3c",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8b43e065d3254592986454986ead8b3c",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_8b43e065d3254592986454986ead8b3c",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "15271b8e-5e62-4cf7-ad2d-e17b1e49bc66",
+              "pipeline_id": "dynamic_e1d881b554914cf495e84ae5a88f29d3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_da25d2bb931842b38dc5364d9fa042ad",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_da25d2bb931842b38dc5364d9fa042ad",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_da25d2bb931842b38dc5364d9fa042ad",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_da25d2bb931842b38dc5364d9fa042ad",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812703.437739,
+          "duration_ms": 3271.88
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812703.4387684,
+      "finished_at": "2026-11-04T17:18:23.438768+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 144,
+        "peak_rss_bytes": 259084288,
+        "peak_cgroup_bytes": 232194048,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 1.2964370000000003,
+        "cpu_system_seconds": 0.07639299999999999,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_8135ebf3078245a9a8b3b65fc0fe4d6f",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812700.4058375
+          },
+          {
+            "request_id": "batch_f8c7c045579b4945b62bb6759ee44c73",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812700.8697038
+          },
+          {
+            "request_id": "batch_fbaa6ab2e651442c9edf7ce74f2de047",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812701.1632097
+          },
+          {
+            "request_id": "batch_2f42ee5be8b74f4fb774717c17c6a80f",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812701.6288066
+          },
+          {
+            "request_id": "batch_8b43e065d3254592986454986ead8b3c",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812701.9285066
+          },
+          {
+            "request_id": "batch_ece413819aad4ba6b10755e50bffdf90",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812702.40106
+          },
+          {
+            "request_id": "batch_da25d2bb931842b38dc5364d9fa042ad",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812702.6976442
+          },
+          {
+            "request_id": "batch_4d5fdb1c33c94951899623b90d1fb2eb",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812703.1683211
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 232185856,
+        "peak_anon_bytes": 222273536,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_8135ebf3078245a9a8b3b65fc0fe4d6f",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812700.4120457,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 947,
+          "handler_end": 1793812700.6069188,
+          "end": 1793812700.6075633
+        },
+        {
+          "request_id": "batch_f8c7c045579b4945b62bb6759ee44c73",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812700.8752534,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 743,
+          "handler_end": 1793812701.0701325,
+          "end": 1793812701.070762
+        },
+        {
+          "request_id": "batch_fbaa6ab2e651442c9edf7ce74f2de047",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812701.1690981,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 947,
+          "handler_end": 1793812701.364828,
+          "end": 1793812701.365479
+        },
+        {
+          "request_id": "batch_2f42ee5be8b74f4fb774717c17c6a80f",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812701.6346874,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 745,
+          "handler_end": 1793812701.8295321,
+          "end": 1793812701.8301747
+        },
+        {
+          "request_id": "batch_8b43e065d3254592986454986ead8b3c",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793812701.9345624,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 949,
+          "handler_end": 1793812702.1318707,
+          "end": 1793812702.1325722
+        },
+        {
+          "request_id": "batch_ece413819aad4ba6b10755e50bffdf90",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793812702.407948,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 745,
+          "handler_end": 1793812702.6066744,
+          "end": 1793812702.6073108
+        },
+        {
+          "request_id": "batch_da25d2bb931842b38dc5364d9fa042ad",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812702.704483,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 947,
+          "handler_end": 1793812702.9019306,
+          "end": 1793812702.9025574
+        },
+        {
+          "request_id": "batch_4d5fdb1c33c94951899623b90d1fb2eb",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793812703.1749914,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 745,
+          "handler_end": 1793812703.3710754,
+          "end": 1793812703.371697
+        }
+      ],
+      "gateway_calls": 8,
+      "batch_image_counts": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "gateway_response_bytes": 6768,
+      "p95_ms": 3271.88,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "compact",
+      "stage": "F",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 2,
+      "dataset": "small",
+      "test_case_ids": [
+        "bce7b830-e180-45f8-94ed-04b41c56cd83",
+        "621532b1-9826-40e2-9e4b-a9886324d7cb"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        },
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:23.934561+00:00",
+      "start_epoch": 1793812703.9345617,
+      "http": [
+        {
+          "test_case_id": "bce7b830-e180-45f8-94ed-04b41c56cd83",
+          "start": 1793812703.9735641,
+          "status": 200,
+          "response_bytes": 3136,
+          "runs": [
+            {
+              "id": "6a3273ee-f342-4c80-ad2e-e2ddce4bfd59",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_f614ed3be9b1437b9c9c172efd2bbc6c",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812704.3971884,
+          "duration_ms": 423.62
+        },
+        {
+          "test_case_id": "621532b1-9826-40e2-9e4b-a9886324d7cb",
+          "start": 1793812703.9740756,
+          "status": 200,
+          "response_bytes": 3136,
+          "runs": [
+            {
+              "id": "d6ab7eef-9add-4d30-bc7f-e739648250eb",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_d11300fa950e4ffaa718b371123b3791",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812704.7502587,
+          "duration_ms": 776.18
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812704.7518005,
+      "finished_at": "2026-11-04T17:18:24.751800+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 36,
+        "peak_rss_bytes": 163291136,
+        "peak_cgroup_bytes": 134467584,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.07562200000000008,
+        "cpu_system_seconds": 0.021850000000000036,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_f614ed3be9b1437b9c9c172efd2bbc6c",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812704.0117562
+          },
+          {
+            "request_id": "batch_d13b10b4b2f1418dba8ccd65cee224ef",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812704.1832058
+          },
+          {
+            "request_id": "batch_d11300fa950e4ffaa718b371123b3791",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812704.3992865
+          },
+          {
+            "request_id": "batch_55435bb8705e422d86b572212157558e",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812704.569393
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 134455296,
+        "peak_anon_bytes": 125042688,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_f614ed3be9b1437b9c9c172efd2bbc6c",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812704.0181077,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793812704.170215,
+          "end": 1793812704.170502
+        },
+        {
+          "request_id": "batch_d13b10b4b2f1418dba8ccd65cee224ef",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812704.1887848,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793812704.3413246,
+          "end": 1793812704.3415172
+        },
+        {
+          "request_id": "batch_d11300fa950e4ffaa718b371123b3791",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812704.406992,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793812704.5585685,
+          "end": 1793812704.558782
+        },
+        {
+          "request_id": "batch_55435bb8705e422d86b572212157558e",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812704.5765798,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 467,
+          "handler_end": 1793812704.7283046,
+          "end": 1793812704.7285028
+        }
+      ],
+      "gateway_calls": 4,
+      "batch_image_counts": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 1948,
+      "p95_ms": 776.18,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "compact",
+      "stage": "G",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 2,
+      "dataset": "medium",
+      "test_case_ids": [
+        "ba93049a-8f6a-426e-939c-2c934aea54fb",
+        "279ad621-cd4f-4f7e-a60c-1d74a0331c95"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        },
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:25.324282+00:00",
+      "start_epoch": 1793812705.3242822,
+      "http": [
+        {
+          "test_case_id": "279ad621-cd4f-4f7e-a60c-1d74a0331c95",
+          "start": 1793812705.3662813,
+          "status": 200,
+          "response_bytes": 9300,
+          "runs": [
+            {
+              "id": "3e4bbf62-0431-48e8-93d1-e7a40708afc6",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_01a89d20ee7d4968a6615604c514fe06",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_01a89d20ee7d4968a6615604c514fe06",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "c2c233ba-a2b5-4a04-b2ea-335f4435b96f",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_01a89d20ee7d4968a6615604c514fe06",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_01a89d20ee7d4968a6615604c514fe06",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812706.09957,
+          "duration_ms": 733.29
+        },
+        {
+          "test_case_id": "ba93049a-8f6a-426e-939c-2c934aea54fb",
+          "start": 1793812705.3652813,
+          "status": 200,
+          "response_bytes": 9300,
+          "runs": [
+            {
+              "id": "e4dbffbc-c091-46e6-9773-503be3aafe5f",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_3ca5cc373a4c4348bbbfe60626740d8f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_3ca5cc373a4c4348bbbfe60626740d8f",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "0e101924-4833-41ac-87e3-8bfc7367c94d",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_3ca5cc373a4c4348bbbfe60626740d8f",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_3ca5cc373a4c4348bbbfe60626740d8f",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812706.7179754,
+          "duration_ms": 1352.69
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812706.7195134,
+      "finished_at": "2026-11-04T17:18:26.719513+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 74,
+        "peak_rss_bytes": 190849024,
+        "peak_cgroup_bytes": 164007936,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.4110170000000002,
+        "cpu_system_seconds": 0.036912999999999974,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_01a89d20ee7d4968a6615604c514fe06",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793812705.4670486
+          },
+          {
+            "request_id": "batch_5e2e79d8afb64f82b882b1cf40b1e81c",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812705.7789733
+          },
+          {
+            "request_id": "batch_67b2e048aaa34badacb639dbae4661a2",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812705.7894206
+          },
+          {
+            "request_id": "batch_3ca5cc373a4c4348bbbfe60626740d8f",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793812706.1019106
+          },
+          {
+            "request_id": "batch_aae96e568574448a850e1696184f3284",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812706.4654667
+          },
+          {
+            "request_id": "batch_2097e97d7a5248a3851c4426df90cfa5",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812706.4927042
+          }
+        ],
+        "json_decode_phases": [],
+        "peak_working_set_bytes": 163995648,
+        "peak_anon_bytes": 154234880,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_01a89d20ee7d4968a6615604c514fe06",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812705.4731781,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793812705.6393435,
+          "end": 1793812705.6395514
+        },
+        {
+          "request_id": "batch_67b2e048aaa34badacb639dbae4661a2",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812705.7964463,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793812705.9547434,
+          "end": 1793812705.954923
+        },
+        {
+          "request_id": "batch_5e2e79d8afb64f82b882b1cf40b1e81c",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812705.8037927,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793812705.9628816,
+          "end": 1793812705.9630594
+        },
+        {
+          "request_id": "batch_3ca5cc373a4c4348bbbfe60626740d8f",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812706.1157992,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793812706.2808897,
+          "end": 1793812706.2810888
+        },
+        {
+          "request_id": "batch_aae96e568574448a850e1696184f3284",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812706.5013988,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 559,
+          "handler_end": 1793812706.6613147,
+          "end": 1793812706.6615648
+        },
+        {
+          "request_id": "batch_2097e97d7a5248a3851c4426df90cfa5",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812706.5022094,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "compact",
+          "status": 200,
+          "response_bytes": 561,
+          "handler_end": 1793812706.6685805,
+          "end": 1793812706.66876
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        4,
+        2,
+        2,
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 4102,
+      "p95_ms": 1352.69,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "A",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "653b2651-0840-4560-949b-d961cd10f1cf"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:27.178078+00:00",
+      "start_epoch": 1793812707.1780782,
+      "http": [
+        {
+          "test_case_id": "653b2651-0840-4560-949b-d961cd10f1cf",
+          "start": 1793812707.2180731,
+          "status": 200,
+          "response_bytes": 3136,
+          "runs": [
+            {
+              "id": "4114b336-6c82-4593-b203-53340741841c",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_212a13b1b35e4d6abf9cf8c443df4422",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812707.678181,
+          "duration_ms": 460.11
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812707.6802764,
+      "finished_at": "2026-11-04T17:18:27.680276+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 22,
+        "peak_rss_bytes": 201453568,
+        "peak_cgroup_bytes": 160411648,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.10316400000000003,
+        "cpu_system_seconds": 0.007869000000000015,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_212a13b1b35e4d6abf9cf8c443df4422",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812707.2926826
+          },
+          {
+            "request_id": "batch_7524bc177e5e46c1882df7b6eff30a93",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812707.4613447
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812707.6237657,
+            "response_bytes": 3330500,
+            "VmRSS": 190877696,
+            "cgroup_current": 149929984
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812707.6534436,
+            "response_bytes": 3330500,
+            "VmRSS": 201453568,
+            "cgroup_current": 160411648
+          }
+        ],
+        "peak_working_set_bytes": 160403456,
+        "peak_anon_bytes": 151429120,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_212a13b1b35e4d6abf9cf8c443df4422",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812707.2993438,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793812707.450704,
+          "end": 1793812707.4508932
+        },
+        {
+          "request_id": "batch_7524bc177e5e46c1882df7b6eff30a93",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812707.4676273,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793812707.6191928,
+          "end": 1793812707.6210089
+        }
+      ],
+      "gateway_calls": 2,
+      "batch_image_counts": [
+        1,
+        1
+      ],
+      "gateway_response_bytes": 3331007,
+      "p95_ms": 460.11,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "B",
+      "pipelines": 2,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "4ef11d3e-8926-42d8-af0a-e35de66b525e"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:28.155675+00:00",
+      "start_epoch": 1793812708.1556754,
+      "http": [
+        {
+          "test_case_id": "4ef11d3e-8926-42d8-af0a-e35de66b525e",
+          "start": 1793812708.1939404,
+          "status": 200,
+          "response_bytes": 6226,
+          "runs": [
+            {
+              "id": "a4f8f71b-b81f-43a8-bb64-d874e68bdb3f",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_cf5c4dfc8a524b0ea8284edf9f08c421",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "e763e97b-ee9f-46fc-b84d-036cba89e39f",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_cf5c4dfc8a524b0ea8284edf9f08c421",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812708.7294853,
+          "duration_ms": 535.54
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812708.732157,
+      "finished_at": "2026-11-04T17:18:28.732156+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 30,
+        "peak_rss_bytes": 201445376,
+        "peak_cgroup_bytes": 173924352,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.11045900000000053,
+        "cpu_system_seconds": 0.016757000000000022,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_cf5c4dfc8a524b0ea8284edf9f08c421",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812708.2400894
+          },
+          {
+            "request_id": "batch_0bcb5ff846f345d086322a887e05ebeb",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812708.4163237
+          },
+          {
+            "request_id": "batch_ad0bba19ce074ba794f11f069598fe6c",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812708.4214997
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812708.591331,
+            "response_bytes": 3330500,
+            "VmRSS": 192163840,
+            "cgroup_current": 162545664
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812708.6173453,
+            "response_bytes": 3330500,
+            "VmRSS": 201445376,
+            "cgroup_current": 171974656
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812708.638346,
+            "response_bytes": 3330502,
+            "VmRSS": 193187840,
+            "cgroup_current": 164225024
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812708.7039087,
+            "response_bytes": 3330502,
+            "VmRSS": 201445376,
+            "cgroup_current": 173924352
+          }
+        ],
+        "peak_working_set_bytes": 173912064,
+        "peak_anon_bytes": 164401152,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_cf5c4dfc8a524b0ea8284edf9f08c421",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812708.2463405,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 643,
+          "handler_end": 1793812708.3989396,
+          "end": 1793812708.3991404
+        },
+        {
+          "request_id": "batch_0bcb5ff846f345d086322a887e05ebeb",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812708.4300046,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793812708.5816634,
+          "end": 1793812708.5842583
+        },
+        {
+          "request_id": "batch_ad0bba19ce074ba794f11f069598fe6c",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812708.4312074,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793812708.5825362,
+          "end": 1793812708.58503
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        2,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 6661645,
+      "p95_ms": 535.54,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "C",
+      "pipelines": 4,
+      "fields": 1,
+      "http_concurrency": 1,
+      "dataset": "small",
+      "test_case_ids": [
+        "696c6d52-00c3-4e99-a8ba-72c572ba9845"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:29.211410+00:00",
+      "start_epoch": 1793812709.2114103,
+      "http": [
+        {
+          "test_case_id": "696c6d52-00c3-4e99-a8ba-72c572ba9845",
+          "start": 1793812709.2528021,
+          "status": 200,
+          "response_bytes": 12400,
+          "runs": [
+            {
+              "id": "0744a0aa-c21d-4cf6-9236-7c6fc587a147",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9073f6d441644128a23d1ea97f5d9de4",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "1c61afba-68a4-4c63-88b2-80c60395ddfc",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9073f6d441644128a23d1ea97f5d9de4",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "34422379-30d8-482d-8f22-617d591bf9fd",
+              "pipeline_id": "dynamic_5e40df94d297404fb7f1f39e48f50ab3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_a772412cdf8547f7a2644e2487578f91",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "8cc79f96-88f4-494c-908c-4a414f31218c",
+              "pipeline_id": "dynamic_e1d881b554914cf495e84ae5a88f29d3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_9073f6d441644128a23d1ea97f5d9de4",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812709.9103954,
+          "duration_ms": 657.59
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812709.9130518,
+      "finished_at": "2026-11-04T17:18:29.913052+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 51,
+        "peak_rss_bytes": 201453568,
+        "peak_cgroup_bytes": 164851712,
+        "max_gateway_inflight": 4,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.1995629999999995,
+        "cpu_system_seconds": 0.023738000000000037,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_9073f6d441644128a23d1ea97f5d9de4",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 3,
+            "dimensions": [
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ],
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812709.3170693
+          },
+          {
+            "request_id": "batch_a772412cdf8547f7a2644e2487578f91",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812709.3264518
+          },
+          {
+            "request_id": "batch_35ff00f570284b2899c714a59f635dca",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812709.4959807
+          },
+          {
+            "request_id": "batch_81bdf09be79e418c8d502efc5c47850c",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812709.5257826
+          },
+          {
+            "request_id": "batch_425b7dc31f254103bf93906aaceca849",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812709.536878
+          },
+          {
+            "request_id": "batch_f3a2d349a1f24ceba4b7a6593035cb01",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812709.5416446
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812709.7121341,
+            "response_bytes": 3330502,
+            "VmRSS": 194220032,
+            "cgroup_current": 157773824
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812709.7369685,
+            "response_bytes": 3330502,
+            "VmRSS": 201453568,
+            "cgroup_current": 164851712
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812709.7620997,
+            "response_bytes": 3330500,
+            "VmRSS": 195260416,
+            "cgroup_current": 155103232
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812709.786507,
+            "response_bytes": 3330500,
+            "VmRSS": 201453568,
+            "cgroup_current": 161132544
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812709.8108678,
+            "response_bytes": 3330502,
+            "VmRSS": 196292608,
+            "cgroup_current": 155676672
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812709.8352501,
+            "response_bytes": 3330502,
+            "VmRSS": 201453568,
+            "cgroup_current": 160657408
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812709.8549898,
+            "response_bytes": 3330502,
+            "VmRSS": 197324800,
+            "cgroup_current": 156528640
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812709.8836796,
+            "response_bytes": 3330502,
+            "VmRSS": 201453568,
+            "cgroup_current": 160722944
+          }
+        ],
+        "peak_working_set_bytes": 164843520,
+        "peak_anon_bytes": 151429120,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_a772412cdf8547f7a2644e2487578f91",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793812709.3331356,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 509,
+          "handler_end": 1793812709.4849033,
+          "end": 1793812709.4850972
+        },
+        {
+          "request_id": "batch_9073f6d441644128a23d1ea97f5d9de4",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812709.3330169,
+          "active_on_start": 2,
+          "count": 3,
+          "dimensions": [
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ],
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 779,
+          "handler_end": 1793812709.4870975,
+          "end": 1793812709.487277
+        },
+        {
+          "request_id": "batch_35ff00f570284b2899c714a59f635dca",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793812709.5489693,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793812709.700677,
+          "end": 1793812709.7027638
+        },
+        {
+          "request_id": "batch_81bdf09be79e418c8d502efc5c47850c",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812709.5504305,
+          "active_on_start": 2,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793812709.702254,
+          "end": 1793812709.706176
+        },
+        {
+          "request_id": "batch_f3a2d349a1f24ceba4b7a6593035cb01",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793812709.5514145,
+          "active_on_start": 3,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793812709.702867,
+          "end": 1793812709.705915
+        },
+        {
+          "request_id": "batch_425b7dc31f254103bf93906aaceca849",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812709.552325,
+          "active_on_start": 4,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330502,
+          "handler_end": 1793812709.7037928,
+          "end": 1793812709.7067523
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        1,
+        3,
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 13323294,
+      "p95_ms": 657.59,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "D",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 1,
+      "dataset": "medium",
+      "test_case_ids": [
+        "c6aedfe1-37ef-47d4-83f8-855ec260425a"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:30.407568+00:00",
+      "start_epoch": 1793812710.407569,
+      "http": [
+        {
+          "test_case_id": "c6aedfe1-37ef-47d4-83f8-855ec260425a",
+          "start": 1793812710.4487731,
+          "status": 200,
+          "response_bytes": 9300,
+          "runs": [
+            {
+              "id": "66104eeb-c568-40df-9da1-6fa7b1d3f086",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_0be48ba925414eca8023663e7a6fd897",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_0be48ba925414eca8023663e7a6fd897",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "b3834af9-7ade-4329-8021-8d09b8f57b5a",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_0be48ba925414eca8023663e7a6fd897",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_0be48ba925414eca8023663e7a6fd897",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812711.2562158,
+          "duration_ms": 807.44
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812711.258794,
+      "finished_at": "2026-11-04T17:18:31.258794+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 42,
+        "peak_rss_bytes": 225112064,
+        "peak_cgroup_bytes": 186241024,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.31164099999999983,
+        "cpu_system_seconds": 0.024352999999999958,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_0be48ba925414eca8023663e7a6fd897",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793812710.5441668
+          },
+          {
+            "request_id": "batch_ebc5b43e80c24870ac39827684f27e73",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812710.903406
+          },
+          {
+            "request_id": "batch_d6f0732cc88f4935aa446fd703962237",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812710.90831
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812711.082342,
+            "response_bytes": 6660596,
+            "VmRSS": 201449472,
+            "cgroup_current": 162910208
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812711.1355386,
+            "response_bytes": 6660596,
+            "VmRSS": 224587776,
+            "cgroup_current": 186241024
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812711.168798,
+            "response_bytes": 6660598,
+            "VmRSS": 211120128,
+            "cgroup_current": 170876928
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812711.220743,
+            "response_bytes": 6660598,
+            "VmRSS": 225112064,
+            "cgroup_current": 184770560
+          }
+        ],
+        "peak_working_set_bytes": 186236928,
+        "peak_anon_bytes": 175087616,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_0be48ba925414eca8023663e7a6fd897",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812710.5506418,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793812710.715964,
+          "end": 1793812710.7161553
+        },
+        {
+          "request_id": "batch_ebc5b43e80c24870ac39827684f27e73",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812710.9154022,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660596,
+          "handler_end": 1793812711.0730805,
+          "end": 1793812711.0754967
+        },
+        {
+          "request_id": "batch_d6f0732cc88f4935aa446fd703962237",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812710.9155366,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660598,
+          "handler_end": 1793812711.0798752,
+          "end": 1793812711.1637332
+        }
+      ],
+      "gateway_calls": 3,
+      "batch_image_counts": [
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 13322125,
+      "p95_ms": 807.44,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "E",
+      "pipelines": 4,
+      "fields": 4,
+      "http_concurrency": 1,
+      "dataset": "large",
+      "test_case_ids": [
+        "25f09676-eb90-4f59-99e6-55cbfc78a7c2"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            4000,
+            2400
+          ],
+          "sha256": "379838a2ab38537136784cbfbf4e540d56dac51e2f864dd9829265b6c4dd3f57"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:31.889955+00:00",
+      "start_epoch": 1793812711.8899555,
+      "http": [
+        {
+          "test_case_id": "25f09676-eb90-4f59-99e6-55cbfc78a7c2",
+          "start": 1793812711.9309554,
+          "status": 200,
+          "response_bytes": 30972,
+          "runs": [
+            {
+              "id": "547f2486-5dbd-455a-833d-ca783234a559",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_f5a39f84937b4e8282867657cdab35d2",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_f5a39f84937b4e8282867657cdab35d2",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_f5a39f84937b4e8282867657cdab35d2",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_f5a39f84937b4e8282867657cdab35d2",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "c6ad724c-3e7e-4061-87bb-fe00e7b38b2f",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_ec29299df550402ba578e252f5dca9e5",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_ec29299df550402ba578e252f5dca9e5",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_ec29299df550402ba578e252f5dca9e5",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_ec29299df550402ba578e252f5dca9e5",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "5ae83ed4-8b64-4a05-aea2-a72c8a56fcba",
+              "pipeline_id": "dynamic_5e40df94d297404fb7f1f39e48f50ab3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6a9535c65ddc4080b4efcff9004b98f4",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6a9535c65ddc4080b4efcff9004b98f4",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6a9535c65ddc4080b4efcff9004b98f4",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_6a9535c65ddc4080b4efcff9004b98f4",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "bd24f6e0-833e-4822-8d8a-3b4b818f9409",
+              "pipeline_id": "dynamic_e1d881b554914cf495e84ae5a88f29d3",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_a2805867fbc2411c9d3cd203b091b1f1",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_a2805867fbc2411c9d3cd203b091b1f1",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_a2805867fbc2411c9d3cd203b091b1f1",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_a2805867fbc2411c9d3cd203b091b1f1",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812715.6978972,
+          "duration_ms": 3766.94
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812715.7005098,
+      "finished_at": "2026-11-04T17:18:35.700509+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 158,
+        "peak_rss_bytes": 324784128,
+        "peak_cgroup_bytes": 284413952,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 1.740723,
+        "cpu_system_seconds": 0.10138099999999994,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_f5a39f84937b4e8282867657cdab35d2",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812712.1675012
+          },
+          {
+            "request_id": "batch_083fe73e843840b8afac61ff046c8013",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812712.6382089
+          },
+          {
+            "request_id": "batch_ec29299df550402ba578e252f5dca9e5",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812713.0484505
+          },
+          {
+            "request_id": "batch_335fb64093d44335a5f46030958a00e1",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812713.5137286
+          },
+          {
+            "request_id": "batch_6a9535c65ddc4080b4efcff9004b98f4",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v2"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812713.9267983
+          },
+          {
+            "request_id": "batch_e4077d1c9bde4464974aa1b938dea077",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v4"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812714.3892574
+          },
+          {
+            "request_id": "batch_a2805867fbc2411c9d3cd203b091b1f1",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ],
+              [
+                2000,
+                1200
+              ]
+            ],
+            "time": 1793812714.834111
+          },
+          {
+            "request_id": "batch_2d76e43a9d1f4faa8fd247c42e8362d2",
+            "params": {
+              "version": "6",
+              "model": "thai_ft_v1"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ],
+              [
+                1997,
+                1197
+              ]
+            ],
+            "time": 1793812715.3150032
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812712.8530653,
+            "response_bytes": 13320788,
+            "VmRSS": 270848000,
+            "cgroup_current": 230264832
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812712.9540172,
+            "response_bytes": 13320788,
+            "VmRSS": 314716160,
+            "cgroup_current": 274305024
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812713.7322993,
+            "response_bytes": 13320790,
+            "VmRSS": 278245376,
+            "cgroup_current": 238010368
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812713.8326538,
+            "response_bytes": 13320790,
+            "VmRSS": 314830848,
+            "cgroup_current": 274448384
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812714.6143355,
+            "response_bytes": 13320790,
+            "VmRSS": 280457216,
+            "cgroup_current": 240214016
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812714.736136,
+            "response_bytes": 13320790,
+            "VmRSS": 324763648,
+            "cgroup_current": 284413952
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812715.528051,
+            "response_bytes": 13320790,
+            "VmRSS": 289357824,
+            "cgroup_current": 248999936
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812715.629594,
+            "response_bytes": 13320790,
+            "VmRSS": 324784128,
+            "cgroup_current": 284389376
+          }
+        ],
+        "peak_working_set_bytes": 284409856,
+        "peak_anon_bytes": 274759680,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_f5a39f84937b4e8282867657cdab35d2",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812712.173174,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 947,
+          "handler_end": 1793812712.367621,
+          "end": 1793812712.3682058
+        },
+        {
+          "request_id": "batch_083fe73e843840b8afac61ff046c8013",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812712.64399,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320788,
+          "handler_end": 1793812712.8383143,
+          "end": 1793812712.8463295
+        },
+        {
+          "request_id": "batch_ec29299df550402ba578e252f5dca9e5",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812713.0544758,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 947,
+          "handler_end": 1793812713.2485461,
+          "end": 1793812713.2490475
+        },
+        {
+          "request_id": "batch_335fb64093d44335a5f46030958a00e1",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812713.5194454,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320790,
+          "handler_end": 1793812713.712349,
+          "end": 1793812713.7197611
+        },
+        {
+          "request_id": "batch_6a9535c65ddc4080b4efcff9004b98f4",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v2"
+          },
+          "start": 1793812713.9330938,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 949,
+          "handler_end": 1793812714.1262748,
+          "end": 1793812714.1267529
+        },
+        {
+          "request_id": "batch_e4077d1c9bde4464974aa1b938dea077",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v4"
+          },
+          "start": 1793812714.4003828,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320790,
+          "handler_end": 1793812714.5938194,
+          "end": 1793812714.601533
+        },
+        {
+          "request_id": "batch_a2805867fbc2411c9d3cd203b091b1f1",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812714.839889,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ],
+            [
+              2000,
+              1200
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 947,
+          "handler_end": 1793812715.033424,
+          "end": 1793812715.0338871
+        },
+        {
+          "request_id": "batch_2d76e43a9d1f4faa8fd247c42e8362d2",
+          "stage": "rec",
+          "params": {
+            "version": "6",
+            "model": "thai_ft_v1"
+          },
+          "start": 1793812715.3206294,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ],
+            [
+              1997,
+              1197
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 13320790,
+          "handler_end": 1793812715.5134325,
+          "end": 1793812715.5210655
+        }
+      ],
+      "gateway_calls": 8,
+      "batch_image_counts": [
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ],
+      "gateway_response_bytes": 53286948,
+      "p95_ms": 3766.94,
+      "success": 1,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "F",
+      "pipelines": 1,
+      "fields": 1,
+      "http_concurrency": 2,
+      "dataset": "small",
+      "test_case_ids": [
+        "25fdb307-f376-409e-9b31-89d117967f58",
+        "b2b1832e-5a4f-4543-bc4a-0208c10a3497"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        },
+        {
+          "dimensions": [
+            1000,
+            240
+          ],
+          "sha256": "4f1f88e1ad063f45978ab4f5a539994704996145429691010d0088b1d08a13a8"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:36.209060+00:00",
+      "start_epoch": 1793812716.209061,
+      "http": [
+        {
+          "test_case_id": "25fdb307-f376-409e-9b31-89d117967f58",
+          "start": 1793812716.2493362,
+          "status": 200,
+          "response_bytes": 3136,
+          "runs": [
+            {
+              "id": "8dc7fa78-8d2d-43a3-ae6d-97f33a6866ed",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_ea27de4e42704725ace37f8bcd46c3cf",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812716.6955888,
+          "duration_ms": 446.25
+        },
+        {
+          "test_case_id": "b2b1832e-5a4f-4543-bc4a-0208c10a3497",
+          "start": 1793812716.249852,
+          "status": 200,
+          "response_bytes": 3136,
+          "runs": [
+            {
+              "id": "40e28e88-9b53-4d3a-be0a-5f2aafc96bb0",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_ef4167e847c6441ca747e8b665f7b2e5",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812717.0866656,
+          "duration_ms": 836.81
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812717.0892365,
+      "finished_at": "2026-11-04T17:18:37.089236+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 40,
+        "peak_rss_bytes": 207675392,
+        "peak_cgroup_bytes": 167133184,
+        "max_gateway_inflight": 1,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.1315230000000005,
+        "cpu_system_seconds": 0.01066200000000006,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_ea27de4e42704725ace37f8bcd46c3cf",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812716.2878861
+          },
+          {
+            "request_id": "batch_5d5c272885c24406b34bc881cfbb1e52",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812716.4582152
+          },
+          {
+            "request_id": "batch_ef4167e847c6441ca747e8b665f7b2e5",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                1000,
+                240
+              ]
+            ],
+            "time": 1793812716.6982446
+          },
+          {
+            "request_id": "batch_244752c4208f44fda2249c5cb87d8f56",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 1,
+            "dimensions": [
+              [
+                997,
+                237
+              ]
+            ],
+            "time": 1793812716.872029
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812716.6210635,
+            "response_bytes": 3330500,
+            "VmRSS": 205295616,
+            "cgroup_current": 164769792
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812716.6494138,
+            "response_bytes": 3330500,
+            "VmRSS": 207581184,
+            "cgroup_current": 167129088
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812717.0336914,
+            "response_bytes": 3330500,
+            "VmRSS": 207581184,
+            "cgroup_current": 166928384
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812717.055617,
+            "response_bytes": 3330500,
+            "VmRSS": 207675392,
+            "cgroup_current": 166928384
+          }
+        ],
+        "peak_working_set_bytes": 167124992,
+        "peak_anon_bytes": 157556736,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_ea27de4e42704725ace37f8bcd46c3cf",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812716.293813,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793812716.4460669,
+          "end": 1793812716.4463847
+        },
+        {
+          "request_id": "batch_5d5c272885c24406b34bc881cfbb1e52",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812716.464133,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793812716.6168342,
+          "end": 1793812716.6184738
+        },
+        {
+          "request_id": "batch_ef4167e847c6441ca747e8b665f7b2e5",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812716.710058,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              1000,
+              240
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 507,
+          "handler_end": 1793812716.8614848,
+          "end": 1793812716.8616796
+        },
+        {
+          "request_id": "batch_244752c4208f44fda2249c5cb87d8f56",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812716.8776364,
+          "active_on_start": 1,
+          "count": 1,
+          "dimensions": [
+            [
+              997,
+              237
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 3330500,
+          "handler_end": 1793812717.0291631,
+          "end": 1793812717.03151
+        }
+      ],
+      "gateway_calls": 4,
+      "batch_image_counts": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "gateway_response_bytes": 6662014,
+      "p95_ms": 836.81,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0
+    },
+    {
+      "profile": "sized",
+      "stage": "G",
+      "pipelines": 2,
+      "fields": 2,
+      "http_concurrency": 2,
+      "dataset": "medium",
+      "test_case_ids": [
+        "4e966c93-4377-41ec-8f66-74e317ef611e",
+        "775fcb91-e8b6-48ca-b9d1-a0fdc6745fd4"
+      ],
+      "assets": [
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        },
+        {
+          "dimensions": [
+            2000,
+            1200
+          ],
+          "sha256": "2655dbbaf71a4cefe85cfcf064a15b069dc03e2bb3f9a01f0146277e6e0d6cad"
+        }
+      ],
+      "started_at": "2026-11-04T17:18:37.686472+00:00",
+      "start_epoch": 1793812717.6864724,
+      "http": [
+        {
+          "test_case_id": "4e966c93-4377-41ec-8f66-74e317ef611e",
+          "start": 1793812717.728121,
+          "status": 200,
+          "response_bytes": 9300,
+          "runs": [
+            {
+              "id": "c4406348-c288-4032-bbfe-8d5027a36f9e",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_48c1dc680f934f7488471125d59f11a6",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_48c1dc680f934f7488471125d59f11a6",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "dbe88cfe-43b3-4a67-a2f0-40d7f78e1349",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_48c1dc680f934f7488471125d59f11a6",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_48c1dc680f934f7488471125d59f11a6",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812718.5836148,
+          "duration_ms": 855.49
+        },
+        {
+          "test_case_id": "775fcb91-e8b6-48ca-b9d1-a0fdc6745fd4",
+          "start": 1793812717.7291667,
+          "status": 200,
+          "response_bytes": 9300,
+          "runs": [
+            {
+              "id": "52000c09-4ba0-4910-9264-7a7881fd9337",
+              "pipeline_id": "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_98bea6393d984e1995c37d79c062f5ed",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_98bea6393d984e1995c37d79c062f5ed",
+                  "error_code": null
+                }
+              ]
+            },
+            {
+              "id": "f5f05bf3-25fc-4421-871d-21c39c6a779d",
+              "pipeline_id": "dynamic_b678914f65e94e8b9b0667815ab031b0",
+              "status": "success",
+              "error_code": null,
+              "fields": [
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_98bea6393d984e1995c37d79c062f5ed",
+                  "error_code": null
+                },
+                {
+                  "status": "success",
+                  "gateway_request_id": "batch_98bea6393d984e1995c37d79c062f5ed",
+                  "error_code": null
+                }
+              ]
+            }
+          ],
+          "end": 1793812719.2579067,
+          "duration_ms": 1528.74
+        }
+      ],
+      "container_before": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "end_epoch": 1793812719.2620778,
+      "finished_at": "2026-11-04T17:18:39.262077+00:00",
+      "container_after": {
+        "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+        "state": {
+          "Status": "running",
+          "Running": true,
+          "OOMKilled": false,
+          "ExitCode": 0,
+          "Pid": 13080,
+          "StartedAt": "2026-11-04T17:18:07.846623728Z",
+          "FinishedAt": "0001-01-01T00:00:00Z"
+        },
+        "restart_count": 0,
+        "memory_limit": 512000000,
+        "nano_cpus": 1000000000
+      },
+      "resources": {
+        "sample_count": 83,
+        "peak_rss_bytes": 227606528,
+        "peak_cgroup_bytes": 187400192,
+        "max_gateway_inflight": 2,
+        "pids": [
+          1
+        ],
+        "cpu_user_seconds": 0.6242929999999998,
+        "cpu_system_seconds": 0.04169999999999996,
+        "gateway_dispatches": [
+          {
+            "request_id": "batch_48c1dc680f934f7488471125d59f11a6",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793812717.8353333
+          },
+          {
+            "request_id": "batch_72b9216d6750403780bcd52603628502",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812718.1406102
+          },
+          {
+            "request_id": "batch_67b8202b8c5744b48aa8d55054486eee",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812718.1490736
+          },
+          {
+            "request_id": "batch_98bea6393d984e1995c37d79c062f5ed",
+            "params": {
+              "version": "6",
+              "model": "baseline"
+            },
+            "count": 4,
+            "dimensions": [
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ],
+              [
+                2000,
+                600
+              ]
+            ],
+            "time": 1793812718.5860243
+          },
+          {
+            "request_id": "batch_68ffe023beff44dd867a555e899e7ab9",
+            "params": {
+              "version": "5",
+              "model": "baseline"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812718.8929234
+          },
+          {
+            "request_id": "batch_ff769fa4885a44c8a28705bd0eeedd99",
+            "params": {
+              "version": "5",
+              "model": "thai_ft_v3"
+            },
+            "count": 2,
+            "dimensions": [
+              [
+                1997,
+                597
+              ],
+              [
+                1997,
+                597
+              ]
+            ],
+            "time": 1793812718.8984005
+          }
+        ],
+        "json_decode_phases": [
+          {
+            "event": "json_decode_start",
+            "time": 1793812718.3218853,
+            "response_bytes": 6660598,
+            "VmRSS": 205586432,
+            "cgroup_current": 165195776
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812718.3758354,
+            "response_bytes": 6660598,
+            "VmRSS": 227606528,
+            "cgroup_current": 187215872
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812718.410747,
+            "response_bytes": 6660596,
+            "VmRSS": 215220224,
+            "cgroup_current": 175079424
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812718.4627502,
+            "response_bytes": 6660596,
+            "VmRSS": 227590144,
+            "cgroup_current": 187400192
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812719.0718718,
+            "response_bytes": 6660596,
+            "VmRSS": 216236032,
+            "cgroup_current": 175964160
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812719.1257224,
+            "response_bytes": 6660596,
+            "VmRSS": 227561472,
+            "cgroup_current": 187236352
+          },
+          {
+            "event": "json_decode_start",
+            "time": 1793812719.1611445,
+            "response_bytes": 6660598,
+            "VmRSS": 218271744,
+            "cgroup_current": 177995776
+          },
+          {
+            "event": "json_decode_end",
+            "time": 1793812719.2154303,
+            "response_bytes": 6660598,
+            "VmRSS": 227561472,
+            "cgroup_current": 187170816
+          }
+        ],
+        "peak_working_set_bytes": 187383808,
+        "peak_anon_bytes": 177582080,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      },
+      "gateway_events": [
+        {
+          "request_id": "batch_48c1dc680f934f7488471125d59f11a6",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812717.841142,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793812718.0075002,
+          "end": 1793812718.0076923
+        },
+        {
+          "request_id": "batch_67b8202b8c5744b48aa8d55054486eee",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812718.155182,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660598,
+          "handler_end": 1793812718.313661,
+          "end": 1793812718.3159184
+        },
+        {
+          "request_id": "batch_72b9216d6750403780bcd52603628502",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812718.155309,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660596,
+          "handler_end": 1793812718.3212385,
+          "end": 1793812718.4046743
+        },
+        {
+          "request_id": "batch_98bea6393d984e1995c37d79c062f5ed",
+          "stage": "det",
+          "params": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "start": 1793812718.5933483,
+          "active_on_start": 1,
+          "count": 4,
+          "dimensions": [
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ],
+            [
+              2000,
+              600
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 931,
+          "handler_end": 1793812718.7577062,
+          "end": 1793812718.757918
+        },
+        {
+          "request_id": "batch_68ffe023beff44dd867a555e899e7ab9",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "start": 1793812718.9059052,
+          "active_on_start": 1,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660596,
+          "handler_end": 1793812719.0641253,
+          "end": 1793812719.0663776
+        },
+        {
+          "request_id": "batch_ff769fa4885a44c8a28705bd0eeedd99",
+          "stage": "rec",
+          "params": {
+            "version": "5",
+            "model": "thai_ft_v3"
+          },
+          "start": 1793812718.9060435,
+          "active_on_start": 2,
+          "count": 2,
+          "dimensions": [
+            [
+              1997,
+              597
+            ],
+            [
+              1997,
+              597
+            ]
+          ],
+          "profile": "sized",
+          "status": 200,
+          "response_bytes": 6660598,
+          "handler_end": 1793812719.0717332,
+          "end": 1793812719.1547265
+        }
+      ],
+      "gateway_calls": 6,
+      "batch_image_counts": [
+        4,
+        2,
+        2,
+        4,
+        2,
+        2
+      ],
+      "gateway_response_bytes": 26644250,
+      "p95_ms": 1528.74,
+      "success": 2,
+      "http_422": 0,
+      "http_502": 0
+    }
+  ],
+  "gateway_only": [
+    {
+      "kind": "det",
+      "version": "6",
+      "model": "baseline",
+      "status": 200,
+      "response_bytes": 501
+    },
+    {
+      "kind": "det",
+      "version": "6",
+      "model": "thai_ft_v2",
+      "status": 200,
+      "response_bytes": 503
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "baseline",
+      "status": 200,
+      "response_bytes": 3330494
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "thai_ft_v3",
+      "status": 200,
+      "response_bytes": 3330496
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "thai_ft_v4",
+      "status": 200,
+      "response_bytes": 3330496
+    },
+    {
+      "kind": "rec",
+      "version": "5",
+      "model": "thai_ft_v6",
+      "status": 200,
+      "response_bytes": 3330496
+    },
+    {
+      "kind": "rec",
+      "version": "6",
+      "model": "thai_ft_v1",
+      "status": 200,
+      "response_bytes": 3330496
+    }
+  ],
+  "stopped": false,
+  "source_tree_sha256": "449298416441198cdd0a821cbc62c31943da1404dfa8a50db350ff882dcdf267",
+  "started_at": "2026-11-04T17:18:14.302077+00:00",
+  "initial_container": {
+    "id": "144a9cdb2a599e82585cc176c1afac15454357117e7f88892b713e2582e456a1",
+    "state": {
+      "Status": "running",
+      "Running": true,
+      "OOMKilled": false,
+      "ExitCode": 0,
+      "Pid": 13080,
+      "StartedAt": "2026-11-04T17:18:07.846623728Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "restart_count": 0,
+    "memory_limit": 512000000,
+    "nano_cpus": 1000000000
+  },
+  "synthetic_pipeline_ids": [
+    "dynamic_03f849e8c6884fe1b212c97b590d41b1",
+    "dynamic_b678914f65e94e8b9b0667815ab031b0",
+    "dynamic_5e40df94d297404fb7f1f39e48f50ab3",
+    "dynamic_e1d881b554914cf495e84ae5a88f29d3"
+  ],
+  "finished_at": "2026-11-04T17:18:39.633020+00:00",
+  "settings": {
+    "OCR_MAX_CONCURRENT_TASKS": 4,
+    "OCR_MAX_CONCURRENT_FIELDS": 8,
+    "OCR_GATEWAY_BATCH_SIZE": 4
+  },
+  "gateway_calls_total": 64,
+  "initial_pr8_evidence": "postman/staging/results-pr8.json",
+  "full_scale_evidence": "postman/staging/full-scale-results.json",
+  "full_scale_summary": {
+    "repetitions": 3,
+    "results_per_run": 360,
+    "all_pass": true,
+    "peak_rss_bytes": 315191296,
+    "peak_cgroup_bytes": 340443136,
+    "p50_http_ms": 48057.67,
+    "p95_http_ms_nearest_rank": 48795.67,
+    "sample_count": 3,
+    "calls_per_run": [
+      195,
+      195,
+      195
+    ]
+  },
+  "backend_regression": {
+    "passed": 447,
+    "failed": 55,
+    "total": 502,
+    "new_failures": [],
+    "baseline_only": [
+      "tests.test_document_dataset_management::test_0009_additive_upgrade_preserves_old_document_and_no_drift",
+      "tests.test_global_layout::test_postgresql_0007_upgrade_preserves_history_and_has_no_drift",
+      "tests.test_lean_bulk::test_postgresql_clean_head_and_bulk_fk_cascades",
+      "tests.test_network_optimization_postgres::test_current_postgresql_upload_ocr_gt_history_metrics_dataset_and_reconnect"
+    ],
+    "remaining_failure_ids": [
+      "tests.test_api::test_auto_roi_and_failure_do_not_block_manual",
+      "tests.test_api::test_config_validation_and_secret_status",
+      "tests.test_api::test_failure_isolation_real_mode_and_trace",
+      "tests.test_api::test_http_fixture_workflow_and_metrics_update",
+      "tests.test_api::test_matrix_latest_runs_filters_and_categories",
+      "tests.test_api::test_no_ground_truth_and_empty_ground_truth",
+      "tests.test_api::test_roi_changes_preserve_old_predictions",
+      "tests.test_batch_logs_delete::test_batch_order_failure_independence_and_safe_logs",
+      "tests.test_batch_logs_delete::test_delete_cascades_preserves_shared_document_and_audit",
+      "tests.test_batch_logs_delete::test_log_never_accepts_secret_identifiers_or_arbitrary_payload",
+      "tests.test_benchmark_pipeline::test_additive_seed_and_fixed_benchmark_settings",
+      "tests.test_benchmark_pipeline::test_benchmark_failure_isolated_from_existing_pipelines",
+      "tests.test_benchmark_pipeline::test_benchmark_persistence_metrics_error_analysis_and_dynamic_views",
+      "tests.test_document_dataset_management::test_recent_dataset_exclusion_preserves_gt_source_history",
+      "tests.test_error_analysis_dataset::test_error_replacement_filters_latest_and_historical_recompute",
+      "tests.test_error_analysis_dataset::test_future_config_is_iterable_without_invented_adapter",
+      "tests.test_fields_roi::test_explicit_roi_origin_pipeline_inputs[auto]",
+      "tests.test_fields_roi::test_explicit_roi_origin_pipeline_inputs[manual]",
+      "tests.test_fields_roi::test_explicit_roi_origin_pipeline_inputs[none]",
+      "tests.test_fields_roi::test_fields_lifecycle_scoping_preview_replacement_and_history",
+      "tests.test_fields_roi::test_postgresql_field_roundtrip",
+      "tests.test_fields_roi::test_roi_source_validation_and_no_roi_full_page",
+      "tests.test_global_layout::test_detector_order_is_not_global_identity_and_failure_isolation",
+      "tests.test_global_layout::test_field_alignment[per_field-ABD-insertion]",
+      "tests.test_global_layout::test_field_alignment[per_field-ABXCD-deletion]",
+      "tests.test_global_layout::test_field_alignment[per_field-ABXD-substitution]",
+      "tests.test_global_layout::test_field_alignment[whole_document-ABD-insertion]",
+      "tests.test_global_layout::test_field_alignment[whole_document-ABXCD-deletion]",
+      "tests.test_global_layout::test_field_alignment[whole_document-ABXD-substitution]",
+      "tests.test_global_layout::test_field_dataset_exact_source_crop_confirmed_gt_and_missing_source",
+      "tests.test_global_layout::test_field_edit_invalidates_only_its_evaluation_and_modes_remain_independent",
+      "tests.test_global_layout::test_geometry_order_reorder_identity_and_historical_lock",
+      "tests.test_global_layout::test_layout_identity_confirmation_history_and_crop_fairness",
+      "tests.test_global_layout::test_shared_gt_explicit_evaluation_persistence_and_invalidation[per_field]",
+      "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[False-False]",
+      "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[False-True]",
+      "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[True-False]",
+      "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[True-True]",
+      "tests.test_global_layout::test_synchronized_gt_requires_all_fields_and_matching_document",
+      "tests.test_global_layout::test_whole_document_explicit_evaluation_invalidation_and_no_dataset_labels",
+      "tests.test_hutch_fine_tune_v2::test_global_identity_order_shared_gt_history_and_partial_failure",
+      "tests.test_hutch_fine_tune_v2::test_registration_fixed_route_unknown_readiness",
+      "tests.test_pdf::test_pdf_page_roi_persistence_and_three_real_adapter_contracts",
+      "tests.test_privacy_and_database::test_bad_metadata_cannot_cancel_other_runs",
+      "tests.test_privacy_and_database::test_live_postgresql_repository_roundtrip",
+      "tests.test_privacy_and_database::test_private_upstream_fields_never_reach_storage_or_frontend",
+      "tests.test_real_boundaries::test_archived_history_excluded_without_deleting_data",
+      "tests.test_real_boundaries::test_missing_key_has_no_fake_fallback",
+      "tests.test_real_boundaries::test_one_shared_key_and_boolean_only_status[]",
+      "tests.test_real_boundaries::test_one_shared_key_and_boolean_only_status[shared-test-only-credential]",
+      "tests.test_real_boundaries::test_shared_gateway_ignores_stale_pipeline_hosts",
+      "tests.test_thai_ft_v2::test_multiple_batches_unicode_order_and_missing_selection",
+      "tests.test_thai_ft_v2::test_registration_fixed_settings_and_unknown_readiness",
+      "tests.test_thai_ft_v2::test_roi_fields_persistence_and_dynamic_views[auto]",
+      "tests.test_thai_ft_v2::test_roi_fields_persistence_and_dynamic_views[manual]"
+    ]
+  },
+  "real_gateway_sequential": {
+    "mode": "baseline",
+    "started_at": "2026-11-04T17:18:24.911Z",
+    "concurrency": 1,
+    "max_iterations": 1,
+    "requests": [
+      {
+        "name": "Backend health",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:25.055Z",
+        "end": "2026-11-04T17:18:40.720Z",
+        "host": "ocrtest-production-095b.up.railway.app",
+        "path": "/api/health",
+        "query": {},
+        "status": 200,
+        "latency_ms": 15665,
+        "response_bytes": 155,
+        "request_id": "diag-38089aeb-9d03-4923-8135-853507041f97"
+      },
+      {
+        "name": "Pipeline catalog",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:40.857Z",
+        "end": "2026-11-04T17:18:42.301Z",
+        "host": "ocrtest-production-095b.up.railway.app",
+        "path": "/api/pipelines",
+        "query": {
+          "fresh": "true"
+        },
+        "status": 200,
+        "latency_ms": 1444,
+        "response_bytes": 16922,
+        "request_id": "diag-1f862055-20b7-465f-a9af-2ff6677aa4e6"
+      },
+      {
+        "name": "Model catalog",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:42.390Z",
+        "end": "2026-11-04T17:18:43.678Z",
+        "host": "ocrtest-production-095b.up.railway.app",
+        "path": "/api/pipelines/models",
+        "query": {
+          "fresh": "true"
+        },
+        "status": 200,
+        "latency_ms": 1288,
+        "response_bytes": 9200,
+        "request_id": "diag-50aac871-cf3f-4c53-b925-1a0323c33ddb"
+      },
+      {
+        "name": "DET V6 baseline",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:43.773Z",
+        "end": "2026-11-04T17:18:43.966Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-detection-batches",
+        "query": {
+          "version": "6",
+          "model": "baseline"
+        },
+        "status": 200,
+        "latency_ms": 193,
+        "response_bytes": 890,
+        "request_id": "diag-605e93a5-206a-4d7c-b0c2-9ea1eced2271",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-605e93a5-206a-4d7c-b0c2-9ea1eced2271",
+          "duration_ms": 56.13,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "detection",
+          "version": "v6",
+          "variant": "baseline",
+          "model_name": "PP-OCRv6_medium_det",
+          "local_weights": false
+        }
+      },
+      {
+        "name": "REC V5 baseline",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:44.049Z",
+        "end": "2026-11-04T17:18:45.592Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-recognition-batches",
+        "query": {
+          "version": "5",
+          "model": "baseline"
+        },
+        "status": 200,
+        "latency_ms": 1542,
+        "response_bytes": 3332714,
+        "request_id": "diag-60bd700a-0455-48fd-8cd9-a2c7b5e64b0d",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-60bd700a-0455-48fd-8cd9-a2c7b5e64b0d",
+          "duration_ms": 1033.5,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "recognition",
+          "version": "v5",
+          "variant": "baseline",
+          "model_name": "th_PP-OCRv5_mobile_rec",
+          "local_weights": false
+        }
+      },
+      {
+        "name": "DET V6 thai_ft_v2",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:45.949Z",
+        "end": "2026-11-04T17:18:45.995Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-detection-batches",
+        "query": {
+          "version": "6",
+          "model": "thai_ft_v2"
+        },
+        "status": 200,
+        "latency_ms": 46,
+        "response_bytes": 895,
+        "request_id": "diag-89d26468-bc24-412a-9714-4ab5c92220b2",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-89d26468-bc24-412a-9714-4ab5c92220b2",
+          "duration_ms": 31.55,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "detection",
+          "version": "v6",
+          "variant": "thai_ft_v2",
+          "model_name": "PP-OCRv6_medium_det",
+          "local_weights": true
+        }
+      },
+      {
+        "name": "REC V5 thai_ft_v3",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:46.090Z",
+        "end": "2026-11-04T17:18:47.634Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-recognition-batches",
+        "query": {
+          "version": "5",
+          "model": "thai_ft_v3"
+        },
+        "status": 200,
+        "latency_ms": 1544,
+        "response_bytes": 3332795,
+        "request_id": "diag-507f2f72-2442-443c-8e30-77695c73e5a3",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-507f2f72-2442-443c-8e30-77695c73e5a3",
+          "duration_ms": 1024.8,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "recognition",
+          "version": "v5",
+          "variant": "thai_ft_v3",
+          "model_name": "th_PP-OCRv5_mobile_rec",
+          "local_weights": true
+        }
+      },
+      {
+        "name": "REC V5 thai_ft_v4",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:47.977Z",
+        "end": "2026-11-04T17:18:49.599Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-recognition-batches",
+        "query": {
+          "version": "5",
+          "model": "thai_ft_v4"
+        },
+        "status": 200,
+        "latency_ms": 1622,
+        "response_bytes": 3332796,
+        "request_id": "diag-d0c11f04-6981-430d-8229-3222f8d9c40a",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-d0c11f04-6981-430d-8229-3222f8d9c40a",
+          "duration_ms": 1093.87,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "recognition",
+          "version": "v5",
+          "variant": "thai_ft_v4",
+          "model_name": "th_PP-OCRv5_mobile_rec",
+          "local_weights": true
+        }
+      },
+      {
+        "name": "REC V5 thai_ft_v6",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:49.938Z",
+        "end": "2026-11-04T17:18:51.499Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-recognition-batches",
+        "query": {
+          "version": "5",
+          "model": "thai_ft_v6"
+        },
+        "status": 200,
+        "latency_ms": 1561,
+        "response_bytes": 3332780,
+        "request_id": "diag-3f167394-9dee-43fd-afc1-fff531744770",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-3f167394-9dee-43fd-afc1-fff531744770",
+          "duration_ms": 1019.25,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "recognition",
+          "version": "v5",
+          "variant": "thai_ft_v6",
+          "model_name": "th_PP-OCRv5_mobile_rec",
+          "local_weights": true
+        }
+      },
+      {
+        "name": "REC V6 thai_ft_v1",
+        "iteration": 0,
+        "start": "2026-11-04T17:18:51.834Z",
+        "end": "2026-11-04T17:18:53.382Z",
+        "host": "websolution.cdgs.co.th",
+        "path": "/paddle/api/v1/text-recognition-batches",
+        "query": {
+          "version": "6",
+          "model": "thai_ft_v1"
+        },
+        "status": 200,
+        "latency_ms": 1548,
+        "response_bytes": 3332870,
+        "request_id": "diag-a410f318-d4d1-4604-b547-2091098f2f79",
+        "input": {
+          "count": 1,
+          "dimensions": [
+            1000,
+            240
+          ],
+          "format": "image/png",
+          "sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03"
+        },
+        "meta": {
+          "request_id": "diag-a410f318-d4d1-4604-b547-2091098f2f79",
+          "duration_ms": 1032.23,
+          "service": "model-api-gateway",
+          "model": "pipeline-router-v1"
+        },
+        "data_keys": [
+          "contract_version",
+          "kind",
+          "result",
+          "raw_output",
+          "results",
+          "predictions",
+          "count",
+          "model_selection"
+        ],
+        "count": 1,
+        "model_selection": {
+          "kind": "recognition",
+          "version": "v6",
+          "variant": "thai_ft_v1",
+          "model_name": "PP-OCRv6_medium_rec",
+          "local_weights": true
+        }
+      }
+    ],
+    "assertion_failures": [],
+    "stopped": false,
+    "finished_at": "2026-11-04T17:18:53.673Z",
+    "runner_error": null,
+    "stats": {
+      "iterations": {
+        "total": 1,
+        "pending": 0,
+        "failed": 0
+      },
+      "items": {
+        "total": 10,
+        "pending": 0,
+        "failed": 0
+      },
+      "scripts": {
+        "total": 30,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequests": {
+        "total": 10,
+        "pending": 0,
+        "failed": 0
+      },
+      "requests": {
+        "total": 10,
+        "pending": 0,
+        "failed": 0
+      },
+      "tests": {
+        "total": 10,
+        "pending": 0,
+        "failed": 0
+      },
+      "assertions": {
+        "total": 20,
+        "pending": 0,
+        "failed": 0
+      },
+      "testScripts": {
+        "total": 20,
+        "pending": 0,
+        "failed": 0
+      },
+      "prerequestScripts": {
+        "total": 10,
+        "pending": 0,
+        "failed": 0
+      }
+    },
+    "synthetic_ids": {
+      "document_id": null,
+      "test_case_id": null,
+      "run_id": null
+    }
+  },
+  "real_backend_candidate": {
+    "scope": "LOCAL CANDIDATE WITH REAL CDGS; isolated PostgreSQL/storage",
+    "steps": [
+      "health_postgresql_connected",
+      "real_auto_roi",
+      "real_det6_rec5_one_field_success",
+      "gt_confirm_and_metrics",
+      "saved_gt_and_prediction_persistence",
+      "history_matrix_analytics",
+      "evaluation_zip_opens",
+      "pdf_upload_page2_preview",
+      "excel_one_sheet_opens_with_confirmed_thai_gt"
+    ],
+    "auto_roi_count": 1,
+    "run": {
+      "id": "6920a0ad-3e40-4b16-aaa6-36189aef7269",
+      "status": "success",
+      "field_count": 1,
+      "pipeline_id": "dynamic_4138bfb030bd4a00ba842f78a4fc3d6c"
+    },
+    "metrics": {
+      "cer": 0.0,
+      "wer": 0.0,
+      "exact_match": true
+    },
+    "trace": {
+      "request_id": "ocr_93f7cdaac7f14205b8cad906ba85e61e",
+      "gateway_request_id": "batch_d748b8100a6d4c469c8957a061d99d21",
+      "gateway_duration_ms": 186.99,
+      "crop_width": 483,
+      "crop_height": 62
+    },
+    "evaluation_zip_entries": 5,
+    "test_case_id": "23949a3f-cdae-4141-a7cb-6dfe7b477790",
+    "document_id": "07af7090-6235-4753-a3ca-72ea0adb4218",
+    "pdf_document_id": "5e581b76-93ed-493a-a2ae-e53da536ff2b",
+    "input_sha256": "a99e15274150eff0ba9a115ce2e8fb2f685fac330fa3d3b88c9c7365c603ca03",
+    "timing": {
+      "processing_time_ms": 688,
+      "wall_time_ms": 688,
+      "total_field_compute_ms": 688,
+      "run_wall_time_ms": 704,
+      "timing_semantics": "wall_clock_v1"
+    }
+  },
+  "real_browser_candidate": {
+    "scope": "LOCAL ACTUAL CDGS CANARY",
+    "steps": [
+      "png_preview_auto_roi_manual_drawing_coexist_real_ocr",
+      "ui_gt_confirm_metrics_and_new_timing",
+      "reload_and_history",
+      "test_detail",
+      "comparison",
+      "zip_excel_http200",
+      "pdf_upload_two_pages_page2_preview",
+      "dataset_original_crop_bytes_and_confirmed_thai_gt_verified",
+      "reload_and_history",
+      "test_detail",
+      "comparison",
+      "zip_excel_http200",
+      "pdf_ui_upload_two_pages_page2_render"
+    ],
+    "jsErrors": [],
+    "httpErrors": [],
+    "ocrPosts": 1,
+    "pipeline_id": "dynamic_cd7e2b413cc947f59b18d8b65ac664bc",
+    "document_id": "fa619f86-cd78-4c17-9a01-64758d0191d2",
+    "auto_roi_count": 1,
+    "case_id": "744d4a4b-2e2f-4e62-a66e-ef06b7b2616d",
+    "fields": [
+      {
+        "id": "ad408492-1524-4009-9d0d-42cdffaaafde",
+        "source": "manual",
+        "roi": {
+          "x1": 81,
+          "y1": 76,
+          "x2": 563,
+          "y2": 138
+        }
+      },
+      {
+        "id": "0a163aae-d004-463a-bdd9-524c6f6a69c8",
+        "source": "auto",
+        "roi": {
+          "x1": 84,
+          "y1": 80,
+          "x2": 561,
+          "y2": 136
+        }
+      }
+    ],
+    "run": {
+      "id": "d0443c97-d70c-4c3c-8c6c-193433c8a275",
+      "status": "success",
+      "field_count": 2,
+      "timing": {
+        "wall": 805,
+        "compute": 1608,
+        "run": 822
+      },
+      "traces": [
+        {
+          "request_id": "ocr_1d86b847e611425fb391add169b2856a",
+          "gateway_request_id": "batch_62056926daf04eeba1421c24ce9d3fc0",
+          "gateway_duration_ms": 129.17,
+          "confidence": 0.9965211153030396,
+          "box_count": 1,
+          "input_width": 482,
+          "input_height": 62
+        },
+        {
+          "request_id": "ocr_2a0ee42c14054483b8ea936f4e54d31a",
+          "gateway_request_id": "batch_62056926daf04eeba1421c24ce9d3fc0",
+          "gateway_duration_ms": 129.17,
+          "confidence": 0.9816281795501709,
+          "box_count": 1,
+          "input_width": 477,
+          "input_height": 56
+        }
+      ]
+    },
+    "metrics": [
+      {
+        "cer": 0,
+        "wer": 0,
+        "exact_match": true
+      },
+      {
+        "cer": 0,
+        "wer": 0,
+        "exact_match": true
+      }
+    ],
+    "pdf_document_id": "81029ffb-077c-471c-bd8c-6bd89853b3dd",
+    "dataset_export": {
+      "status": 200,
+      "samples": 2,
+      "crop_png_bytes_equal": true,
+      "confirmed_gt_only": true,
+      "hashes": [
+        "578513455ee26f82ff02fff94d7540d85ce9f0f12f154d6412d3dbd7fde928d5",
+        "1854c1097103961876e60b1004259017998ac7ad7ad1d12c9fd12e649f67fbed"
+      ]
+    }
+  },
+  "rollback_local": {
+    "scope": "LOCAL ONLY; isolated mock/DB/storage",
+    "steps": [
+      "synthetic_uploads_backup_restore_sha256_match",
+      "rollback_to_production_source_preserves_case_and_upload",
+      "forward_to_final_candidate_preserves_case_and_upload"
+    ],
+    "backup_restore_manifest": {
+      "064a2819-fb53-4867-8f7b-d2499f26a32f.png": "5d434a56050bc3d4f53e0d00855515c14a11eae136e5925980ff3b5a8bad1601",
+      "29a32456-c3ff-4247-a7c4-e630f8fc7f6f.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "378623fd-0cf3-49c4-b358-e4bd08fd1feb.png": "5d434a56050bc3d4f53e0d00855515c14a11eae136e5925980ff3b5a8bad1601",
+      "50cb28b2-12fe-4bc9-af43-b6d49ab06d6f.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "50d80149-8633-4d7e-9b84-6c75865495cb.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "6002cf37-1133-4645-b7e2-447880774078.png": "5d434a56050bc3d4f53e0d00855515c14a11eae136e5925980ff3b5a8bad1601",
+      "7f90f7aa-5235-4820-8e59-b45b8a97bcd2.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "7fd8e51b-a67c-4d23-bc3d-bdaf4fe96a39.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "82f65f5f-5543-4e91-9c0c-f0a3719ca65d.png": "5d434a56050bc3d4f53e0d00855515c14a11eae136e5925980ff3b5a8bad1601",
+      "8329f563-2415-4b70-9c84-016f301887e8.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "9260a3e5-4957-4362-9afc-22b78d0f5117.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "a3cc546e-d0d9-4556-8310-199c36f8acbc.png": "ebaf7524782443292f65011ec21ae6c9b9ed5d7b81385272088547d3325e2132",
+      "ac35c6fe-5082-4276-af72-95d2a1050b40.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "b3dedbda-3492-4ae4-bbe4-f44a40f784de.png": "5d434a56050bc3d4f53e0d00855515c14a11eae136e5925980ff3b5a8bad1601",
+      "ba614ead-6f17-4f8c-a721-2c2dcb7067e9.png": "5d434a56050bc3d4f53e0d00855515c14a11eae136e5925980ff3b5a8bad1601",
+      "e4b2bf90-5ec4-4192-ac5c-135088a25c84.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e",
+      "efb26a4d-f875-41c2-b515-8920599d56d3.png": "ebaf7524782443292f65011ec21ae6c9b9ed5d7b81385272088547d3325e2132",
+      "fa924f9e-39b9-4839-bd96-810250aa7120.png": "aa89b5b35783ea07ce9be86ed206bd15072e697bbd80b3a488ac0b7c371e1a2e"
+    }
+  },
+  "production_readonly_preflight": {
+    "scope": "production read-only",
+    "revision": "0011_gt_prefill",
+    "counts_before_release": {
+      "documents": 149,
+      "test_cases": 115,
+      "pipeline_runs": 564
+    },
+    "schema_change_required": false
+  },
+  "release_decision": "GO WITH DOCUMENTED RESIDUAL RISK: code/local gates pass; pending checks/deployment/production canary",
+  "frontend_regression": {
+    "baseline": {
+      "failed": 35,
+      "passed": 117,
+      "ids": [
+        "tests/batch-logs-delete.spec.ts:7:5 legacy compatibility: selected PDF pages run separately; logs and confirmed deletion preserve document",
+        "tests/batch-review.spec.ts:7:5 legacy compatibility: batch selection is independent of preview; selected page results and GT stay inline",
+        "tests/batch-review.spec.ts:84:5 legacy compatibility: batch retries only failed pages and preserves completed progress",
+        "tests/benchmark.spec.ts:8:5 legacy compatibility: Benchmark appears dynamically and flows through ROI, saved metrics, errors and comparison",
+        "tests/comparison-dashboard.spec.ts:41:44 real contracts responsive dashboard 390",
+        "tests/console.spec.ts:102:5 business library filters, detail tabs, missing metrics and history links",
+        "tests/console.spec.ts:161:5 all data routes have recoverable errors and intentional empty states",
+        "tests/dataset-errors.spec.ts:8:5 confirmed source crop dataset export and persisted error analysis drilldown",
+        "tests/fields-roi.spec.ts:27:5 legacy compatibility: default field GT uses Check preview, accessible red errors and explicit confirmation",
+        "tests/fields-roi.spec.ts:101:5 legacy compatibility: Dataset stale-file failure stays actionable and does not hide the selection",
+        "tests/global-comparison.spec.ts:5:35 comparison scroll, pinned GT, modes and explicit recalculation at 390px",
+        "tests/global-comparison.spec.ts:5:35 comparison scroll, pinned GT, modes and explicit recalculation at 1440px",
+        "tests/global-layout.spec.ts:32:5 Hutch fine tune v2 shares four-page workflow, busy state and result blocks with Mint",
+        "tests/global-layout.spec.ts:49:5 Run OCR shows immediate busy feedback, blocks duplicates and restores after failure",
+        "tests/global-layout.spec.ts:64:5 GT input cards show focus and preserve both drafts across repeated toggles",
+        "tests/global-layout.spec.ts:74:5 global acceptance: 3 Auto + Manual, shared crops/GT, explicit calculate, History and field Dataset",
+        "tests/global-layout.spec.ts:107:5 smart calculation stays on page four and evaluates Whole/Sub/both from data, with collapsed cards",
+        "tests/global-layout.spec.ts:133:5 global boxes move/resize/delete/add without losing other identities or zoom coordinates",
+        "tests/global-layout.spec.ts:145:5 four-page PDF navigation preserves saved layout per selected page",
+        "tests/global-layout.spec.ts:153:5 image upload refresh, bulk layout selection and safe back navigation preserve historical runs",
+        "tests/global-layout.spec.ts:172:39 global workflow responsive 390",
+        "tests/global-layout.spec.ts:172:39 global workflow responsive 768",
+        "tests/global-layout.spec.ts:172:39 global workflow responsive 1440",
+        "tests/pdf.spec.ts:9:5 legacy compatibility: Thai multi-page PDF: choose page two, ROI, all configured pipelines, save and reopen",
+        "tests/pdf.spec.ts:129:7 Thai PDF workspace remains usable at 1440px",
+        "tests/pdf.spec.ts:129:7 Thai PDF workspace remains usable at 1024px",
+        "tests/pdf.spec.ts:129:7 Thai PDF workspace remains usable at 768px",
+        "tests/release-b.spec.ts:6:39 document types, one-pipeline History, dataset exclusion and log search 390",
+        "tests/release-b.spec.ts:6:39 document types, one-pipeline History, dataset exclusion and log search 768",
+        "tests/release-b.spec.ts:6:39 document types, one-pipeline History, dataset exclusion and log search 1440",
+        "tests/thai-ft-v2.spec.ts:9:5 legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, field GT, persistence and dashboards",
+        "tests/workflow.spec.ts:14:7 upload public/sample-document.png, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+        "tests/workflow.spec.ts:14:7 upload tests/fixtures/sample-document.jpg, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+        "tests/workflow.spec.ts:310:5 legacy compatibility: ROI move and resize, selectable Auto ROI, and failure recovery",
+        "tests/workflow.spec.ts:453:5 legacy compatibility: settings save and upstream connection test"
+      ]
+    },
+    "candidate": {
+      "passed": 126,
+      "failed": 34,
+      "ids": [
+        "tests/batch-logs-delete.spec.ts:7:5 legacy compatibility: selected PDF pages run separately; logs and confirmed deletion preserve document",
+        "tests/batch-review.spec.ts:7:5 legacy compatibility: batch selection is independent of preview; selected page results and GT stay inline",
+        "tests/batch-review.spec.ts:84:5 legacy compatibility: batch retries only failed pages and preserves completed progress",
+        "tests/benchmark.spec.ts:8:5 legacy compatibility: Benchmark appears dynamically and flows through ROI, saved metrics, errors and comparison",
+        "tests/console.spec.ts:102:5 business library filters, detail tabs, missing metrics and history links",
+        "tests/console.spec.ts:161:5 all data routes have recoverable errors and intentional empty states",
+        "tests/dataset-errors.spec.ts:8:5 confirmed source crop dataset export and persisted error analysis drilldown",
+        "tests/fields-roi.spec.ts:27:5 legacy compatibility: default field GT uses Check preview, accessible red errors and explicit confirmation",
+        "tests/fields-roi.spec.ts:101:5 legacy compatibility: Dataset stale-file failure stays actionable and does not hide the selection",
+        "tests/global-comparison.spec.ts:5:35 comparison scroll, pinned GT, modes and explicit recalculation at 390px",
+        "tests/global-comparison.spec.ts:5:35 comparison scroll, pinned GT, modes and explicit recalculation at 1440px",
+        "tests/global-layout.spec.ts:32:5 Hutch fine tune v2 shares four-page workflow, busy state and result blocks with Mint",
+        "tests/global-layout.spec.ts:49:5 Run OCR shows immediate busy feedback, blocks duplicates and restores after failure",
+        "tests/global-layout.spec.ts:64:5 GT input cards show focus and preserve both drafts across repeated toggles",
+        "tests/global-layout.spec.ts:74:5 global acceptance: 3 Auto + Manual, shared crops/GT, explicit calculate, History and field Dataset",
+        "tests/global-layout.spec.ts:107:5 smart calculation stays on page four and evaluates Whole/Sub/both from data, with collapsed cards",
+        "tests/global-layout.spec.ts:133:5 global boxes move/resize/delete/add without losing other identities or zoom coordinates",
+        "tests/global-layout.spec.ts:145:5 four-page PDF navigation preserves saved layout per selected page",
+        "tests/global-layout.spec.ts:153:5 image upload refresh, bulk layout selection and safe back navigation preserve historical runs",
+        "tests/global-layout.spec.ts:172:39 global workflow responsive 390",
+        "tests/global-layout.spec.ts:172:39 global workflow responsive 768",
+        "tests/global-layout.spec.ts:172:39 global workflow responsive 1440",
+        "tests/pdf.spec.ts:9:5 legacy compatibility: Thai multi-page PDF: choose page two, ROI, all configured pipelines, save and reopen",
+        "tests/pdf.spec.ts:129:7 Thai PDF workspace remains usable at 1440px",
+        "tests/pdf.spec.ts:129:7 Thai PDF workspace remains usable at 1024px",
+        "tests/pdf.spec.ts:129:7 Thai PDF workspace remains usable at 768px",
+        "tests/release-b.spec.ts:6:39 document types, one-pipeline History, dataset exclusion and log search 390",
+        "tests/release-b.spec.ts:6:39 document types, one-pipeline History, dataset exclusion and log search 768",
+        "tests/release-b.spec.ts:6:39 document types, one-pipeline History, dataset exclusion and log search 1440",
+        "tests/thai-ft-v2.spec.ts:9:5 legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, field GT, persistence and dashboards",
+        "tests/workflow.spec.ts:14:7 upload public/sample-document.png, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+        "tests/workflow.spec.ts:14:7 upload tests/fixtures/sample-document.jpg, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+        "tests/workflow.spec.ts:310:5 legacy compatibility: ROI move and resize, selectable Auto ROI, and failure recovery",
+        "tests/workflow.spec.ts:453:5 legacy compatibility: settings save and upstream connection test"
+      ]
+    },
+    "new_failures": [],
+    "baseline_only": [
+      "tests/comparison-dashboard.spec.ts:41:44 real contracts responsive dashboard 390"
+    ]
+  },
+  "frontend_checks": {
+    "typecheck": "PASS",
+    "eslint": "PASS",
+    "production_build": "PASS",
+    "new_timing_tests_passed": 3,
+    "full_suite_passed": 126,
+    "full_suite_failed": 34,
+    "new_failure_ids": []
+  }
+}

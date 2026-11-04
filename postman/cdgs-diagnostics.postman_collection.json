@@ -1,0 +1,551 @@
+{
+  "info": {
+    "name": "OCRLab CDGS bounded diagnostics",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.variables.set('request_id','diag-'+pm.variables.replaceIn('{{$guid}}'));",
+          "const u=pm.variables.replaceIn(pm.request.url.toString());",
+          "const gateway=pm.environment.get('gateway_base_url');",
+          "if(u.startsWith(gateway+'/') && gateway!=='https://websolution.cdgs.co.th/paddle/api/v1') throw new Error('Gateway host/prefix not approved');"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if(pm.response.code>=500 || pm.response.code===429) pm.execution.setNextRequest(null);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Read-only preflight",
+      "item": [
+        {
+          "name": "Backend health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));pm.test('DB and storage ready',()=>{const d=pm.response.json();pm.expect(d.database.status).to.eql('connected');pm.expect(d.storage.status).to.eql('ready');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pipeline catalog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/pipelines?fresh=true"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));pm.test('catalog list',()=>pm.expect(pm.response.json()).to.be.an('array'));",
+                  "const p=pm.response.json().find(p=>p.enabled&&p.source==='custom'&&p.execution_mode==='det_rec'&&p.det_model?.version==='6'&&p.det_model?.weight==='baseline'&&p.rec_model?.version==='5'&&p.rec_model?.weight==='baseline');if(p)pm.environment.set('pipeline_id',p.pipeline_id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Model catalog",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/pipelines/models?fresh=true"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));pm.test('models list',()=>pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Baseline sequential",
+      "item": [
+        {
+          "name": "DET V6 baseline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-detection-batches?version=6&model=baseline",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v6');pm.expect(d.data.model_selection.variant).to.eql('baseline');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].dt_polys).to.be.an('array');pm.expect(rows[0].dt_scores).to.be.an('array');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "REC V5 baseline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-recognition-batches?version=5&model=baseline",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v5');pm.expect(d.data.model_selection.variant).to.eql('baseline');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].rec_text).to.be.a('string');pm.expect(rows[0].rec_score).to.be.a('number');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "DET V6 thai_ft_v2",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-detection-batches?version=6&model=thai_ft_v2",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v6');pm.expect(d.data.model_selection.variant).to.eql('thai_ft_v2');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].dt_polys).to.be.an('array');pm.expect(rows[0].dt_scores).to.be.an('array');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "REC V5 thai_ft_v3",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-recognition-batches?version=5&model=thai_ft_v3",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v5');pm.expect(d.data.model_selection.variant).to.eql('thai_ft_v3');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].rec_text).to.be.a('string');pm.expect(rows[0].rec_score).to.be.a('number');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "REC V5 thai_ft_v4",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-recognition-batches?version=5&model=thai_ft_v4",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v5');pm.expect(d.data.model_selection.variant).to.eql('thai_ft_v4');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].rec_text).to.be.a('string');pm.expect(rows[0].rec_score).to.be.a('number');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "REC V5 thai_ft_v6",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-recognition-batches?version=5&model=thai_ft_v6",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v5');pm.expect(d.data.model_selection.variant).to.eql('thai_ft_v6');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].rec_text).to.be.a('string');pm.expect(rows[0].rec_score).to.be.a('number');});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "REC V6 thai_ft_v1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{gateway_api_key}}"
+              }
+            ],
+            "url": "{{gateway_base_url}}/text-recognition-batches?version=6&model=thai_ft_v1",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "images",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('leaf envelope and selection',()=>{pm.expect(d.meta.request_id).to.be.a('string');pm.expect(d.meta.duration_ms).to.be.a('number');pm.expect(d.data.count).to.eql(1);pm.expect(d.data.model_selection.version).to.eql('v6');pm.expect(d.data.model_selection.variant).to.eql('thai_ft_v1');const rows=d.data.results;pm.expect(rows).to.be.an('array').with.lengthOf(1);pm.expect(rows[0].rec_text).to.be.a('string');pm.expect(rows[0].rec_score).to.be.a('number');});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 Synthetic backend smoke (writes NEW records)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if(pm.environment.get('allow_synthetic_writes')!=='true') pm.execution.skipRequest();",
+              "if(!pm.environment.get('field_id'))pm.environment.set('field_id',pm.variables.replaceIn('{{$guid}}'));"
+            ]
+          }
+        }
+      ],
+      "item": [
+        {
+          "name": "Upload NEW synthetic document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/documents",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{synthetic_image}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created',()=>pm.response.to.have.status(201));pm.environment.set('document_id',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create NEW synthetic case",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/test-cases",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"document_id\": \"{{document_id}}\", \"workflow\": \"global\", \"ground_truth_raw\": \"ทดสอบ CDGS 12345\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('created',()=>pm.response.to.have.status(201));pm.environment.set('test_case_id',pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Confirm ONE synthetic field with manual GT",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/test-cases/{{test_case_id}}/global-fields",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"confirmed\": true, \"fields\": [{\"id\": \"{{field_id}}\", \"field_index\": 1, \"source\": \"manual\", \"roi\": {\"x1\": 70, \"y1\": 65, \"x2\": 600, \"y2\": 150}, \"ground_truth_raw\": \"ทดสอบ CDGS 12345\"}]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Run ONE pipeline ONE field",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/test-cases/{{test_case_id}}/run",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"pipelines\": [\"{{pipeline_id}}\"]}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));const d=pm.response.json();pm.test('one successful pipeline and field',()=>{pm.expect(d.runs).to.have.lengthOf(1);pm.expect(d.runs[0].pipeline_id).to.eql(pm.environment.get('pipeline_id'));pm.expect(d.runs[0].status).to.eql('success');pm.expect(d.runs[0].fields).to.have.lengthOf(1);pm.expect(d.runs[0].fields[0].status).to.eql('success');});pm.environment.set('run_id',d.runs[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Validate saved OCR run",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Request-ID",
+                "value": "{{request_id}}"
+              }
+            ],
+            "url": "{{backend_base_url}}/api/test-cases/{{test_case_id}}/results"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200',()=>pm.response.to.have.status(200));pm.test('saved run successful',()=>{const r=pm.response.json().runs.find(x=>x.id===pm.environment.get('run_id'));pm.expect(r).to.exist;pm.expect(r.status).to.eql('success');pm.expect(r.fields[0].diagnostics.gateway_request_id).to.be.a('string');});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

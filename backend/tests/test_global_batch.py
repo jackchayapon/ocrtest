@@ -8,6 +8,9 @@ from tests.test_global_layout import layout
 @pytest.mark.parametrize("mode", ["det_rec", "rec"])
 @pytest.mark.parametrize("contract", ["legacy", "leaf_aliases"])
 def test_global_crops_are_batched_and_results_keep_field_identity(client, document, gateway, mode, contract):
+    # This test deliberately exercises a single 3-image batch; defaults are tested separately.
+    client.app.state.settings.ocr_max_concurrent_fields = 3
+    client.app.state.settings.ocr_max_concurrent_tasks = 8
     case, fields = layout(client, document, count=3)
     models = client.get("/api/pipelines/models").json()
     selected = {kind: next(m["id"] for m in models if m["kind"] == kind and m["source"] == "custom" and m["version"] == "5" and m["weight"] == "baseline") for kind in ("det", "rec")}
@@ -57,8 +60,9 @@ def test_global_crops_are_batched_and_results_keep_field_identity(client, docume
 
 def test_batch_split_bound_and_count_mismatch(settings):
     import asyncio
+
     from app.integrations.batch_gateway import BatchGateway
-    from app.integrations.model_gateway import ModelGatewayClient, GatewayError
+    from app.integrations.model_gateway import GatewayError, ModelGatewayClient
 
     async def scenario():
         gateway = ModelGatewayClient(settings)
@@ -76,6 +80,7 @@ def test_batch_split_bound_and_count_mismatch(settings):
 
 def test_large_batch_preserves_order_across_chunks_and_query_groups(settings):
     import asyncio
+
     from app.integrations.batch_gateway import BatchGateway
     from app.integrations.model_gateway import ModelGatewayClient
 
@@ -90,4 +95,40 @@ def test_large_batch_preserves_order_across_chunks_and_query_groups(settings):
         responses = await asyncio.gather(*(batches.send(gateway, gateway.build_batch_request(pngs=[str(i).encode()], endpoint="/rec", version=5 if i < 61 else 6, request_id=str(i))) for i in range(63)))
         assert sorted(calls) == [("5", 1), ("5", 30), ("5", 30), ("6", 2)]
         assert [r["data"]["results"][0]["text"] for r in responses] == [str(i) for i in range(63)]
+    asyncio.run(scenario())
+
+
+@pytest.mark.parametrize("batch_size", [1, 4, 30])
+def test_configurable_batch_budget_preserves_model_ownership_and_trace(settings, batch_size):
+    import asyncio
+
+    from app.integrations.batch_gateway import BatchGateway
+    from app.integrations.model_gateway import ModelGatewayClient
+
+    async def scenario():
+        gateway = ModelGatewayClient(settings)
+        calls = []
+
+        async def send(request):
+            variant = request["params"]["model"]
+            calls.append((variant, len(request["files"])))
+            return {"data": {"count": len(request["files"]), "results": [
+                {"text": variant + ":" + part[1][1].decode()} for part in request["files"]
+            ]}, "meta": {"request_id": request["headers"]["X-Request-ID"], "duration_ms": 20}}
+
+        gateway.send = send
+        batches = BatchGateway(batch_size)
+
+        async def submit(index):
+            request = gateway.build_batch_request(pngs=[str(index).encode()], endpoint="/rec", version=6, request_id=str(index))
+            request["params"]["model"] = "a" if index % 2 else "b"
+            return await batches.send(gateway, request)
+
+        results = await asyncio.wait_for(asyncio.gather(*(submit(i) for i in range(19))), timeout=2)
+        assert all(1 <= count <= batch_size for _, count in calls)
+        for i, result in enumerate(results):
+            assert result["data"]["results"][0]["text"] == ("a" if i % 2 else "b") + f":{i}"
+            assert result["meta"]["request_id"] in result["meta"]["batch_request_ids"]
+        assert sum(result["meta"]["duration_ms"] for result in results) == pytest.approx(20 * len(calls))
+
     asyncio.run(scenario())

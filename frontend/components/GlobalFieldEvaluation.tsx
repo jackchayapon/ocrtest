@@ -10,6 +10,7 @@ import PipelineVisibilityFilter from "./PipelineVisibilityFilter";
 import PipelineResultPreview from "./PipelineResultPreview";
 import type {EvaluationMode, GlobalField, PipelineRun, TestCase} from "@/types";
 import {pipelineLabel} from "@/lib/i18n/th";
+import {runTimingText} from "@/lib/run-timing";
 
 const pct=(n:number|null|undefined)=>n==null?"—":`${(n*100).toFixed(2)}%`;
 type Props={fields:GlobalField[];saved:TestCase;runs:PipelineRun[];mode:EvaluationMode;documentGT:string;onMode:(mode:EvaluationMode)=>void;onEdit:()=>void;busy:boolean};
@@ -26,6 +27,10 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-5">
    <div><h2>ผลประเมินและเปรียบเทียบ</h2><p className="mt-1 text-sm text-slate-500">ข้อความจริงตรึงด้านซ้าย · เลื่อนแนวนอนเพื่อเทียบ Pipeline และเลื่อนลงเพื่อดูทุก Field</p></div>
    {exportError&&<p role="alert">{exportError}</p>}
+   <div className="w-full space-y-1 text-xs text-slate-600" aria-label="เวลาประมวลผล">
+    {visibleRuns.map(run=><p key={run.id} data-testid="run-timing">{pipelineLabel(run.pipeline_id,run.pipeline_name)}: {runTimingText(run)}</p>)}
+    <p>เวลาที่ผ่านไปจริงรวมเวลารอคิวระหว่างกลุ่ม Fields ส่วนเวลา Gateway เป็นเวลาที่แบ่งตาม batch</p>
+   </div>
    <button className="button secondary" disabled={busy} onClick={onEdit}>กลับไปแก้ Ground Truth</button>
    <div className="flex w-full flex-wrap items-center gap-2" aria-label="Evaluation mode">{(["whole_document","per_field"] as const).map(m=><button key={m} disabled={busy} aria-pressed={m===mode} className={`button ${mode===m?"primary":"secondary"}`} onClick={()=>onMode(m)}>{m==="whole_document"?"Whole Field":"Sub-fields"}</button>)}<PipelineVisibilityFilter runs={runs} hidden={hiddenPipelines} onApply={setHiddenPipelines}/><details className="relative ml-auto shrink-0" data-testid="export-menu" onKeyDown={e=>{if(e.key==="Escape"){e.currentTarget.open=false;e.currentTarget.querySelector("summary")?.focus();}}}>
 <summary className="button primary cursor-pointer list-none">{exporting?"กำลังสร้างรายงาน…":"ส่งออก Excel ▾"}</summary>

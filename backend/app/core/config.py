@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     model_gateway_api_key: SecretStr = SecretStr("")
     model_gateway_timeout_seconds: float = Field(default=240, gt=0, le=600)
     model_gateway_max_response_mb: int = Field(default=64, ge=1, le=256)
+    ocr_max_concurrent_tasks: int = Field(default=4, ge=1, le=8)
+    ocr_max_concurrent_fields: int = Field(default=8, ge=1, le=8)
+    ocr_gateway_batch_size: int = Field(default=4, ge=1, le=30)
     mint_ocr_endpoint: str = "/api/v1/ocr-results"
     mint_ocr_engine: str = "custom"
     hutch_crop_endpoint: str = "/api/v1/ocr-results"

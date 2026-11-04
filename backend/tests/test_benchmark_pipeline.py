@@ -174,7 +174,7 @@ def test_batch_responses_still_redact_images_and_secrets(settings, gateway):
     result, _ = execute(settings)
     text = json.dumps(result.raw_response)
     assert "SECRETIMAGE" not in text and "test-gateway-secret" not in text
-    assert result.raw_response["detection"]["data"]["raw_output"]["input_img"] == "[redacted]"
+    assert "raw_output" not in result.raw_response["detection"]["data"]
 
 
 def test_benchmark_persistence_metrics_error_analysis_and_dynamic_views(client, case):

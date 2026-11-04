@@ -12,6 +12,7 @@ from uuid import uuid4
 import httpx
 
 from app.core.config import Settings
+from app.core.runtime_metrics import memory_snapshot
 from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
 
 logger = logging.getLogger(__name__)
@@ -24,11 +25,13 @@ class GatewayError(Exception):
         code: str = "GATEWAY_ERROR",
         request_id: str | None = None,
         http_status=None,
+        details=None,
     ):
         super().__init__(message)
         self.code = code
         self.request_id = request_id
         self.http_status = http_status
+        self.details = details or []
 
 
 def safe_response(value, secrets=()):
@@ -70,6 +73,8 @@ def safe_response(value, secrets=()):
 
 
 class ModelGatewayClient:
+    active_requests = 0
+
     def __init__(self, settings: Settings, pipeline_id=None):
         self.settings = settings
         self.pipeline_id = pipeline_id
@@ -155,6 +160,8 @@ class ModelGatewayClient:
 
     async def send(self, request: dict):
         started, status, code = time.perf_counter(), None, None
+        details = []
+        ModelGatewayClient.active_requests += 1
         try:
             if origin(request["url"]) != origin(self.base_url):
                 raise ValueError("Unapproved host")
@@ -189,11 +196,15 @@ class ModelGatewayClient:
             ) from None
         except GatewayError as exc:
             status, code = exc.http_status, exc.code
+            details = exc.details
             raise
         finally:
-            self.log_request(request, started, status, code)
+            try:
+                self.log_request(request, started, status, code, details)
+            finally:
+                ModelGatewayClient.active_requests -= 1
 
-    def log_request(self, request, started, status, code):
+    def log_request(self, request, started, status, code, details=()):
         categories = {
             401: "authentication",
             403: "authorization",
@@ -215,9 +226,11 @@ class ModelGatewayClient:
             if code
             else None,
         )
-        # Never log queries, headers, exception text, request bodies or OCR responses.
+        # Never log unrestricted queries, headers, exception text, bodies or OCR responses.
         if code == "GATEWAY_SERVICE_UNAVAILABLE":
             category = "availability"  # Locally blocked; no inference HTTP status exists.
+        elif code == "UPSTREAM_MODEL_ERROR":
+            category = "upstream_model"
         event = dict(
             request_id=str(request.get("headers", {}).get("X-Request-ID", ""))[:100],
             pipeline_id=self.pipeline_id,
@@ -227,6 +240,13 @@ class ModelGatewayClient:
             duration_ms=round((time.perf_counter() - started) * 1000, 2),
             error_code=code,
             failure_category=category,
+            model_selection={k: str(v)[:100] for k, v in request.get("params", {}).items()
+                             if k in {"version", "model", "engine"}
+                             and re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", str(v))},
+            batch_count=len(request.get("files", [])),
+            error_details=details,
+            active_gateway_tasks=ModelGatewayClient.active_requests,
+            **memory_snapshot(),
         )
         logger.log(
             logging.WARNING if code else logging.INFO,
@@ -285,6 +305,18 @@ class ModelGatewayClient:
                             error.get("request_id"),
                             (self.key, self.settings.database_url.get_secret_value()),
                         )
+                        details = []
+                        for item in error.get("details", [])[:10] if isinstance(error.get("details"), list) else []:
+                            if isinstance(item, dict):
+                                # Do not reflect messages, input values or worker stack traces.
+                                item = safe_response(item, (self.key, self.settings.database_url.get_secret_value()))
+                                detail = {k: item[k] for k in ("code", "type")
+                                          if isinstance(item.get(k), str)
+                                          and re.fullmatch(r"[A-Za-z0-9_.-]{1,80}", item[k])}
+                                if detail:
+                                    details.append(detail)
+                            if len(details) == 5:
+                                break
                         messages = {
                             401: "Gateway authentication is required or invalid",
                             403: "Gateway access was denied",
@@ -292,13 +324,15 @@ class ModelGatewayClient:
                             503: "The requested Gateway service is unavailable",
                         }
                         raise GatewayError(
-                            messages.get(
+                            ("Gateway model worker failed; verify the model service using the request ID"
+                             if code == "UPSTREAM_MODEL_ERROR" else messages.get(
                                 response.status_code,
                                 f"Gateway request failed (HTTP {response.status_code})",
-                            ),
+                            )),
                             code,
                             str(rid)[:100] if rid else None,
                             http_status=response.status_code,
+                            details=details,
                         )
                     if (
                         not isinstance(payload, dict)
@@ -310,8 +344,15 @@ class ModelGatewayClient:
                             "INVALID_RESPONSE",
                             http_status=response.status_code,
                         )
+                    # The Gateway contract is data/meta. Ignore extra transport archives before
+                    # redaction and downstream batching can amplify their allocations.
+                    data = payload["data"]
+                    if isinstance(data, dict) and data.get("contract_version") == "leaf-inference-v1":
+                        data.pop("raw_output", None)  # Structured results retain all OCR values.
+                    del body
                     return safe_response(
-                        payload, (self.key, self.settings.database_url.get_secret_value())
+                        {"data": data, "meta": payload["meta"]},
+                        (self.key, self.settings.database_url.get_secret_value()),
                     )
         except httpx.TimeoutException:
             raise GatewayError("Gateway request timed out", "GATEWAY_TIMEOUT") from None

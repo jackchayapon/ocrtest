@@ -1,15 +1,18 @@
 """Combine concurrent leaf requests, then restore each caller's ordered result slice."""
 import asyncio
-from copy import deepcopy
 import json
+from copy import deepcopy
 from uuid import uuid4
 
-from app.integrations.model_gateway import GatewayError
 from app.core.batching import IMAGE_BATCH_SIZE
+from app.integrations.model_gateway import GatewayError
 
 
 class BatchGateway:
-    def __init__(self):
+    def __init__(self, max_images=IMAGE_BATCH_SIZE):
+        if not 1 <= max_images <= IMAGE_BATCH_SIZE:
+            raise ValueError("Gateway batch size must be between 1 and 30")
+        self.max_images = max_images
         self.pending = {}
 
     async def send(self, gateway, request):
@@ -34,8 +37,8 @@ class BatchGateway:
             request_ids = [[] for _ in entries]
             duration = 0
             duration_known = True
-            for start in range(0, len(flat), IMAGE_BATCH_SIZE):
-                chunk = flat[start:start + IMAGE_BATCH_SIZE]
+            for start in range(0, len(flat), self.max_images):
+                chunk = flat[start:start + self.max_images]
                 request = dict(entries[0][1])
                 request["headers"] = {**request["headers"], "X-Request-ID": f"batch_{uuid4().hex}"}
                 request["files"] = [("images", (f"crop-{i}.png", part[1][1], part[1][2])) for i, (_, part) in enumerate(chunk)]
@@ -59,16 +62,28 @@ class BatchGateway:
                 for (owner, _), item in zip(chunk, items):
                     collected[owner].append(item)
             for index, (_, _, future) in enumerate(entries):
-                response = deepcopy(template)
+                # Copy each owner's result slice, never the entire combined results/raw tensor.
+                response = {
+                    "meta": deepcopy(template["meta"]),
+                    "data": {
+                        k: deepcopy(v) for k, v in template["data"].items()
+                        if k not in {"result", "results", "predictions", "raw_output"}
+                    },
+                }
                 data = response["data"]
                 data["count"] = len(collected[index])
-                if isinstance(data.get("result"), dict):
-                    data["result"]["results"] = collected[index]
+                owned = deepcopy(collected[index])
+                if isinstance(template["data"].get("result"), dict):
+                    data["result"] = {
+                        k: deepcopy(v) for k, v in template["data"]["result"].items()
+                        if k != "results"
+                    }
+                    data["result"]["results"] = owned
                 # Leaf adapters expose aliases of the same result list. REC reads
                 # the top-level alias; leaving it unsliced breaks multi-image calls.
-                data["results"] = collected[index]
-                if "predictions" in data:
-                    data["predictions"] = collected[index]
+                data["results"] = owned
+                if "predictions" in template["data"]:
+                    data["predictions"] = owned
                 response["meta"]["duration_ms"] = duration / len(entries) if duration_known else None
                 response["meta"]["combined_input_count"] = len(flat)
                 response["meta"]["batch_request_ids"] = request_ids[index]

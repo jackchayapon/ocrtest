@@ -29,7 +29,8 @@ for(const width of [1440,390])test(`Dataset missing sources, exclusion namespace
  const state=await mock(page);await page.setViewportSize({width,height:1000});await page.goto("/dataset");await page.getByLabel("เลือก s0",{exact:true}).check();await page.getByLabel("เลือก s1",{exact:true}).check();
  await expect(page.getByLabel("จัดการตัวอย่างที่เลือก")).toContainText("เลือกแล้ว 2 รายการ · พร้อมส่งออก 1");await expect(page.getByRole("button",{name:"ส่งออก ZIP (1 ที่พร้อม)",exact:true})).toBeEnabled();
  await page.getByRole("button",{name:"นำออกจาก Dataset (2)",exact:true}).click();await page.getByRole("alertdialog").getByRole("button",{name:"ยืนยันนำออก 2 รายการ",exact:true}).click();await expect.poll(()=>state.exclusions.length).toBe(1);expect(state.exclusions[0]).toEqual({test_case_ids:["s0"],global_field_ids:["s1"]});
- for(let i=0;i<4;i++){await page.getByLabel("เลือกตัวอย่างในหน้านี้ทั้งหมด").check();await expect(page.getByLabel("จัดการตัวอย่างที่เลือก")).toContainText(`เลือกแล้ว ${(i+1)*50} รายการ`);await page.getByRole("button",{name:"ถัดไป",exact:true}).click();}
+ await expect(page.getByRole("alertdialog")).toBeHidden();
+ for(let i=0;i<4;i++){await page.getByLabel(`เลือก s${i*50}`,{exact:true}).waitFor({state:"visible"});await page.getByLabel("เลือกตัวอย่างในหน้านี้ทั้งหมด").check();await expect(page.getByLabel("จัดการตัวอย่างที่เลือก")).toContainText(`เลือกแล้ว ${(i+1)*50} รายการ`);await page.getByRole("button",{name:"ถัดไป",exact:true}).click();await expect(page.getByLabel(`เลือก s${(i+1)*50}`,{exact:true})).toBeVisible();}
  await expect(page.getByLabel("เลือก s200",{exact:true})).toBeDisabled();await page.getByLabel("ประเภทเอกสาร (ธุรกิจ)").selectOption("type");await expect(page.getByLabel("จัดการตัวอย่างที่เลือก")).toContainText("เลือกแล้ว 0 รายการ");
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
 });

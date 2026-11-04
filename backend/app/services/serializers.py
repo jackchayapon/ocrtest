@@ -107,6 +107,13 @@ def run_json(record, detail=False, *, summary=False):
     data = {key: getattr(record, key) for key in fields if not summary or key not in {"boxes", "raw_response"}}
     if summary:
         data.update(boxes=[], raw_response=None)
+    timing = (record.raw_response or {}).get("timing", {}) if not summary else {}
+    data.update(
+        timing_semantics=timing.get("semantics", "legacy_recorded" if not summary else "not_loaded"),
+        wall_time_ms=timing.get("wall_time_ms"),
+        run_wall_time_ms=timing.get("run_wall_time_ms"),
+        total_field_compute_ms=timing.get("total_field_compute_ms"),
+    )
     data["raw_text"] = record.raw_text if record.raw_text is not None else record.final_text
     if detail and record.document_evaluation:
         case = record.test_case

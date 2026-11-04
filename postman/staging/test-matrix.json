@@ -1,0 +1,19 @@
+{
+  "source_commit": "67df434dabed0eeb70a38009fc33fde0e12eba41",
+  "backend_memory_limit_bytes": 512000000,
+  "cpu_limit": 1,
+  "trials_per_stage": 1,
+  "gateway": "ISOLATED MOCK ONLY",
+  "profiles": ["compact", "sized"],
+  "datasets": [{"name":"small","width":1000,"height":240},{"name":"medium","width":2000,"height":1200},{"name":"large","width":4000,"height":2400}],
+  "stages": [
+    {"stage":"A","pipelines":1,"fields":1,"http_concurrency":1,"dataset":"small"},
+    {"stage":"B","pipelines":2,"fields":1,"http_concurrency":1,"dataset":"small"},
+    {"stage":"C","pipelines":4,"fields":1,"http_concurrency":1,"dataset":"small"},
+    {"stage":"D","pipelines":2,"fields":2,"http_concurrency":1,"dataset":"medium"},
+    {"stage":"E","pipelines":4,"fields":4,"http_concurrency":1,"dataset":"large"},
+    {"stage":"F","pipelines":1,"fields":1,"http_concurrency":2,"dataset":"small"},
+    {"stage":"G","pipelines":2,"fields":2,"http_concurrency":2,"dataset":"medium"}
+  ],
+  "stop_on": ["http_5xx","connection_error","pipeline_or_field_error","oom_kill","process_exit"]
+}

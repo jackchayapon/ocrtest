@@ -1,0 +1,33 @@
+# Pre-production fallback only. Never supply production DATABASE_URL before acceptance/cutover.
+# Free local storage is ephemeral; this blueprint alone is NOT production persistence ready.
+services:
+  - type: web
+    name: ocrlab-recovery-candidate
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements-runtime-lock.txt
+    startCommand: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --workers 1 --no-access-log
+    healthCheckPath: /api/health
+    autoDeployTrigger: 'off'
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: DATABASE_URL
+        sync: false
+      - key: MODEL_GATEWAY_BASE_URL
+        value: https://websolution.cdgs.co.th/paddle
+      - key: MODEL_GATEWAY_API_KEY
+        sync: false
+      - key: MODEL_GATEWAY_SERVICE_PREFIXES
+        value: '{"paddle":null,"custom":null,"det_rec":"/paddle/api/v1","layout":"/paddle/api/v1","status":"/paddle/api/v1"}'
+      - key: OCR_MAX_CONCURRENT_TASKS
+        value: '4'
+      - key: OCR_MAX_CONCURRENT_FIELDS
+        value: '8'
+      - key: OCR_GATEWAY_BATCH_SIZE
+        value: '4'
+      - key: CORS_ORIGINS
+        sync: false
+      - key: STORAGE_PATH
+        value: /tmp/ocrlab-candidate-uploads
