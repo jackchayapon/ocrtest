@@ -6231,7 +6231,7 @@
     },
     "schema_change_required": false
   },
-  "release_decision": "GO WITH DOCUMENTED RESIDUAL RISK: code/local gates pass; pending checks/deployment/production canary",
+  "release_decision": "RELEASED \u2014 GO WITH DOCUMENTED RESIDUAL RISK",
   "frontend_regression": {
     "baseline": {
       "failed": 35,
@@ -6327,5 +6327,332 @@
     "full_suite_passed": 126,
     "full_suite_failed": 34,
     "new_failure_ids": []
-  }
+  },
+  "production_release": {
+    "decision": "RELEASED \u2014 GO WITH DOCUMENTED RESIDUAL RISK",
+    "pr8": "https://github.com/jackchayapon/ocrtest/pull/8",
+    "pr9_dataset_followup": "https://github.com/jackchayapon/ocrtest/pull/9",
+    "merge_sha_core": "b28f5d8193be9549e01b1aff9d6cc74809ef9144",
+    "merge_sha_final_backend": "a4dfb464dbaf2d3844035bef52a1ccb3c3d6bc39",
+    "backend_deployment_id": "471f2fc9-a4cc-4ded-b771-012fc9cf9c2a",
+    "backend_status": "SUCCESS",
+    "backend_url": "https://ocrtest-production-095b.up.railway.app",
+    "frontend": {
+      "id": "dpl_43zry3Abjxxx3nbX6QjXDGLRUvW2",
+      "target": "production",
+      "state": "READY",
+      "sha": "b28f5d8193be9549e01b1aff9d6cc74809ef9144",
+      "url": "ocrtest-mh4jusjej-jackchayapon-s-projects.vercel.app",
+      "canonical_alias": "https://ocrtest-sandy.vercel.app",
+      "backend_api_target": "https://ocrtest-production-095b.up.railway.app"
+    },
+    "frontend_tree_identical_to_backend_merge": true,
+    "canary": {
+      "scope": "BOUNDED PRODUCTION SYNTHETIC CANARY",
+      "steps": [
+        "png_preview_auto_roi_manual_drawing_coexist_real_ocr",
+        "ui_gt_confirm_metrics_and_new_timing",
+        "reload_and_history",
+        "test_detail",
+        "comparison",
+        "zip_excel_http200",
+        "pdf_ui_upload_two_pages_page2_render"
+      ],
+      "jsErrors": [],
+      "httpErrors": [],
+      "ocrPosts": 1,
+      "pipeline_id": "dynamic_9cada1c7ef3f4a729c0360d93679feeb",
+      "document_id": "19d32a37-7bb5-49b9-a6db-7509a5350bad",
+      "auto_roi_count": 1,
+      "case_id": "dde7e747-db52-497f-8c1d-932a9cbba39c",
+      "fields": [
+        {
+          "id": "f41fa3b1-aa28-46f7-a105-8e978f16b84d",
+          "source": "manual",
+          "roi": {
+            "x1": 81,
+            "y1": 76,
+            "x2": 563,
+            "y2": 138
+          }
+        },
+        {
+          "id": "136a4645-0f50-4f10-930a-2987431b9da3",
+          "source": "auto",
+          "roi": {
+            "x1": 84,
+            "y1": 80,
+            "x2": 561,
+            "y2": 136
+          }
+        }
+      ],
+      "run": {
+        "id": "dc853ee0-34fb-48f9-bbdd-fcaff51b6851",
+        "status": "success",
+        "field_count": 2,
+        "timing": {
+          "wall": 3345,
+          "compute": 6690,
+          "run": 5121
+        },
+        "traces": [
+          {
+            "request_id": "ocr_ab5fcca2e2fb433398cd2165724a8382",
+            "gateway_request_id": "batch_2266e1da9c0e4dcd8ad087a2f63ee8a8",
+            "gateway_duration_ms": 392.69,
+            "confidence": 0.9965211153030396,
+            "box_count": 1,
+            "input_width": 482,
+            "input_height": 62
+          },
+          {
+            "request_id": "ocr_e6cfefcc05a342a4a1e1d62cf0e91b80",
+            "gateway_request_id": "batch_2266e1da9c0e4dcd8ad087a2f63ee8a8",
+            "gateway_duration_ms": 392.69,
+            "confidence": 0.9816281795501709,
+            "box_count": 1,
+            "input_width": 477,
+            "input_height": 56
+          }
+        ]
+      },
+      "metrics": [
+        {
+          "cer": 0,
+          "wer": 0,
+          "exact_match": true
+        },
+        {
+          "cer": 0,
+          "wer": 0,
+          "exact_match": true
+        }
+      ],
+      "pdf_document_id": "f1662d26-cc59-4bf7-9182-262c579c4ffe",
+      "dataset_export": {
+        "status": 200,
+        "samples": 2,
+        "pixels_equal_original_roi": true,
+        "bytes_match_inference_crop_sha256": true,
+        "confirmed_gt_only": true,
+        "hashes": [
+          "7666ad693d4e832b2759a74e6dd88707ad94936e54d65c072bd69020b4c28a1e",
+          "8e6f65b7dbfb2ab56c3e986e43bca18ee485e3570f015e3ea07bdc3eb403d27b"
+        ]
+      },
+      "archives": {
+        "evaluation_zip_valid": true,
+        "excel_valid": true,
+        "excel_sheet_count": 1
+      }
+    },
+    "ui_exports": {
+      "scope": "PRODUCTION UI EXPORTS OF OWN SYNTHETIC CASE",
+      "steps": [
+        "excel_download_from_ui",
+        "available_confirmed_samples_zip_download_from_ui"
+      ],
+      "archives_valid": true,
+      "excel_sheets": 1,
+      "dataset_labels": 2
+    },
+    "routes": {
+      "scope": "PRODUCTION READ ONLY AFTER RELEASE",
+      "routes": [
+        {
+          "route": "/",
+          "http": 200
+        },
+        {
+          "route": "/history?document=[synthetic-id]",
+          "http": 200
+        },
+        {
+          "route": "/matrix",
+          "http": 200
+        },
+        {
+          "route": "/analytics/categories",
+          "http": 200
+        },
+        {
+          "route": "/analytics/errors?test_case_id=[synthetic-id]",
+          "http": 200
+        },
+        {
+          "route": "/dataset?document=[synthetic-id]",
+          "http": 200
+        },
+        {
+          "route": "/logs",
+          "http": 200
+        },
+        {
+          "route": "/settings/pipelines",
+          "http": 200
+        },
+        {
+          "route": "/test/[synthetic-id]",
+          "http": 200
+        }
+      ],
+      "jsErrors": [],
+      "api5xx": [],
+      "unfiltered_error_analysis": {
+        "status": "slow; previous all-history GET exceeded 45-second harness wait",
+        "source_unchanged_from_baseline": true
+      }
+    },
+    "dataset_list": {
+      "health": 200,
+      "dataset_list_http": 200,
+      "latency_ms": 2217.77,
+      "http_response_bytes": 37497,
+      "returned_samples": 50,
+      "unavailable_samples": 50
+    },
+    "data_preservation": {
+      "revision": "0011_gt_prefill",
+      "counts_after": {
+        "documents": 153,
+        "test_cases": 117,
+        "pipeline_runs": 566
+      },
+      "missing_original_ids": {
+        "documents": 0,
+        "test_cases": 0,
+        "pipeline_runs": 0
+      },
+      "added_synthetic_counts": {
+        "documents": 4,
+        "test_cases": 2,
+        "pipeline_runs": 2
+      }
+    },
+    "observability": {
+      "deploymentId": "471f2fc9-a4cc-4ded-b771-012fc9cf9c2a",
+      "gateway_events": [
+        {
+          "timestamp": "2026-11-04T18:21:56.150537609Z",
+          "request_id": "roi_1c7baebe49104c85b1e9f1fc3f0756c4",
+          "endpoint_path": "/paddle/api/v1/document-layouts",
+          "http_status": 200,
+          "duration_ms": 1248.13,
+          "error_code": null,
+          "batch_count": 1,
+          "model_selection": {},
+          "process_rss_bytes": 148836352,
+          "cgroup_memory_bytes": 106815488
+        },
+        {
+          "timestamp": "2026-11-04T18:22:16.148278475Z",
+          "request_id": "batch_2266e1da9c0e4dcd8ad087a2f63ee8a8",
+          "endpoint_path": "/paddle/api/v1/text-detection-batches",
+          "http_status": 200,
+          "duration_ms": 920.66,
+          "error_code": null,
+          "batch_count": 2,
+          "model_selection": {
+            "version": "6",
+            "model": "baseline"
+          },
+          "process_rss_bytes": 152805376,
+          "cgroup_memory_bytes": 109375488
+        },
+        {
+          "timestamp": "2026-11-04T18:22:16.148288074Z",
+          "request_id": "batch_17e09eb390b34a3eb6ec15fc80bf411d",
+          "endpoint_path": "/paddle/api/v1/text-recognition-batches",
+          "http_status": 200,
+          "duration_ms": 2417.64,
+          "error_code": null,
+          "batch_count": 2,
+          "model_selection": {
+            "version": "5",
+            "model": "baseline"
+          },
+          "process_rss_bytes": 156860416,
+          "cgroup_memory_bytes": 112193536
+        }
+      ],
+      "metrics_scope": "last 1h; 30-second samples, not an instantaneous canary peak",
+      "metrics": [
+        {
+          "measurement": "CPU_USAGE",
+          "current": 0,
+          "average": 0.024488377134986222,
+          "min": 0,
+          "max": 1.2502575,
+          "sampleCount": 121
+        },
+        {
+          "measurement": "MEMORY_USAGE_GB",
+          "current": 0.320147456,
+          "average": 0.23496693844628122,
+          "min": 0.09971712,
+          "max": 0.32043008,
+          "sampleCount": 121
+        },
+        {
+          "measurement": "MEMORY_LIMIT_GB",
+          "current": 0.512,
+          "average": 0.5120000000000003,
+          "min": 0.512,
+          "max": 0.512,
+          "sampleCount": 121
+        }
+      ],
+      "errors": {
+        "gateway_failures": 0,
+        "http5xx_in_checked_deployment_logs": 0,
+        "fatal_errors": 0,
+        "server_starts": 1
+      },
+      "known_non_success": "Historical non-canary crop404 and client-cancelled499 observed; no OCR error or process restart."
+    },
+    "storage_durability_verified": false,
+    "schema_migration_performed": false,
+    "paid_resources_created": false,
+    "new_required_secret": false,
+    "remaining_limitations": [
+      "Historical CDGS422/Railway502 root causes unconfirmed",
+      "Ephemeral uploads; old missing sources cannot be reconstructed from records",
+      "Unfiltered all-history Error Analysis exceeded45seconds; scoped route verified",
+      "55 backend/34 UI baseline failures,8 existing Ruff import findings",
+      "Real sustained/shared-Gateway high-concurrency capacity not certified"
+    ]
+  },
+  "dataset_read_comparison": {
+    "scope": "LOCAL SYNTHETIC SQLITE, 50 field samples, shared document; estimates are not wire bytes",
+    "measurements": {
+      "before": {
+        "sql_queries": 352,
+        "estimated_db_fetched_bytes": 1072484,
+        "http_response_bytes": 27962,
+        "local_elapsed_ms": 178.06
+      },
+      "after": {
+        "sql_queries": 6,
+        "estimated_db_fetched_bytes": 20415,
+        "http_response_bytes": 27962,
+        "local_elapsed_ms": 20.0
+      }
+    },
+    "response_semantics_equal": true
+  },
+  "backend_regression_after_dataset_followup": {
+    "passed": 449,
+    "failed": 55,
+    "total": 504,
+    "new_failure_ids": [],
+    "baseline_only": [
+      "tests.test_document_dataset_management::test_0009_additive_upgrade_preserves_old_document_and_no_drift",
+      "tests.test_global_layout::test_postgresql_0007_upgrade_preserves_history_and_has_no_drift",
+      "tests.test_lean_bulk::test_postgresql_clean_head_and_bulk_fk_cascades",
+      "tests.test_network_optimization_postgres::test_current_postgresql_upload_ocr_gt_history_metrics_dataset_and_reconnect"
+    ]
+  },
+  "post_dataset_full_scale_label": "dataset-read-followup-final",
+  "source_status": "Application deployed; subsequent release-evidence commits change documentation/reports only"
 }

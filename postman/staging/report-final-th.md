@@ -1,6 +1,6 @@
 # ผลแก้ไข OCR resource management — candidate release
 
-สถานะล่าสุด: **FINAL CANDIDATE — รอผล Playwright/Release Gate สุดท้าย** ข้อมูลด้านล่างส่วนแรกเป็นหลักฐาน PR รุ่นแรก ไม่ใช่ค่าของ candidate สุดท้าย ไม่ได้ประกาศว่าปัญหา422/502เดิมได้รับการแก้ถาวรที่productionแล้ว
+สถานะล่าสุด: **RELEASED — GO WITH DOCUMENTED RESIDUAL RISK** วันที่5พฤศจิกายน2569 รายละเอียดด้านล่างเรียงตามขั้นตอนและเก็บหลักฐานPRรุ่นแรกไว้ ไม่ได้อ้างว่าปัญหา422/502ย้อนหลังถูกแก้ถาวร
 
 ## สิ่งที่แก้จริง
 
@@ -84,3 +84,15 @@ Backend447ผ่าน/55failureเดิม ไม่มีfailureใหม่ 
 Playwrightครบ160:126ผ่าน/34failureเดิม ไม่พบfailureIDsใหม่ ทั้ง3timingtestsและGTbrowser2casesผ่าน รวมถึงDatasetpagination200รายการทั้ง2viewports Backend447/55เดิม ไม่มีregressionใหม่ TypeScript/ESLint/buildผ่าน Ruffไฟล์ที่เปลี่ยนผ่าน Alembic0011/no drift ไม่มีmigrationใหม่
 
 Decision: GO WITH DOCUMENTED RESIDUAL RISK สำหรับworkloadที่ระบุ รอGitHubchecks/auto-deploy/canaryจริง ความเสี่ยงhistorical422/502ยังไม่ยืนยัน uploadsยังephemeralตามที่ผู้ใช้ยอมรับ ไม่ถือว่าbackupหรือrestartdurabilityผ่าน
+
+## Production release สุดท้าย
+
+PR8 merged b28f5d8193be9549e01b1aff9d6cc74809ef9144 และfollow-upDatasetPR9 merged a4dfb464dbaf2d3844035bef52a1ccb3c3d6bc39 Railwaydeployment471f2fc9-a4cc-4ded-b771-012fc9cf9c2a SUCCESS ใช้a4dfb46 Vercelproductiondpl_43zry3Abjxxx3nbX6QjXDGLRUvW2 READY ใช้b28f5d8 โดยfrontendtreeเหมือนa4dfb46 จึงไม่deployfrontendซ้ำสำหรับbackend-onlyfix APIยังชี้Railwayเดิม ไม่ย้ายRender
+
+Backend449/55failureเดิม ไม่มีfailureใหม่ FullPlaywright126/34เดิมและDatasetUI4/4ผ่าน Post-followup30x12ผ่าน3รอบ360/360,195calls,47.529/47.789/47.052วินาที PeakRSS313.8MB/cgroup289.5MB ผลcandidateก่อนหน้ายังเก็บcgroup340.4MBไว้ ไม่เลือกซ่อนค่าที่สูงกว่า
+
+Canaryproductionรุ่นสุดท้ายยิงOCRPOSTเดียวกับAuto+Manual2fields ได้successทั้งคู่ confidenceจริง0.996521/0.981628 CER/WER0 ExactMatchtrue wall3345ms/compute6690ms/run5121ms GTconfirm-refresh-History-Detail-Comparison-PDFpage2ผ่าน ZIP/Excel1sheetเปิดได้ ปุ่มexportExcelและDatasetZIPบนUIทำงาน PNGdataset2ภาพpixelsตรงต้นฉบับROIและbyteshashตรงinferencecrop labelเป็นconfirmedThaiGT ไม่ใช่prediction/metrics หน้าเว็บ9เส้นทางHTTP200ไม่มีJSerror/API5xx โดยErrorAnalysisกรองเคสcanary
+
+Datasetlist50samplesproduction200ใน2217.77ms หลังแก้readpath localcontrol352->6queries/1,072,484->20,415estimatedDBbytes responseเท่าเดิม ทุกoriginalPK149documents/115cases/564runsยังอยู่ เพิ่มเฉพาะcanary4documents/2cases/2runs รวม153/117/566 Alembic0011ไม่migrate ไม่มีการลบ/รีเซ็ตข้อมูลหรือแก้secret Logsไม่มีGatewayerror/5xx/OOM/unexpectedrestart มีhistoricalcrop404และclientcancel499ตามที่บันทึกไว้ memoryplatformช่วง1ชั่วโมง/30วินาทีmax0.32043008GBไม่ใช่instantaneouspeakของcanary
+
+Decision RELEASED—GO WITH DOCUMENTED RESIDUAL RISK: uploadsยังephemeralและoldmissingfilesไม่ฟื้นจากDB, historical422/502ยังไม่ทราบเหตุยืนยัน, all-historyErrorAnalysisยังช้าเกิน45วินาที (scoped200), baselinefailuresและRuff8findingsเดิมยังอยู่ และไม่รับรองsustainedCDGSconcurrency ไม่ซื้อแพ็กเกจ/volume/บริการใหม่ ไม่claimdurability ปิดเฉพาะlocaltestprocesses/containersและเก็บหลักฐานไว้

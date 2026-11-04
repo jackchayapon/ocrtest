@@ -35,3 +35,9 @@ Railway currently has no uploads volume; no durable storage credentials were ava
 7. If cutover fails, restore the previous accepted Vercel target/deployment and compatible backend where safe. Provider rollback does not recover lost ephemeral uploads.
 
 No provider cutover, production migration, plan purchase or storage mount was performed by this preparation.
+
+## Executed result — 5 November2026
+
+Railway passed the corrected local workload and bounded production canary, so Render fallback was not used. PR8 and the targeted Dataset read follow-up PR9 are merged. Backend471f2fc9-a4cc-4ded-b771-012fc9cf9c2a runs a4dfb46; frontend dpl_43zry3Abjxxx3nbX6QjXDGLRUvW2 runs the identical frontend tree at b28f5d8 and still points to Railway. Vercel did not auto-create PR8's production deployment, so one Git-source deployment from the verified merge SHA was created; PR9 is backend-only and did not require another frontend deployment. Previous Railway deployments remain provider-listed as rollback-capable; rollback does not restore ephemeral uploads. No paid plan/volume/database move/secret change was performed.
+
+See [final validation](production-release-validation.md) for actual test/canary results and explicit remaining all-history Error Analysis/storage limitations.
