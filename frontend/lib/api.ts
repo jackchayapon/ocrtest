@@ -11,6 +11,9 @@ export function assetUrl(path: string): string {
 export const deletePipeline = (id: string) => request<void>(`/pipelines/${encodeURIComponent(id)}`, {method:"DELETE"});
 
 const reads = new ReadCoordinator();
+export class APIError extends Error {
+  constructor(message:string,public readonly status:number){super(message);this.name="APIError";}
+}
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (typeof window === "undefined") return fetchJSON<T>(path, init);
@@ -41,7 +44,7 @@ async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
     const message = typeof detail === "string" ? detail : Array.isArray(detail)
       ? detail.map((item: { msg?: string }) => item.msg ?? t("Invalid input")).join(". ")
       : `Request failed (${response.status}). Please try again.`;
-    throw new Error(userError(message, response.status));
+    throw new APIError(userError(message, response.status),response.status);
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
@@ -90,7 +93,31 @@ export async function runPages(id: string, pages: number[], pipelines: string[],
 }
 export const updateTestCase = (id: string, input: Partial<TestCaseInput>) => request<TestCase>(`/test-cases/${id}`, { method: "PUT", body: JSON.stringify(input) });
 export const saveGroundTruth = (id: string, ground_truth_raw: string, confirmed = false) => request<TestCase>(`/test-cases/${id}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
-export const runPipelines = (id: string, pipelines: string[]) => request<RunResponse>(`/test-cases/${id}/run`, { method: "POST", body: JSON.stringify({ pipelines }) });
+export async function runPipelines(id: string, pipelines: string[]): Promise<RunResponse> {
+  // Compatibility caller for historical cases; execution is still a durable job.
+  const requestKey=`ocrlab-job:${id}:request:${JSON.stringify(pipelines)}`;
+  const key=typeof window!=="undefined"?localStorage.getItem(requestKey)||crypto.randomUUID():crypto.randomUUID();
+  if(typeof window!=="undefined")localStorage.setItem(requestKey,key);
+  const job = await createOCRJob(id,pipelines,key);
+  if(typeof window!=="undefined")localStorage.removeItem(requestKey);
+  let state=job;
+  while(state.status==="queued"||state.status==="running"){
+    await new Promise(resolve=>setTimeout(resolve,2500));
+    state=await getOCRJob(job.job_id);
+  }
+  if(state.status==="failed"&&!state.run_ids.length)throw new Error(state.safe_error_message||"งาน OCR ไม่สำเร็จ");
+  return getOCRJobResults(job.job_id);
+}
+export type OCRJob = {
+ job_id: string; test_case_id: string; status: "queued"|"running"|"completed"|"partial_success"|"failed"|"cancelled";
+ pipeline_ids: string[]; total_fields: number; total_pipelines: number; completed_units: number; failed_units: number;
+ completed_pipelines: number; progress_percent: number; current_pipeline_id: string|null; current_field_index: number|null;
+ started_at: string|null; created_at: string; updated_at: string; safe_error_message: string|null; run_ids: string[];
+};
+export const createOCRJob = (id: string, pipelines: string[], idempotency_key: string) => request<OCRJob>(`/test-cases/${id}/jobs`, {method:"POST",body:JSON.stringify({pipelines,idempotency_key})});
+export const getOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob>(`/ocr-jobs/${id}`, {signal});
+export const getCaseOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob|null>(`/test-cases/${id}/jobs`, {signal});
+export const getOCRJobResults = (id: string) => request<RunResponse>(`/ocr-jobs/${id}/results`);
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const getHistory = (filters?: QueryFilters, signal?: AbortSignal, compact = false) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary&latest=true${compact ? "&compact=true" : ""}`, { signal });

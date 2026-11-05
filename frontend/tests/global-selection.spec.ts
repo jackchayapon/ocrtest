@@ -12,8 +12,20 @@ async function setup(page: Page, groundTruth = false) {
     runs: groundTruth ? [{ id: "run", pipeline_id: "mint", pipeline_name: "Mint", status: "success", fields: [], final_text: "OCR" }] : [],
   };
   const state = { failSave: false, drafts: 0, evaluations: 0, confirmations: 0, gtSaves: 0 };
+  let job:Record<string,unknown>|null=null;
   await page.route("**/api/**", async route => {
     const req = route.request(), url = new URL(req.url()).pathname;
+    if(url.endsWith("/jobs")){
+      if(req.method()==="POST"){
+        job={job_id:"synthetic-job",test_case_id:record.id,status:"queued",pipeline_ids:["mint"],total_fields:2,total_pipelines:1,completed_units:0,failed_units:0,completed_pipelines:0,progress_percent:0,created_at:new Date().toISOString(),started_at:new Date().toISOString(),run_ids:["run"]};
+        return route.fulfill({status:202,json:job});
+      }
+      return route.fulfill({json:job});
+    }
+    if(url.endsWith("/ocr-jobs/synthetic-job")){
+      job={...job,status:"completed",completed_units:2,completed_pipelines:1,progress_percent:100};
+      return route.fulfill({json:job});
+    }
     if (url.endsWith("preview.svg")) return route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="300" height="200" fill="white"/><text x="30" y="50">First field</text><text x="170" y="140">Second field</text></svg>' });
     if (url.endsWith("/pipelines")) return route.fulfill({ json: [{ pipeline_id: "mint", name: "Mint", enabled: true }] });
     if (url.endsWith("/global-fields") && req.method() === "PUT") {
