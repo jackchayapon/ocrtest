@@ -69,6 +69,9 @@ def gc_event(phase,info):
 gc.callbacks.append(gc_event)
 emit('observer_ready',note='Synthetic diagnostics only; no credentials/bodies logged')
 from app.main import app as original_app
+from sqlalchemy import event as sql_event
+@sql_event.listens_for(original_app.state.database.engine,'begin')
+def db_transaction(connection):emit('db_transaction')
 class ObservedHTTP:
  async def __call__(self,scope,receive,send):
   global active_http

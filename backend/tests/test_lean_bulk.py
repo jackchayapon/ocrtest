@@ -189,8 +189,11 @@ def test_bulk_delete_rollback(client, document, monkeypatch):
 
     with monkeypatch.context() as m:
         m.setattr(Session, "commit", fail)
-        with pytest.raises(RuntimeError):
-            client.post("/api/test-cases/bulk-delete", json={"test_case_ids": [cid]})
+        response = client.post("/api/test-cases/bulk-delete", json={"test_case_ids": [cid]},
+                               headers={"Origin": "http://localhost:3000"})
+        assert response.status_code == 500
+        assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
+        assert "injected commit failure" not in response.text
     assert client.get("/api/test-cases/" + cid).status_code == 200
 
 
@@ -293,8 +296,10 @@ def test_bulk_exclusion_rollback_and_combined_limit(client, document, monkeypatc
 
     with monkeypatch.context() as m:
         m.setattr(Session, "commit", fail)
-        with pytest.raises(RuntimeError):
-            client.post("/api/dataset/items/bulk-exclude", json=body)
+        response = client.post("/api/dataset/items/bulk-exclude", json=body,
+                               headers={"Origin": "http://localhost:3000"})
+        assert response.status_code == 500
+        assert response.headers["access-control-allow-origin"] == "http://localhost:3000"
     with client.app.state.database.session_factory() as s:
         assert s.get(Case, case["id"]).dataset_excluded_at is None
         assert s.get(GlobalField, fields[0]["id"]).dataset_excluded_at is None
@@ -362,7 +367,7 @@ def test_postgresql_clean_head_and_bulk_fk_cascades(settings):
             command.upgrade(cfg, "head")
             assert (
                 conn.scalar(text("SELECT version_num FROM alembic_version"))
-                == "0011_gt_prefill"
+                == "0012_ocr_jobs"
             )
             previous = conn.dialect.default_schema_name
             conn.dialect.default_schema_name = schema

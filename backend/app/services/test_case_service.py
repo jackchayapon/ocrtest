@@ -93,6 +93,8 @@ class TestCaseService:
         return self.repository.save(record)
 
     def update(self, case_id, data):
+        from app.services.ocr_jobs import ensure_not_running
+        ensure_not_running(self.repository.session, case_id)
         record = self.repository.test_case(case_id, for_update=True)
         if record.workflow == "global" and ({"roi", "roi_source", "ground_truth_raw"} & data.model_fields_set):
             raise AppError("Use Global Layout and Global Field Ground Truth endpoints", 409)
@@ -135,6 +137,8 @@ class TestCaseService:
         return self.repository.save(record)
 
     def delete(self, case_id):
+        from app.services.ocr_jobs import ensure_not_running
+        ensure_not_running(self.repository.session, case_id)
         session = self.repository.session
         record = self.repository.test_case(case_id)
         try:
@@ -150,6 +154,9 @@ class TestCaseService:
         ids = set(ids)
         try:
             found = set(session.scalars(select(TestCase.id).where(TestCase.id.in_(ids)).with_for_update()))
+            from app.services.ocr_jobs import has_active_jobs
+            if has_active_jobs(session, found):
+                raise AppError("An OCR job is active for a selected test case", 409)
             # Schema FK cascades remove exactly the same owned rows as ORM individual delete.
             session.execute(delete(TestCase).where(TestCase.id.in_(found)), execution_options={"synchronize_session": False})
             session.commit()
@@ -182,11 +189,13 @@ class TestCaseService:
             else:
                 run.metric_records.append(Metric(text_kind=text_kind, **values))
 
-    async def run(self, case_id, pipeline_ids):
+    async def run(self, case_id, pipeline_ids, *, checkpoint=None):
         record = self.repository.test_case(case_id)
         if record.workflow == "global":
             from app.services.global_layout_service import GlobalLayoutService
-            return await GlobalLayoutService(self).run(case_id, pipeline_ids)
+            return await GlobalLayoutService(self).run(case_id, pipeline_ids, checkpoint=checkpoint)
+        if checkpoint is not None:
+            return await self._run_job_legacy(record, checkpoint)
         configs = [self.repository.config(pipeline_id) for pipeline_id in pipeline_ids]
         self.logs.add("ocr_run_started", case=record)
         self.repository.session.commit()
@@ -216,6 +225,33 @@ class TestCaseService:
         record.updated_at = now()
         self.repository.save(record)
         return runs
+
+    async def _run_job_legacy(self, record, checkpoint):
+        """Checkpoint each legacy pipeline without changing its ROI/metric semantics."""
+        from app.db.models import PipelineRun
+        session = self.repository.session
+        parents = [session.get(PipelineRun, rid) for rid in checkpoint.job.run_ids.values()]
+        page_data, _, _ = self.page_image(record.document, record.page_number)
+        with self.images.open(page_data) as original:
+            manager = PipelineManager(self.settings)
+            for config in checkpoint.configs:
+                if any(p.pipeline_id == config.pipeline_id for p in parents):
+                    continue
+                crop = self.images.canonical_crop(original, record.roi) if manager.requires_crop(config) else None
+                result = (await manager.run([config], original, crop, record.roi, record.roi_source))[0]
+                checkpoint.fence()
+                session.refresh(record, attribute_names=["ground_truth_raw", "status"])
+                FieldService.generate(result)
+                self.evaluate(result, record.ground_truth_raw)
+                record.runs.append(result)
+                session.flush()
+                parents.append(result)
+                checkpoint.save(parents)
+        if record.status != "confirmed":
+            record.status = "tested"
+        checkpoint.fence()
+        session.commit()
+        return parents
 
     @staticmethod
     def page_number(document, page_number):

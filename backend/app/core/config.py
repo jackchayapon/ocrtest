@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     ocr_max_concurrent_tasks: int = Field(default=4, ge=1, le=8)
     ocr_max_concurrent_fields: int = Field(default=8, ge=1, le=8)
     ocr_gateway_batch_size: int = Field(default=4, ge=1, le=30)
+    ocr_jobs_enabled: bool = True
     mint_ocr_endpoint: str = "/api/v1/ocr-results"
     mint_ocr_engine: str = "custom"
     hutch_crop_endpoint: str = "/api/v1/ocr-results"

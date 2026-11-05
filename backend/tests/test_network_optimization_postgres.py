@@ -116,5 +116,5 @@ def test_current_postgresql_upload_ocr_gt_history_metrics_dataset_and_reconnect(
         with app.state.database.session_factory() as session:
             assert (
                 session.scalar(text("SELECT version_num FROM alembic_version"))
-                == "0011_gt_prefill"
+                == "0012_ocr_jobs"
             )

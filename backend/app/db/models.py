@@ -8,12 +8,14 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Table,
     Text,
     UniqueConstraint,
     Uuid,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -254,6 +256,42 @@ class AppLog(Base):
     request_id: Mapped[str | None] = mapped_column(String(100), nullable=True, index=True)
     gateway_request_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
     details: Mapped[dict] = mapped_column("metadata", JSON_TYPE, default=dict)
+
+
+class OCRJob(Base):
+    __tablename__ = "ocr_jobs"
+    __table_args__ = (
+        UniqueConstraint("test_case_id", "idempotency_key", name="uq_ocr_job_request"),
+        Index("uq_ocr_job_active_case", "test_case_id", unique=True,
+              postgresql_where=text("status IN ('queued', 'running')"),
+              sqlite_where=text("status IN ('queued', 'running')")),
+        Index("ix_ocr_job_queue", "status", "created_at"),
+    )
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=new_id)
+    test_case_id: Mapped[str] = mapped_column(ForeignKey("test_cases.id", ondelete="CASCADE"), index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(100))
+    status: Mapped[str] = mapped_column(String(20), default="queued")
+    pipeline_ids: Mapped[list] = mapped_column(JSON_TYPE)
+    config_snapshot: Mapped[list] = mapped_column(JSON_TYPE)
+    run_ids: Mapped[dict] = mapped_column(JSON_TYPE, default=dict)
+    prefill_results: Mapped[dict] = mapped_column(JSON_TYPE, default=dict)
+    total_fields: Mapped[int] = mapped_column(Integer)
+    total_pipelines: Mapped[int] = mapped_column(Integer)
+    completed_units: Mapped[int] = mapped_column(Integer, default=0)
+    failed_units: Mapped[int] = mapped_column(Integer, default=0)
+    completed_pipelines: Mapped[int] = mapped_column(Integer, default=0)
+    current_pipeline_id: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    current_field_index: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0)
+    lease_owner: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    heartbeat_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    error_code: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    safe_error_message: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
 
 class OCRModel(Base):
