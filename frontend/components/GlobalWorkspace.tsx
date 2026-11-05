@@ -3,7 +3,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import {useRouter,useSearchParams} from "next/navigation";
 import {useEffect,useRef,useState} from "react";
-import {LoaderCircle,X} from "lucide-react";
+import {X} from "lucide-react";
 import * as api from "@/lib/api";
 import type {EvaluationMode,GlobalField,PipelineConfig,ROI,TestCase} from "@/types";
 import {PageHeader} from "./ConsoleUI";
@@ -11,6 +11,7 @@ import {pipelineLabel,userError} from "@/lib/i18n/th";
 import {previewFieldOrder} from "@/lib/global-order";
 import {completeGT,fieldLineCounts,joinFieldGT,splitDocumentGT} from "@/lib/ground-truth-sync";
 import WorkflowSteps,{stageTitles,stages,workflowUrl,type WorkflowStage} from "./WorkflowSteps";
+import OCRJobRunner from "./OCRJobRunner";
 import GlobalGroundTruthForm from "./GlobalGroundTruthForm";
 import GlobalFieldEvaluation from "./GlobalFieldEvaluation";
 const DocumentViewer=dynamic(()=>import("./DocumentViewer"),{ssr:false});
@@ -87,7 +88,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  {hasRuns&&<p className="text-xs text-amber-800">หากแก้กรอบแล้วบันทึก จะสร้างชุดแก้ไขสำหรับรัน OCR ใหม่ โดยเก็บ GT ติดกับ Field เดิมแม้ลำดับเปลี่ยน กรอบใหม่เริ่มว่าง และผลประเมินเดิมยังอยู่ในประวัติ</p>}
  <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy||!layoutDirty} onClick={()=>void act(async()=>{const c=await saveLayout(false);adopt(c);if(c.id!==saved.id)router.replace(workflowUrl(c.id,"layout"));setSaveMessage("บันทึก Layout ฉบับร่างแล้ว — ยังแก้ไขกรอบได้");})}>บันทึก Layout ฉบับร่าง</button><button className="button primary" disabled={busy||!fields.length} onClick={()=>void act(async()=>{const c=await saveLayout(true);adopt(c);router.push(workflowUrl(c.id,"pipelines"));})}>ยืนยัน ROI</button></div>
  </div>}
- {stage==="pipelines"&&<section className="panel panel-body space-y-4 lg:h-full"><h2>เลือก Pipelines</h2><p>ทุก Pipeline จะใช้ Global Field ชุดเดียวกัน</p><div data-testid="pipeline-options" aria-busy={busy} className={`space-y-3 transition-opacity ${busy?"opacity-50":"opacity-100"}`}>{configs.map(p=><label key={p.pipeline_id} className="flex gap-2"><input type="checkbox" aria-label={`เลือก ${pipelineLabel(p.pipeline_id,p.name)}`} disabled={busy||!p.enabled} checked={pipelineIds.includes(p.pipeline_id)} onChange={e=>setPipelineIds(old=>e.target.checked?[...old,p.pipeline_id]:old.filter(id=>id!==p.pipeline_id))}/>{pipelineLabel(p.pipeline_id,p.name)}{!p.enabled&&" (ปิดอยู่)"}</label>)}</div><button aria-busy={busy} className="button primary" disabled={busy||!pipelineIds.length} onClick={()=>void act(async()=>{await api.runPipelines(saved.id,pipelineIds);router.push(workflowUrl(saved.id,"ground-truth")+"?edit=1");})}>{busy?<><LoaderCircle aria-hidden="true" data-testid="ocr-spinner" className="h-4 w-4 animate-spin"/>กำลังรัน OCR...</>:"Run OCR"}</button></section>}
+ {stage==="pipelines"&&<section className="panel panel-body space-y-4 lg:h-full"><h2>เลือก Pipelines</h2><p>ทุก Pipeline จะใช้ Global Field ชุดเดียวกัน</p><div data-testid="pipeline-options" aria-busy={busy} className={`space-y-3 transition-opacity ${busy?"opacity-50":"opacity-100"}`}>{configs.map(p=><label key={p.pipeline_id} className="flex gap-2"><input type="checkbox" aria-label={`เลือก ${pipelineLabel(p.pipeline_id,p.name)}`} disabled={busy||!p.enabled} checked={pipelineIds.includes(p.pipeline_id)} onChange={e=>setPipelineIds(old=>e.target.checked?[...old,p.pipeline_id]:old.filter(id=>id!==p.pipeline_id))}/>{pipelineLabel(p.pipeline_id,p.name)}{!p.enabled&&" (ปิดอยู่)"}</label>)}</div><OCRJobRunner caseId={saved.id} pipelines={pipelineIds} names={Object.fromEntries(configs.map(p=>[p.pipeline_id,p.name]))} onBusy={setBusy} resultsUrl={workflowUrl(saved.id,"ground-truth")} onCompleted={()=>router.push(workflowUrl(saved.id,"ground-truth")+"?edit=1")}/></section>}
  {stage==="ground-truth"&&<GlobalGroundTruthForm mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>}
  </section></div>}</>}
  </div>;

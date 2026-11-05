@@ -3,11 +3,12 @@ import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { spawnSync } from "node:child_process";
 import type { PipelineRun, TestCase } from "../types";
+import {waitForJobResults} from "./job-results";
 
 const api = process.env.E2E_API_URL || "http://127.0.0.1:8100";
 const definitions = [
-  { name: "Network smoke Official", source: "official", execution_mode: "integrated", version: "6", det_weight: "baseline", rec_weight: "baseline" },
-  { name: "Network smoke Custom", source: "custom", execution_mode: "integrated", version: "6", det_weight: "baseline", rec_weight: "thai_ft_v1" },
+  { name: "Network smoke Official "+randomUUID(), source: "official", execution_mode: "integrated", version: "6", det_weight: "baseline", rec_weight: "baseline" },
+  { name: "Network smoke Custom "+randomUUID(), source: "custom", execution_mode: "integrated", version: "6", det_weight: "baseline", rec_weight: "thai_ft_v1" },
 ];
 
 test("isolated real backend: browser upload, Auto/Manual layout, multi OCR, GT, History and bundled Matrix", async ({ page, request }) => {
@@ -64,7 +65,7 @@ test("isolated real backend: browser upload, Auto/Manual layout, multi OCR, GT, 
     for (const definition of definitions) {
       await options.getByRole("checkbox", { name: `เลือก ${definition.name}`, exact: true }).check();
     }
-    const resultPromise = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
+    const resultPromise = waitForJobResults(page);
     await page.getByRole("button", { name: "Run OCR", exact: true }).click();
     const result = await (await resultPromise).json();
     expect(result.runs.map((r: PipelineRun) => r.pipeline_id).sort()).toEqual([...ids].sort());
@@ -171,7 +172,7 @@ for (const input of [
       await expect(options.getByRole("checkbox")).toHaveCount(registry.length);
       for (const checkbox of await options.getByRole("checkbox").all()) if (await checkbox.isEnabled()) await checkbox.uncheck();
       await options.getByRole("checkbox", { name: `เลือก ${pipeline.name}`, exact: true }).check();
-      const completed = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
+      const completed = waitForJobResults(page);
       await page.getByRole("button", { name: "Run OCR", exact: true }).click();
       const result = await (await completed).json();
       expect(result.runs).toHaveLength(1);

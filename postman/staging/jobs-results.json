@@ -115,7 +115,7 @@
       ]
     },
     "focused_final": {
-      "passed": 8,
+      "passed": 9,
       "failed": 0
     }
   },
@@ -311,5 +311,95 @@
       "max_gateway_inflight": 1,
       "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
     }
+  },
+  "production_backend": {
+    "merge": "64c23a7c996b73c89f37f9cfef112a65489e5028",
+    "railway_deployment": "468e0200-d1be-41b9-a201-2288b8be0fc0",
+    "revision": "0012_ocr_jobs",
+    "canary": {
+      "scope": "BOUNDED PRODUCTION API CANARY; one job/two synthetic fields; no registry edits",
+      "document_id": "efbf86b4-670b-4df0-9597-cb33d06fd6e3",
+      "case_id": "7bc9e8a7-38b8-45b8-bb29-4676a92b5c40",
+      "pipeline_id": "dynamic_9cada1c7ef3f4a729c0360d93679feeb",
+      "job_id": "94f56151-b97d-418a-9bbf-12a450919ad4",
+      "creation_ms": 2781.0,
+      "submission_status": 202,
+      "status": "completed",
+      "attempt_count": 1,
+      "completed_units": 2,
+      "elapsed_ms": 30890,
+      "progress": [
+        {
+          "status": "running",
+          "completed": 0,
+          "progress": 0.0
+        },
+        {
+          "status": "running",
+          "completed": 0,
+          "progress": 0.0
+        },
+        {
+          "status": "running",
+          "completed": 0,
+          "progress": 0.0
+        },
+        {
+          "status": "completed",
+          "completed": 2,
+          "progress": 100.0
+        }
+      ],
+      "idempotent_retry_same_job": true,
+      "metrics": [
+        {
+          "cer": 0.0,
+          "wer": 0.0,
+          "exact_match": true
+        },
+        {
+          "cer": 0.0,
+          "wer": 0.0,
+          "exact_match": true
+        }
+      ],
+      "traces": [
+        {
+          "characters": 16,
+          "text_sha256": "6fb058e280a5d95cea2af82c7433cec002fe407887daf1e48a8d329c2f4b1a77",
+          "confidence": 0.9702301025390625,
+          "boxes": 1,
+          "request_id": "ocr_e3e4ac1e7bfc4f3e85b1db98b6cb7bf5",
+          "gateway_request_id": "batch_732a9e5ed6524167abd902610adbe14b",
+          "gateway_service": "model-api-gateway",
+          "gateway_duration_ms": 395.375
+        },
+        {
+          "characters": 16,
+          "text_sha256": "6fb058e280a5d95cea2af82c7433cec002fe407887daf1e48a8d329c2f4b1a77",
+          "confidence": 0.9697983860969543,
+          "boxes": 1,
+          "request_id": "ocr_2ad32b2038f74d7b85259978162b6922",
+          "gateway_request_id": "batch_732a9e5ed6524167abd902610adbe14b",
+          "gateway_service": "model-api-gateway",
+          "gateway_duration_ms": 395.375
+        }
+      ],
+      "pass_check": true,
+      "server_job_seconds": 13.49274
+    },
+    "data_preservation": {
+      "revision_before": "0011_gt_prefill",
+      "revision_after": "0012_ocr_jobs",
+      "original_ids_preserved": true,
+      "counts": {
+        "documents": 158,
+        "test_cases": 122,
+        "pipeline_runs": 600,
+        "ocr_fields": 15069,
+        "metrics": 429
+      }
+    },
+    "ui_release_record": "https://github.com/jackchayapon/ocrtest/pull/12"
   }
 }
