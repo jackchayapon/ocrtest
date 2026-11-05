@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query, Request, Response
 
 from app.api.dependencies import CaseServiceDep, RepoDep, SessionDep
+from app.core.errors import AppError
 from app.schemas.contracts import (
     BenchmarkFilters,
     BulkCases,
@@ -24,6 +25,7 @@ from app.services.evaluation_insights_service import EvaluationInsightsService
 from app.services.excel_evaluation_service import ExcelEvaluationService
 from app.services.field_service import FieldService
 from app.services.global_layout_service import GlobalLayoutService
+from app.services.ocr_jobs import ensure_not_running, has_active_jobs
 from app.services.serializers import field_json, run_json, test_case_json
 
 router = APIRouter(prefix="/test-cases")
@@ -31,6 +33,9 @@ router = APIRouter(prefix="/test-cases")
 
 @router.post("/bulk-delete")
 async def bulk_delete(data: BulkCases, service: CaseServiceDep, request: Request):
+    ids = [str(i) for i in data.test_case_ids]
+    if has_active_jobs(service.repository.session, ids):
+        raise AppError("An OCR job is active for a selected test case", 409)
     async with request.app.state.ocr_lock:
         return service.bulk_delete([str(i) for i in data.test_case_ids])
 
@@ -120,6 +125,7 @@ def update_categories(case_id: UUID, data: CategoriesUpdate, service: CaseServic
 @router.post("/{case_id}/run")
 async def run_test_case(case_id: UUID, data: RunRequest, service: CaseServiceDep, request: Request):
     async with request.app.state.ocr_lock:
+        ensure_not_running(service.repository.session, str(case_id))
         return {
             "test_case_id": str(case_id),
             "runs": [run_json(run) for run in await service.run(str(case_id), data.pipelines)],
@@ -128,6 +134,8 @@ async def run_test_case(case_id: UUID, data: RunRequest, service: CaseServiceDep
 
 @router.delete("/{case_id}", status_code=204)
 async def delete_test_case(case_id: UUID, service: CaseServiceDep, request: Request):
+    if has_active_jobs(service.repository.session, [str(case_id)]):
+        raise AppError("An OCR job is active for this test case", 409)
     async with request.app.state.ocr_lock:
         service.delete(str(case_id))
     return Response(status_code=204)

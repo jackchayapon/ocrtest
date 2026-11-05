@@ -1,6 +1,7 @@
 """Canonical layout/GT identities and explicitly evaluated prediction snapshots."""
 
 import time
+from datetime import datetime, timedelta, timezone
 from statistics import fmean
 
 from app.core.batching import IMAGE_BATCH_SIZE
@@ -61,6 +62,8 @@ class GlobalLayoutService:
         return field
 
     def layout(self, case_id, data):
+        from app.services.ocr_jobs import ensure_not_running
+        ensure_not_running(self.session, case_id)
         case = self.case(case_id)
         if case.layout_locked_at or case.runs:
             raise AppError(
@@ -263,19 +266,23 @@ class GlobalLayoutService:
         case.status, case.updated_at = "confirmed", stamp
         return self.repo.save(case) if persist else case
 
-    async def run(self, case_id, pipeline_ids):
+    async def run(self, case_id, pipeline_ids, *, checkpoint=None):
         started = time.perf_counter()
         case = self.case(case_id)
         if not case.layout_confirmed_at or not case.global_fields:
             raise AppError("Confirm a non-empty Global Layout before running OCR", 409)
-        configs = [self.repo.config(p) for p in pipeline_ids]
+        configs = checkpoint.configs if checkpoint else [self.repo.config(p) for p in pipeline_ids]
         prefill = prefill_pipeline(configs) if case.gt_prefill is None and pristine_gt(case) else None
-        prefill_results = {}
+        if checkpoint and case.gt_prefill and case.gt_prefill.get("status") == "pending":
+            prefill = prefill_pipeline(configs)
+        prefill_results = dict(checkpoint.prefill) if checkpoint else {}
         if prefill is not None:
             # Commit the attempt before external requests to avoid duplicate assistance on reruns.
             case.gt_prefill = {"status": "pending", "det_endpoint": DETECTION, "rec_endpoint": RECOGNITION}
         case.layout_locked_at = now()
         self.cases.logs.add("ocr_run_started", case=case)
+        if checkpoint:
+            checkpoint.fence()
         self.session.commit()
         source, _, _ = self.cases.page_image(case.document, case.page_number)
         parents = {
@@ -290,7 +297,18 @@ class GlobalLayoutService:
             )
             for c in configs
         }
-        raw_parts = {c.pipeline_id: [] for c in configs}
+        if checkpoint:
+            for pipeline_id, run_id in checkpoint.job.run_ids.items():
+                parents[pipeline_id] = self.session.get(PipelineRun, run_id)
+            for parent in parents.values():
+                if parent not in case.runs:
+                    case.runs.append(parent)
+                    parent.status = "running"
+            checkpoint.fence()
+            self.session.flush()
+            checkpoint.save(list(parents.values()), prefill_results)
+        raw_parts = {p.pipeline_id: [f.diagnostics.get("raw_text", f.ocr_text) for f in p.fields]
+                     for p in parents.values()}
         with self.cases.images.open(source) as image:
             manager = PipelineManager(self.cases.settings)
             fields = sorted(case.global_fields, key=lambda field: field.field_index)
@@ -298,12 +316,21 @@ class GlobalLayoutService:
             field_limit = min(IMAGE_BATCH_SIZE, self.cases.settings.ocr_max_concurrent_fields)
             for start in range(0, len(fields), field_limit):
                 batch = fields[start:start + field_limit]
+                missing_configs = [c for c in configs if any(
+                    not any(p.global_field_id == field.id for p in parents[c.pipeline_id].fields)
+                    for field in batch)]
+                needs_prefill = prefill is not None and any(f.id not in prefill_results for f in batch)
+                if not missing_configs and not needs_prefill:
+                    continue
                 results_by_field = await manager.run_fields(
-                    configs + ([prefill] if prefill is not None and prefill not in configs else []),
+                    (missing_configs if checkpoint else configs) +
+                    ([prefill] if prefill is not None and prefill not in (missing_configs if checkpoint else configs) else []),
                     image,
                     [(self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
                      for field in batch],
                 )
+                if checkpoint:
+                    checkpoint.fence()
                 for field, results in zip(batch, results_by_field):
                     for result in results:
                         if prefill is not None and result.pipeline_id == prefill.pipeline_id:
@@ -311,6 +338,8 @@ class GlobalLayoutService:
                         if result.pipeline_id not in parents:
                             continue
                         parent = parents[result.pipeline_id]
+                        if checkpoint and any(p.global_field_id == field.id for p in parent.fields):
+                            continue
                         lines = reading_lines(result)
                         trace_keys = (
                             "input_sha256",
@@ -341,6 +370,8 @@ class GlobalLayoutService:
                             boxes=ordered_detection_boxes(result.boxes),
                             ordering="row_then_left_within_global_field",
                         )
+                        if checkpoint:
+                            diagnostics["raw_text"] = result.raw_text if result.raw_text is not None else result.final_text or ""
                         parent.fields.append(
                             OCRField(
                                 global_field_id=field.id,
@@ -357,12 +388,30 @@ class GlobalLayoutService:
                             parent.error_message = "One or more fields failed; successful field predictions remain available"
                         if parent.raw_response is None:
                             parent.raw_response = result.raw_response
+                if checkpoint:
+                    for parent in parents.values():
+                        if parent.pipeline_id in manager.windows:
+                            start_time, end_time = manager.windows[parent.pipeline_id]
+                            timing = (parent.raw_response or {}).get("timing", {})
+                            first = timing.get("started_at")
+                            first = datetime.fromisoformat(first) if first else now() - timedelta(seconds=time.perf_counter()-start_time)
+                            ended = now() - timedelta(seconds=time.perf_counter()-end_time)
+                            parent.processing_time_ms = round((ended-first).total_seconds()*1000)
+                            parent.raw_response = {**(parent.raw_response or {}), "timing": {"started_at": first.isoformat()}}
+                    checkpoint.job.current_field_index = batch[-1].field_index
+                    checkpoint.job.current_pipeline_id = None  # No single pipeline during concurrent groups.
+                    checkpoint.save(list(parents.values()), prefill_results)
         if prefill is not None:
             self.session.refresh(case, attribute_names=["ground_truth_raw", "document_gt_confirmed_at"], with_for_update=True)
             for field in case.global_fields:
                 self.session.refresh(field, attribute_names=["ground_truth_raw", "confirmed_at"])
             apply_prefill(case, prefill_results, reading_lines)
         run_wall_time_ms = round((time.perf_counter() - started) * 1000)
+        if checkpoint:
+            first = checkpoint.job.started_at
+            if first.tzinfo is None:
+                first = first.replace(tzinfo=timezone.utc)
+            run_wall_time_ms = round((now()-first).total_seconds()*1000)
         for parent in parents.values():
             parent.raw_text = "\n".join(raw_parts[parent.pipeline_id])
             parent.final_text = canonical_document_text(case.global_fields, parent.fields)
@@ -374,9 +423,13 @@ class GlobalLayoutService:
             total_field_compute_ms = sum(
                 f.diagnostics.get("processing_time_ms") or 0 for f in parent.fields
             )
-            start, end = manager.windows[parent.pipeline_id]
-            parent.processing_time_ms = round((end - start) * 1000)
+            if not checkpoint:
+                start, end = manager.windows[parent.pipeline_id]
+                parent.processing_time_ms = round((end - start) * 1000)
+            else:
+                parent.status = "error" if any(f.status != "success" for f in parent.fields) else "success"
             parent.raw_response = {**(parent.raw_response or {}), "timing": {
+                **(parent.raw_response or {}).get("timing", {}),
                 "semantics": "wall_clock_v1",
                 "wall_time_ms": parent.processing_time_ms,
                 "run_wall_time_ms": run_wall_time_ms,
@@ -388,13 +441,19 @@ class GlobalLayoutService:
                 if f.diagnostics.get("gateway_duration_ms") is not None
             ]
             parent.gateway_duration_ms = sum(durations) if durations else None
-            case.runs.append(parent)
+            if not checkpoint:
+                case.runs.append(parent)
             self.cases.logs.add(
                 "ocr_run_success" if parent.status == "success" else "ocr_run_error",
                 case=case,
                 run=parent,
             )
+        if checkpoint:
+            checkpoint.fence()
         # Explicit calculate is required even on reruns with saved GT.
         case.status, case.updated_at = "tested", now()
-        self.repo.save(case)
+        if checkpoint:
+            checkpoint.save(list(parents.values()), prefill_results)
+        else:
+            self.repo.save(case)
         return list(parents.values())

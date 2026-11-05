@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse,StreamingResponse
 from PIL import Image
 
 app=FastAPI();active=0;profile='sized';events=[];identity=False;failure_model='none'
+delay_seconds=.15
 # ~3.33 MB numeric JSON per REC input. Size-matched surrogate, not captured CDGS content.
 numeric=b'['+b'0.1234567,'*333_000+b'0]'
 @app.get('/diagnostics')
@@ -20,6 +21,11 @@ def set_profile(value:str):
 def set_identity(enabled:bool):
  global identity
  identity=enabled;return {'identity':identity}
+@app.post('/diagnostics/delay/{seconds}')
+def set_delay(seconds:float):
+ global delay_seconds
+ if not 0<=seconds<=5:return {'error':'synthetic delay must be between 0 and 5 seconds'}
+ delay_seconds=seconds;return {'delay_seconds':delay_seconds}
 @app.post('/diagnostics/failure/{model}')
 def set_failure(model:str):
  global failure_model
@@ -40,7 +46,7 @@ async def infer(stage:str,request:Request):
  e={'request_id':rid,'stage':'det' if det else 'rec','params':dict(request.query_params),'start':started,'active_on_start':active,'count':len(files),'dimensions':dims,'profile':profile}
  events.append(e)
  try:
-  await asyncio.sleep(.15)
+  await asyncio.sleep(delay_seconds)
   if not det and failure_model!='none' and request.query_params.get('model','baseline')==failure_model:
    active-=1;e.update(status=422,end=time.time())
    return JSONResponse(status_code=422,content={'error':{'code':'UPSTREAM_MODEL_ERROR','request_id':rid,'details':[{'type':'synthetic_worker_failure'}]}})

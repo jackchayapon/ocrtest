@@ -1,0 +1,315 @@
+{
+  "scope": "LOCAL VALIDATION; production stage recorded separately",
+  "baseline_main": "309a0fe49313fe34fcdd0b223851373995ec02d9",
+  "compatibility_rollback_commit": "7e64d98e97e01727e2497abbf17aeeea55be5da3",
+  "tests": {
+    "secret_scan": "PASS; actual private key/DB URL/password exact matching, values withheld",
+    "env_ignored_untracked": true,
+    "runtime_excluded": true,
+    "diff_check": true,
+    "docs_links": true,
+    "backend": {
+      "passed": 466,
+      "failed": 55,
+      "skipped": 0,
+      "total": 521,
+      "new_failures": [],
+      "baseline_failures": [
+        "tests.test_api::test_auto_roi_and_failure_do_not_block_manual",
+        "tests.test_api::test_config_validation_and_secret_status",
+        "tests.test_api::test_failure_isolation_real_mode_and_trace",
+        "tests.test_api::test_http_fixture_workflow_and_metrics_update",
+        "tests.test_api::test_matrix_latest_runs_filters_and_categories",
+        "tests.test_api::test_no_ground_truth_and_empty_ground_truth",
+        "tests.test_api::test_roi_changes_preserve_old_predictions",
+        "tests.test_batch_logs_delete::test_batch_order_failure_independence_and_safe_logs",
+        "tests.test_batch_logs_delete::test_delete_cascades_preserves_shared_document_and_audit",
+        "tests.test_batch_logs_delete::test_log_never_accepts_secret_identifiers_or_arbitrary_payload",
+        "tests.test_benchmark_pipeline::test_additive_seed_and_fixed_benchmark_settings",
+        "tests.test_benchmark_pipeline::test_benchmark_failure_isolated_from_existing_pipelines",
+        "tests.test_benchmark_pipeline::test_benchmark_persistence_metrics_error_analysis_and_dynamic_views",
+        "tests.test_document_dataset_management::test_recent_dataset_exclusion_preserves_gt_source_history",
+        "tests.test_error_analysis_dataset::test_error_replacement_filters_latest_and_historical_recompute",
+        "tests.test_error_analysis_dataset::test_future_config_is_iterable_without_invented_adapter",
+        "tests.test_fields_roi::test_explicit_roi_origin_pipeline_inputs[auto]",
+        "tests.test_fields_roi::test_explicit_roi_origin_pipeline_inputs[manual]",
+        "tests.test_fields_roi::test_explicit_roi_origin_pipeline_inputs[none]",
+        "tests.test_fields_roi::test_fields_lifecycle_scoping_preview_replacement_and_history",
+        "tests.test_fields_roi::test_postgresql_field_roundtrip",
+        "tests.test_fields_roi::test_roi_source_validation_and_no_roi_full_page",
+        "tests.test_global_layout::test_detector_order_is_not_global_identity_and_failure_isolation",
+        "tests.test_global_layout::test_field_alignment[per_field-ABD-insertion]",
+        "tests.test_global_layout::test_field_alignment[per_field-ABXCD-deletion]",
+        "tests.test_global_layout::test_field_alignment[per_field-ABXD-substitution]",
+        "tests.test_global_layout::test_field_alignment[whole_document-ABD-insertion]",
+        "tests.test_global_layout::test_field_alignment[whole_document-ABXCD-deletion]",
+        "tests.test_global_layout::test_field_alignment[whole_document-ABXD-substitution]",
+        "tests.test_global_layout::test_field_dataset_exact_source_crop_confirmed_gt_and_missing_source",
+        "tests.test_global_layout::test_field_edit_invalidates_only_its_evaluation_and_modes_remain_independent",
+        "tests.test_global_layout::test_geometry_order_reorder_identity_and_historical_lock",
+        "tests.test_global_layout::test_layout_identity_confirmation_history_and_crop_fairness",
+        "tests.test_global_layout::test_shared_gt_explicit_evaluation_persistence_and_invalidation[per_field]",
+        "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[False-False]",
+        "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[False-True]",
+        "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[True-False]",
+        "tests.test_global_layout::test_smart_calculation_data_presence_and_persistence[True-True]",
+        "tests.test_global_layout::test_synchronized_gt_requires_all_fields_and_matching_document",
+        "tests.test_global_layout::test_whole_document_explicit_evaluation_invalidation_and_no_dataset_labels",
+        "tests.test_hutch_fine_tune_v2::test_global_identity_order_shared_gt_history_and_partial_failure",
+        "tests.test_hutch_fine_tune_v2::test_registration_fixed_route_unknown_readiness",
+        "tests.test_pdf::test_pdf_page_roi_persistence_and_three_real_adapter_contracts",
+        "tests.test_privacy_and_database::test_bad_metadata_cannot_cancel_other_runs",
+        "tests.test_privacy_and_database::test_live_postgresql_repository_roundtrip",
+        "tests.test_privacy_and_database::test_private_upstream_fields_never_reach_storage_or_frontend",
+        "tests.test_real_boundaries::test_archived_history_excluded_without_deleting_data",
+        "tests.test_real_boundaries::test_missing_key_has_no_fake_fallback",
+        "tests.test_real_boundaries::test_one_shared_key_and_boolean_only_status[]",
+        "tests.test_real_boundaries::test_one_shared_key_and_boolean_only_status[shared-test-only-credential]",
+        "tests.test_real_boundaries::test_shared_gateway_ignores_stale_pipeline_hosts",
+        "tests.test_thai_ft_v2::test_multiple_batches_unicode_order_and_missing_selection",
+        "tests.test_thai_ft_v2::test_registration_fixed_settings_and_unknown_readiness",
+        "tests.test_thai_ft_v2::test_roi_fields_persistence_and_dynamic_views[auto]",
+        "tests.test_thai_ft_v2::test_roi_fields_persistence_and_dynamic_views[manual]"
+      ]
+    },
+    "playwright_full": {
+      "passed": 128,
+      "failed": 34,
+      "total": 162,
+      "new_failure_titles": [],
+      "baseline_failure_titles": [
+        "tests/batch-logs-delete.spec.ts legacy compatibility: selected PDF pages run separately; logs and confirmed deletion preserve document",
+        "tests/batch-review.spec.ts legacy compatibility: batch selection is independent of preview; selected page results and GT stay inline",
+        "tests/batch-review.spec.ts legacy compatibility: batch retries only failed pages and preserves completed progress",
+        "tests/benchmark.spec.ts legacy compatibility: Benchmark appears dynamically and flows through ROI, saved metrics, errors and comparison",
+        "tests/console.spec.ts business library filters, detail tabs, missing metrics and history links",
+        "tests/console.spec.ts all data routes have recoverable errors and intentional empty states",
+        "tests/dataset-errors.spec.ts confirmed source crop dataset export and persisted error analysis drilldown",
+        "tests/fields-roi.spec.ts legacy compatibility: default field GT uses Check preview, accessible red errors and explicit confirmation",
+        "tests/fields-roi.spec.ts legacy compatibility: Dataset stale-file failure stays actionable and does not hide the selection",
+        "tests/global-comparison.spec.ts comparison scroll, pinned GT, modes and explicit recalculation at 390px",
+        "tests/global-comparison.spec.ts comparison scroll, pinned GT, modes and explicit recalculation at 1440px",
+        "tests/global-layout.spec.ts Hutch fine tune v2 shares four-page workflow, busy state and result blocks with Mint",
+        "tests/global-layout.spec.ts Run OCR shows immediate busy feedback, blocks duplicates and restores after failure",
+        "tests/global-layout.spec.ts GT input cards show focus and preserve both drafts across repeated toggles",
+        "tests/global-layout.spec.ts global acceptance: 3 Auto + Manual, shared crops/GT, explicit calculate, History and field Dataset",
+        "tests/global-layout.spec.ts smart calculation stays on page four and evaluates Whole/Sub/both from data, with collapsed cards",
+        "tests/global-layout.spec.ts global boxes move/resize/delete/add without losing other identities or zoom coordinates",
+        "tests/global-layout.spec.ts four-page PDF navigation preserves saved layout per selected page",
+        "tests/global-layout.spec.ts image upload refresh, bulk layout selection and safe back navigation preserve historical runs",
+        "tests/global-layout.spec.ts global workflow responsive 390",
+        "tests/global-layout.spec.ts global workflow responsive 768",
+        "tests/global-layout.spec.ts global workflow responsive 1440",
+        "tests/pdf.spec.ts legacy compatibility: Thai multi-page PDF: choose page two, ROI, all configured pipelines, save and reopen",
+        "tests/pdf.spec.ts Thai PDF workspace remains usable at 1440px",
+        "tests/pdf.spec.ts Thai PDF workspace remains usable at 1024px",
+        "tests/pdf.spec.ts Thai PDF workspace remains usable at 768px",
+        "tests/release-b.spec.ts document types, one-pipeline History, dataset exclusion and log search 390",
+        "tests/release-b.spec.ts document types, one-pipeline History, dataset exclusion and log search 768",
+        "tests/release-b.spec.ts document types, one-pipeline History, dataset exclusion and log search 1440",
+        "tests/thai-ft-v2.spec.ts legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, field GT, persistence and dashboards",
+        "tests/workflow.spec.ts upload public/sample-document.png, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+        "tests/workflow.spec.ts upload tests/fixtures/sample-document.jpg, original-coordinate ROI, all configured pipelines with canonical crops, ground truth, saved detail and dashboards",
+        "tests/workflow.spec.ts legacy compatibility: ROI move and resize, selectable Auto ROI, and failure recovery",
+        "tests/workflow.spec.ts legacy compatibility: settings save and upstream connection test"
+      ]
+    },
+    "focused_final": {
+      "passed": 8,
+      "failed": 0
+    }
+  },
+  "heavy": [
+    {
+      "pass": true,
+      "fields": 40,
+      "pipelines": 12,
+      "expected_outputs": 480,
+      "recovery": true,
+      "creation_ms": 31.25,
+      "elapsed_seconds": 779.85,
+      "correct": 480,
+      "persisted": 480,
+      "unique": 480,
+      "confidence": 480,
+      "traces": 480,
+      "geometry": 400,
+      "gateway_calls": 221,
+      "poll_count": null,
+      "poll_response_bytes": null,
+      "database_transactions": null,
+      "preserved_checkpoint_ids": 96,
+      "killed_after_units": 96,
+      "resources": {
+        "peak_rss_bytes": 308244480,
+        "peak_cgroup_bytes": 479637504,
+        "peak_working_set_bytes": 281260032,
+        "max_gateway_inflight": 1,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    },
+    {
+      "pass": true,
+      "fields": 40,
+      "pipelines": 12,
+      "expected_outputs": 480,
+      "recovery": false,
+      "creation_ms": 32.0,
+      "elapsed_seconds": 691.28,
+      "correct": 480,
+      "persisted": 480,
+      "unique": 480,
+      "confidence": 480,
+      "traces": 480,
+      "geometry": 400,
+      "gateway_calls": 220,
+      "poll_count": 217,
+      "poll_response_bytes": 344501,
+      "database_transactions": 613,
+      "preserved_checkpoint_ids": 0,
+      "killed_after_units": null,
+      "resources": {
+        "peak_rss_bytes": 336392192,
+        "peak_cgroup_bytes": 295645184,
+        "peak_working_set_bytes": 295641088,
+        "max_gateway_inflight": 1,
+        "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+      }
+    }
+  ],
+  "database_reconnect": {
+    "pass": true,
+    "outage_seconds": 20,
+    "elapsed_seconds": 117.87,
+    "persisted": 40,
+    "unique": 40,
+    "preserved_checkpoint_ids": 8,
+    "status_during_outage": 503,
+    "cors_on_503": true
+  },
+  "live_local_cdgs": {
+    "scope": "LOCAL FINAL BACKEND + REAL CDGS; isolated DB/storage; one job/two synthetic fields",
+    "creation_ms": 15.0,
+    "job_id": "38f026e9-b2ca-4528-9d23-21e94d1c9adb",
+    "case_id": "9b8ddf0d-5f92-4834-8c83-a14325a5720b",
+    "status": "completed",
+    "completed_units": 2,
+    "elapsed_ms": 5140,
+    "traces": [
+      {
+        "characters": 16,
+        "text_sha256": "6fb058e280a5d95cea2af82c7433cec002fe407887daf1e48a8d329c2f4b1a77",
+        "confidence": 0.9702301025390625,
+        "gateway_request_id": "batch_6797bf60cb2c4b48a2c96c38a8598b26",
+        "request_id": "ocr_5f7eadc1d1dc4444ac877a76d758aaad",
+        "gateway_service": "model-api-gateway",
+        "gateway_model": "pipeline-router-v1",
+        "gateway_duration_ms": 1741.665,
+        "boxes": 1
+      },
+      {
+        "characters": 16,
+        "text_sha256": "6fb058e280a5d95cea2af82c7433cec002fe407887daf1e48a8d329c2f4b1a77",
+        "confidence": 0.9697983860969543,
+        "gateway_request_id": "batch_6797bf60cb2c4b48a2c96c38a8598b26",
+        "request_id": "ocr_d31a079236074319bdb913d451013b3b",
+        "gateway_service": "model-api-gateway",
+        "gateway_model": "pipeline-router-v1",
+        "gateway_duration_ms": 1741.665,
+        "boxes": 1
+      }
+    ],
+    "metrics": [
+      {
+        "cer": 0.0,
+        "wer": 0.0,
+        "exact_match": true
+      },
+      {
+        "cer": 0.0,
+        "wer": 0.0,
+        "exact_match": true
+      }
+    ],
+    "det_path": "/api/v1/text-detection-batches?version=6&model=baseline",
+    "rec_path": "/api/v1/text-recognition-batches?version=5&model=baseline",
+    "pass": true
+  },
+  "logical_backup": {
+    "authorized": true,
+    "encrypted": true,
+    "local_restore_all_table_counts_match": true,
+    "neon_account_pitr": "not verified",
+    "uploads_backed_up": false
+  },
+  "no_browser": {
+    "pass": true,
+    "no_browser_seconds": 330,
+    "actual_job_duration_seconds": 689.994985,
+    "creation_ms": 20.45,
+    "elapsed_seconds": 691.02,
+    "correct": 480,
+    "persisted": 480,
+    "unique": 480,
+    "gateway_calls": 220,
+    "poll_count": 113,
+    "poll_response_bytes": 179478,
+    "database_transactions": 194,
+    "history_run_count": 12,
+    "history_field_count": 480,
+    "history_unique_field_ids": 480,
+    "independent_db_observations": [
+      {
+        "elapsed": 30.13,
+        "db_state": "running|0|2026-11-05 08:51:35.292433+00|1"
+      },
+      {
+        "elapsed": 60.23,
+        "db_state": "running|0|2026-11-05 08:52:05.382738+00|1"
+      },
+      {
+        "elapsed": 90.34,
+        "db_state": "running|0|2026-11-05 08:52:35.464452+00|1"
+      },
+      {
+        "elapsed": 120.42,
+        "db_state": "running|0|2026-11-05 08:53:05.529557+00|1"
+      },
+      {
+        "elapsed": 150.51,
+        "db_state": "running|96|2026-11-05 08:53:35.558537+00|1"
+      },
+      {
+        "elapsed": 180.6,
+        "db_state": "running|96|2026-11-05 08:54:05.595996+00|1"
+      },
+      {
+        "elapsed": 210.67,
+        "db_state": "running|96|2026-11-05 08:54:45.646601+00|1"
+      },
+      {
+        "elapsed": 240.78,
+        "db_state": "running|96|2026-11-05 08:55:15.682789+00|1"
+      },
+      {
+        "elapsed": 270.87,
+        "db_state": "running|96|2026-11-05 08:55:45.710037+00|1"
+      },
+      {
+        "elapsed": 300.97,
+        "db_state": "running|192|2026-11-05 08:56:15.730798+00|1"
+      },
+      {
+        "elapsed": 331.08,
+        "db_state": "running|192|2026-11-05 08:56:45.75971+00|1"
+      }
+    ],
+    "healthcheck_disabled": true,
+    "resources": {
+      "peak_rss_bytes": 336510976,
+      "peak_cgroup_bytes": 295641088,
+      "max_gateway_inflight": 1,
+      "cgroup_events_last": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0"
+    }
+  }
+}
