@@ -1,0 +1,101 @@
+{
+  "base_main": "695bf4b0f3355653ea4c82102e6586debaac9c2b",
+  "date": "2026-11-07",
+  "backend": {
+    "passed": 480,
+    "failed": 55,
+    "new_failures": [],
+    "baseline_passed": 466,
+    "baseline_failed": 55
+  },
+  "playwright": {
+    "passed": 137,
+    "failed": 34,
+    "new_failures": [],
+    "baseline_full_passed": 128,
+    "baseline_failed": 34,
+    "focused_passed": 36
+  },
+  "scale": {
+    "fields": 38,
+    "pipelines": 13,
+    "correct": 494,
+    "unique": 494,
+    "elapsed_seconds": 971.57,
+    "no_browser_seconds": 330,
+    "preserved_checkpoint_ids": 104,
+    "gateway_calls": 282
+  },
+  "resource": {
+    "peak_rss_bytes": 309313536,
+    "peak_cgroup_bytes": 477556736,
+    "max_gateway_inflight": 2
+  },
+  "memory_limit_bytes": 512000000,
+  "cpu_limit": 1.0,
+  "attempt_count": 3,
+  "oom_killed": false,
+  "live_isolated_gateway": [
+    {
+      "det": "/api/v1/text-detection-batches?version=6&model=thai_ft_v2",
+      "rec": "/api/v1/text-recognition-batches?version=5&model=thai_ft_v6",
+      "completed_units": 2,
+      "metrics": [
+        {
+          "cer": 0.0,
+          "wer": 0.0,
+          "exact_match": true
+        },
+        {
+          "cer": 0.0,
+          "wer": 0.0,
+          "exact_match": true
+        }
+      ],
+      "confidence_and_traces_present": true
+    },
+    {
+      "det": "/api/v1/text-detection-batches?version=6&model=baseline",
+      "rec": "/api/v1/text-recognition-batches?version=5&model=thai_ft_v6",
+      "completed_units": 2,
+      "metrics": [
+        {
+          "cer": 0.0,
+          "wer": 0.0,
+          "exact_match": true
+        },
+        {
+          "cer": 0.0,
+          "wer": 0.0,
+          "exact_match": true
+        }
+      ],
+      "confidence_and_traces_present": true
+    }
+  ],
+  "alembic": {
+    "isolated_local": true,
+    "clean_upgrade_via_0011_to_head": true,
+    "revision": "0012_ocr_jobs",
+    "schema_drift": false,
+    "table_count": 15
+  },
+  "repository": {
+    "secret_scan": "PASS; exact private key/DB URL/password matching, values withheld",
+    "env_ignored_untracked": true,
+    "runtime_excluded": true,
+    "diff_check": true,
+    "docs_links": true,
+    "metrics_dataset_migrations_deployment_unchanged": true
+  },
+  "source_recovery_mobile": true,
+  "internal_debug_auth": "BLOCKED: no authentication/roles; safe public diagnostics explicitly labelled",
+  "production": "UNCHANGED; storage-preservation authorization/recovery gate pending, no merge/deploy",
+  "limitations": [
+    "Heavy load is a local synthetic JSON surrogate, not shared-CDGS capacity certification",
+    "Cgroup includes cache and does not equal RSS",
+    "Uncommitted upstream inference may repeat after interruption",
+    "Ephemeral uploads require separate source protection; DB records do not reconstruct files",
+    "Historical upstream-model errors and container exit cause remain unconfirmed"
+  ]
+}
