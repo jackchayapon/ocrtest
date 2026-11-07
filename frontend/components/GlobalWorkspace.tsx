@@ -12,6 +12,7 @@ import {previewFieldOrder} from "@/lib/global-order";
 import {completeGT,fieldLineCounts,joinFieldGT,splitDocumentGT} from "@/lib/ground-truth-sync";
 import WorkflowSteps,{stageTitles,stages,workflowUrl,type WorkflowStage} from "./WorkflowSteps";
 import OCRJobRunner from "./OCRJobRunner";
+import SafeDebugPanel from "./SafeDebugPanel";
 import GlobalGroundTruthForm from "./GlobalGroundTruthForm";
 import GlobalFieldEvaluation from "./GlobalFieldEvaluation";
 const DocumentViewer=dynamic(()=>import("./DocumentViewer"),{ssr:false});
@@ -29,6 +30,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  const searchParams=useSearchParams();
  const [comparison,setComparison]=useState(searchParams.get("edit")!=="1"&&initialCase.runs.some(r=>r.document_evaluation||r.fields?.some(f=>f.evaluation)));
  const actionPending=useRef(false);
+ const [focusRequest,setFocusRequest]=useState<{id:string;revision:number}|null>(null);
  const fieldRows=useRef(new Map<string,HTMLDivElement>());
  const doc=saved.document,active=fields.find(f=>f.id===activeId)??null,locked=stage!=="layout"&&!!saved.layout_confirmed_at,hasRuns=!!saved.runs.length;
  const latestRuns=[...new Set(saved.runs.map(r=>r.pipeline_id))].flatMap(id=>{const r=[...saved.runs].reverse().find(r=>r.pipeline_id===id);return r?[r]:[];});
@@ -36,7 +38,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  async function act(fn:()=>Promise<void>){if(actionPending.current)return;actionPending.current=true;setBusy(true);setError("");setNotice(false);setSaveMessage("");try{await fn();}catch(e){setError(userError(e instanceof Error?e.message:"ดำเนินการไม่สำเร็จ"));}finally{actionPending.current=false;setBusy(false);}}
  function adopt(c:TestCase){setSaved(c);setFields(c.global_fields??[]);const ids=new Set(c.global_fields?.map(f=>f.id));setActiveId(old=>old&&ids.has(old)?old:null);}
  function selectField(id:string){if(busy)return;setDrawing(false);setActiveId(id);}
- function selectPreviewField(id:string){selectField(id);if(!busy)fieldRows.current.get(id)?.scrollIntoView({block:"nearest",inline:"nearest",behavior:"smooth"});}
+ function selectPreviewField(id:string){if(busy)return;selectField(id);if(stage==="ground-truth"){setMode("per_field");setFocusRequest(old=>({id,revision:(old?.revision??0)+1}));}else{const row=fieldRows.current.get(id),container=row?.parentElement;if(row&&container)container.scrollTo({top:container.scrollTop+row.getBoundingClientRect().top-container.getBoundingClientRect().top,behavior:"smooth"});}}
  function deleteField(id:string){if(locked||busy)return;setFields(old=>previewFieldOrder(old.filter(f=>f.id!==id)));setActiveId(old=>old===id?null:old);setSaveMessage("");setDrawing(false);}
  function add(roi:ROI,source:"auto"|"manual"){
   if(locked||busy)return;const f:GlobalField={id:crypto.randomUUID(),field_index:fields.length+1,roi,source,ground_truth_raw:null,confirmed_at:null};setFields(old=>previewFieldOrder([...old,f]));setActiveId(f.id);setSaveMessage("");
@@ -52,6 +54,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
   else setSaveMessage("บันทึก GT ฉบับร่างแล้ว — ยังไม่ได้คำนวณผลประเมิน");
  });}
  const allowed=stage==="layout"||stage==="pipelines"&&locked||(stage==="ground-truth")&&hasRuns;
+ useEffect(()=>{if(stage==="ground-truth"&&hasRuns){const key=`ocrlab-job:${saved.id}`,id=localStorage.getItem(key);if(id)sessionStorage.setItem(`${key}:opened`,id);}},[stage,hasRuns,saved.id]);
  const layoutDirty=JSON.stringify(fields)!==JSON.stringify(saved.global_fields??[]);
  async function saveLayout(confirmed:boolean){
   if(hasRuns||saved.layout_locked_at){
@@ -70,13 +73,15 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  <WorkflowSteps stage={stage} saved={saved} uploadUrl={`/?document=${doc.id}${doc.document_type==="pdf"?`&page=${doc.page_number??1}`:""}`} busy={busy}/>
  {error&&<div className="error-banner" role="alert">{error}</div>}{busy&&<p role="status" className="notice-banner">กำลังดำเนินการ…</p>}{saveMessage&&<p role="status" className="notice-banner">{saveMessage}</p>}
  {stage==="ground-truth"&&!comparison&&!saved.document_gt_confirmed_at&&!fields.some(f=>f.confirmed_at)&&saved.gt_prefill&&["ready","partial","unavailable","pending"].includes(saved.gt_prefill.status)&&<p role="status" className="notice-banner" data-testid="gt-prefill-notice">{saved.gt_prefill.status==="ready"||saved.gt_prefill.status==="partial"?"เติม GT ฉบับร่างจาก Custom DET v6 (thai_ft_v2) + REC v6 (thai_ft_v1) แล้ว กรุณาตรวจและแก้ไขก่อนยืนยันคำนวณ":"ยังไม่มีข้อความตั้งต้นจาก OCR กรุณากรอก GT ด้วยตนเอง"}{saved.gt_prefill.status==="partial"&&" · บาง Field ยังไม่มีข้อความ กรุณากรอกให้ครบ"}</p>}
+ {stage==="ground-truth"&&(searchParams.get("partial")==="1"||latestRuns.some(r=>r.status==="error"))&&<p role="alert" className="rounded-lg border border-amber-400 bg-amber-50 p-3">OCR สำเร็จบางส่วน — มี Field/Pipeline ที่ล้มเหลว ผลที่สำเร็จยังใช้กรอก GT ได้ ตรวจรายละเอียดข้อผิดพลาดก่อนประเมิน</p>}
+ {stage==="ground-truth"&&<SafeDebugPanel caseId={saved.id} runs={latestRuns}/>}
  {!allowed?<section className="panel panel-body"><p>กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน</p><Link className="button primary" href={workflowUrl(saved.id,locked?"pipelines":"layout")}>กลับไปขั้นตอนก่อนหน้า</Link></section>:<>
  {stage==="ground-truth"&&comparison?<>
  {notice&&<p role="status" className="notice-banner">คำนวณแล้ว — ผลประเมินอยู่ในตาราง</p>}
  <GlobalFieldEvaluation key={saved.id} fields={fields} saved={saved} runs={latestRuns} mode={mode} documentGT={documentGT} busy={busy} onMode={setMode} onEdit={()=>{setComparison(false);setNotice(false);}}/>
  </>:<div className="grid gap-5 lg:grid-cols-2">
  <section data-testid="preview-column" className="relative min-w-0 lg:min-h-[560px]"><div className="lg:absolute lg:inset-0">
- <DocumentViewer fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy)setActiveId(null);}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fields} selectedGlobalFieldId={activeId} showRoiDelete={false} onSelectGlobalField={selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!locked&&!busy}/>
+ <DocumentViewer missingGTFieldIds={stage==="ground-truth"?fields.filter(f=>!f.ground_truth_raw?.trim()).map(f=>f.id):[]} errorFieldIds={fields.filter(f=>latestRuns.some(r=>r.fields?.some(p=>p.global_field_id===f.id&&p.status==="error"))).map(f=>f.id)} fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy)setActiveId(null);}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fields} selectedGlobalFieldId={activeId} showRoiDelete={false} onSelectGlobalField={selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!locked&&!busy}/>
  </div></section><section data-testid="controls-column" className="min-w-0 space-y-4">
  {stage==="layout"&&<div className="panel panel-body space-y-4 lg:h-full"><h2>จัดการ Global Fields</h2>
  <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy} onClick={()=>void act(async()=>{const regions=(await api.getAutoROIs(doc.id,"text-line",doc.page_number)).regions;setFields(old=>previewFieldOrder([...old,...regions.filter(r=>!old.some(f=>JSON.stringify(f.roi)===JSON.stringify(r.roi))).map(r=>({id:crypto.randomUUID(),field_index:0,roi:r.roi,source:"auto" as const,ground_truth_raw:null,confirmed_at:null}))]));})}>Auto Layout</button><button className="button secondary" disabled={busy} onClick={()=>setDrawing(true)}>เพิ่มกรอบ Manual</button></div>
@@ -88,8 +93,8 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  {hasRuns&&<p className="text-xs text-amber-800">หากแก้กรอบแล้วบันทึก จะสร้างชุดแก้ไขสำหรับรัน OCR ใหม่ โดยเก็บ GT ติดกับ Field เดิมแม้ลำดับเปลี่ยน กรอบใหม่เริ่มว่าง และผลประเมินเดิมยังอยู่ในประวัติ</p>}
  <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy||!layoutDirty} onClick={()=>void act(async()=>{const c=await saveLayout(false);adopt(c);if(c.id!==saved.id)router.replace(workflowUrl(c.id,"layout"));setSaveMessage("บันทึก Layout ฉบับร่างแล้ว — ยังแก้ไขกรอบได้");})}>บันทึก Layout ฉบับร่าง</button><button className="button primary" disabled={busy||!fields.length} onClick={()=>void act(async()=>{const c=await saveLayout(true);adopt(c);router.push(workflowUrl(c.id,"pipelines"));})}>ยืนยัน ROI</button></div>
  </div>}
- {stage==="pipelines"&&<section className="panel panel-body space-y-4 lg:h-full"><h2>เลือก Pipelines</h2><p>ทุก Pipeline จะใช้ Global Field ชุดเดียวกัน</p><div data-testid="pipeline-options" aria-busy={busy} className={`space-y-3 transition-opacity ${busy?"opacity-50":"opacity-100"}`}>{configs.map(p=><label key={p.pipeline_id} className="flex gap-2"><input type="checkbox" aria-label={`เลือก ${pipelineLabel(p.pipeline_id,p.name)}`} disabled={busy||!p.enabled} checked={pipelineIds.includes(p.pipeline_id)} onChange={e=>setPipelineIds(old=>e.target.checked?[...old,p.pipeline_id]:old.filter(id=>id!==p.pipeline_id))}/>{pipelineLabel(p.pipeline_id,p.name)}{!p.enabled&&" (ปิดอยู่)"}</label>)}</div><OCRJobRunner caseId={saved.id} pipelines={pipelineIds} names={Object.fromEntries(configs.map(p=>[p.pipeline_id,p.name]))} onBusy={setBusy} resultsUrl={workflowUrl(saved.id,"ground-truth")} onCompleted={()=>router.push(workflowUrl(saved.id,"ground-truth")+"?edit=1")}/></section>}
- {stage==="ground-truth"&&<GlobalGroundTruthForm mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>}
+ {stage==="pipelines"&&<section className="panel panel-body space-y-4 lg:h-full"><h2>เลือก Pipelines</h2><p>ทุก Pipeline จะใช้ Global Field ชุดเดียวกัน</p><div data-testid="pipeline-options" aria-busy={busy} className={`space-y-3 transition-opacity ${busy?"opacity-50":"opacity-100"}`}>{configs.map(p=><label key={p.pipeline_id} className="flex gap-2"><input type="checkbox" aria-label={`เลือก ${pipelineLabel(p.pipeline_id,p.name)}`} disabled={busy||!p.enabled} checked={pipelineIds.includes(p.pipeline_id)} onChange={e=>setPipelineIds(old=>e.target.checked?[...old,p.pipeline_id]:old.filter(id=>id!==p.pipeline_id))}/>{pipelineLabel(p.pipeline_id,p.name)}{!p.enabled&&" (ปิดอยู่)"}</label>)}</div><OCRJobRunner caseId={saved.id} pipelines={pipelineIds} names={Object.fromEntries(configs.map(p=>[p.pipeline_id,p.name]))} onBusy={setBusy} resultsUrl={workflowUrl(saved.id,"ground-truth")} onCompleted={job=>router.push(workflowUrl(saved.id,"ground-truth")+(job.status==="partial_success"?"?partial=1&edit=1":"?edit=1"))}/></section>}
+ {stage==="ground-truth"&&<GlobalGroundTruthForm activeFieldId={activeId} focusRequest={focusRequest} mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>}
  </section></div>}</>}
  </div>;
 }

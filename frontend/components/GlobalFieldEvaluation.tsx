@@ -64,6 +64,7 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
       return <td key={run.id} data-testid={`global-result-${run.pipeline_id}`} className="border-b border-r border-slate-200 p-3 align-top">
        <section aria-label="Extracted Text" data-testid="prediction-pane" tabIndex={0} className={`space-y-2 pr-2 ${whole?"min-h-64":"min-h-32"}`}>
        <h3 className="text-sm font-semibold text-slate-500" title={analysis.highlight?"สีเขียว: ถูก · กดสีแดงเพื่อดูข้อความที่ผิด เกิน หรือขาด":undefined}>ข้อความที่ OCR อ่านได้{analysis.highlight&&<span className="ml-2 text-xs font-normal text-green-700">HIGHLIGHT</span>}</h3>
+       <button type="button" className="text-xs text-sky-800 underline" aria-label={`รายละเอียด ${row.name} ${pipelineLabel(run.pipeline_id,run.pipeline_name)}`} onClick={()=>setExpanded({run,fieldId:whole?null:row.id})}>เปิดภาพและรายละเอียดผล</button>
        {failed&&<p role="alert" className="mb-3 text-amber-800">บริการ OCR ยังไม่พร้อมใช้งาน</p>}
        {!whole&&!field&&!failed&&<p className="mb-3 text-slate-500">ไม่มีผลลัพธ์สำหรับ Field นี้</p>}
        {analysis.highlight&&evaluation?<InteractiveErrorText evaluation={evaluation} groundTruth={row.gt}/>:<p data-testid="global-prediction" className="whitespace-pre-wrap break-words leading-relaxed">{(whole?run.final_text:field?.ocr_text)||"(ไม่พบข้อความ)"}</p>}

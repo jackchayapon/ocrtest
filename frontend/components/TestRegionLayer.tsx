@@ -15,6 +15,7 @@ interface TestRegionLayerProps {
   interactive: boolean;
   drawing?: boolean;
   label?: string;
+  showLabel?: boolean;
   onClick?: () => void;
   onChange: (roi: ROI) => void;
 }
@@ -29,6 +30,7 @@ export default function TestRegionLayer({
   interactive,
   drawing = false,
   label,
+  showLabel = true,
   onClick,
   onChange,
 }: TestRegionLayerProps) {
@@ -74,7 +76,7 @@ export default function TestRegionLayer({
         width={regionWidth}
         height={regionHeight}
         stroke="#6366f1"
-        strokeWidth={2}
+        strokeWidth={1.5}
         strokeScaleEnabled={false}
         dash={drawing ? [6 / scale, 4 / scale] : undefined}
         fill="rgba(99,102,241,0.035)"
@@ -100,7 +102,7 @@ export default function TestRegionLayer({
         onClick={onClick}
         onTap={onClick}
       />
-      <FieldLabel x={roi.x1} y={roi.y1} scale={scale} text={label || t("TEST REGION")} />
+      {showLabel&&<FieldLabel x={roi.x1} y={roi.y1} scale={scale} text={label || t("TEST REGION")} />}
       {interactive && (
         <Transformer
           ref={transformerRef}

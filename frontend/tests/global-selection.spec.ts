@@ -142,7 +142,8 @@ for(const gt of [false,true])test(`blank preview clears field selection without 
 test("GT preview highlights input, keeps hidden fields selectable and supports zoom/pan",async({page})=>{
  await setup(page,true);
  const viewer=page.getByTestId("document-viewer");
- await expect(viewer.getByRole("button",{name:/วาดพื้นที่|ลบพื้นที่|รีเซ็ตมุมมอง|กรอบข้อความ OCR/})).toHaveCount(0);
+ await expect(viewer.getByRole("button",{name:/วาดพื้นที่|ลบพื้นที่|กรอบข้อความ OCR/})).toHaveCount(0);
+ await expect(viewer.getByRole("button",{name:"รีเซ็ตมุมมอง",exact:true})).toBeVisible();
  const toggle=viewer.getByRole("button",{name:"แสดงกรอบ Global ทั้งหมด",exact:true});
  await expect(toggle).toHaveAttribute("aria-pressed","true");
  await toggle.click();
