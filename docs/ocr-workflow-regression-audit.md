@@ -3,6 +3,8 @@
 Base main: `695bf4b0f3355653ea4c82102e6586debaac9c2b` (PR11/PR12).
 Branch: `fix/ocr-workflow-regression-audit`. No database migration or model-registry change.
 
+**Review update, 8 November:** the [independent review](pr13-independent-review.md) supersedes completion assumptions below: terminal-result empty/error retry defects were reproduced and corrected; production remains NO-GO. The original results below remain historical evidence, not a full-suite rerun of the review fixes. Gateway's 30-second retry budget is admission-only, not a hard overall inference timeout.
+
 ## Confirmed root causes
 
 1. **DET HTTP200 / FIELD_PIPELINE_ERROR:** read-only production diagnostics grouped154 affected Field failures as `INVALID_OCR_RESPONSE`, message `Batch result count does not match input images`. The shared client removed `raw_output` assuming structured aliases existed. Controlled synthetic CDGS requests on7November confirmed DET and REC currently return `leaf-inference-v1` predictions **only inside `data.raw_output`**, with `count` and model selection. Removing that sole representation loses all predictions before batch slicing, prevents REC after DET, and explains these contract failures. This does not explain every historical upstream error.

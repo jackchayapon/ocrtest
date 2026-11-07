@@ -117,7 +117,7 @@ export type OCRJob = {
 export const createOCRJob = (id: string, pipelines: string[], idempotency_key: string) => request<OCRJob>(`/test-cases/${id}/jobs`, {method:"POST",body:JSON.stringify({pipelines,idempotency_key})});
 export const getOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob>(`/ocr-jobs/${id}`, {signal});
 export const getCaseOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob|null>(`/test-cases/${id}/jobs`, {signal});
-export const getOCRJobResults = (id: string) => request<RunResponse>(`/ocr-jobs/${id}/results`);
+export const getOCRJobResults = (id: string, signal?: AbortSignal) => request<RunResponse>(`/ocr-jobs/${id}/results`, signal ? {signal} : undefined);
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const getHistory = (filters?: QueryFilters, signal?: AbortSignal, compact = false) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary&latest=true${compact ? "&compact=true" : ""}`, { signal });

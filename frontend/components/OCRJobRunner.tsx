@@ -6,12 +6,14 @@ import {useEffect,useRef,useState} from "react";
 import {APIError,createOCRJob,getCaseOCRJob,getOCRJob,getOCRJobResults,type OCRJob} from "@/lib/api";
 
 const active=(job:OCRJob)=>job.status==="queued"||job.status==="running";
+const RESULT_ATTEMPTS=6,RESULT_DEADLINE_MS=30_000,RESULT_RECHECK_MS=5_000;
 
 export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,resultsUrl}:{
  caseId:string;pipelines:string[];names:Record<string,string>;onCompleted:(job:OCRJob)=>void;onBusy:(busy:boolean)=>void;resultsUrl:string;
 }){
  const [job,setJob]=useState<OCRJob|null>(null),[checking,setChecking]=useState(true),[submitting,setSubmitting]=useState(false),[error,setError]=useState("");
  const [clock,setClock]=useState(()=>Date.now());
+ const [verifying,setVerifying]=useState(false),[verification,setVerification]=useState(0);
  const pending=useRef(false),callbacks=useRef({onCompleted,onBusy});
  const navigated=useRef<string|null>(null);
  const activeId=job&&active(job)?job.job_id:null;
@@ -27,7 +29,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   }).catch(()=>{if(!controller.signal.aborted){setError("ตรวจสอบงานเดิมไม่ได้ กรุณาลองตรวจสอบอีกครั้งก่อนเริ่มงานใหม่");setChecking(false);}});
   return()=>controller.abort();
  },[caseId,storageKey]);
- useEffect(()=>{callbacks.current.onBusy(checking||submitting||!!job&&active(job));return()=>callbacks.current.onBusy(false);},[checking,submitting,job]);
+ useEffect(()=>{callbacks.current.onBusy(checking||submitting||verifying||!!job&&active(job));return()=>callbacks.current.onBusy(false);},[checking,submitting,verifying,job]);
  useEffect(()=>{
   if(!job)return;
   if(!active(job)){
@@ -43,21 +45,34 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   return()=>{controller.abort();clearTimeout(timer);};
  },[job,storageKey]);
  useEffect(()=>{
-  if(!job||!["completed","partial_success"].includes(job.status)||navigated.current===job.job_id||sessionStorage.getItem(`${storageKey}:opened`)===job.job_id)return;
-  let cancelled=false;let timer:ReturnType<typeof setTimeout>;
-  async function verify(){
-   try{
-    const result=await getOCRJobResults(job!.job_id);
-    if(cancelled)return;
-    const usable=result.runs.some(r=>r.status==="success"||r.fields?.some(f=>f.status==="success"));
-    if(!usable){setError("งานสิ้นสุดแล้ว แต่ยังไม่มีผล OCR ที่ใช้งานได้ กรุณาดูรายละเอียดข้อผิดพลาด");return;}
-    localStorage.setItem(storageKey,job!.job_id);
-    navigated.current=job!.job_id;
-    try{callbacks.current.onCompleted(job!);}catch{setError("เปิดหน้า Ground Truth ไม่สำเร็จ กรุณาใช้ลิงก์ผลลัพธ์ด้านล่าง งานเดิมยังถูกเก็บไว้");}
-   }catch{if(!cancelled){setError("ยังโหลดผลที่บันทึกไม่ได้ ระบบจะตรวจสอบงานเดิมอีกครั้ง หรือเปิดผลลัพธ์ด้านล่าง");timer=setTimeout(verify,5000);}}
+  if(!job||!["completed","partial_success"].includes(job.status)||navigated.current===job.job_id)return;
+  try{if(!verification&&sessionStorage.getItem(`${storageKey}:opened`)===job.job_id)return;}catch{/* Optional navigation acknowledgement. */}
+  const controller=new AbortController();let cancelled=false,finished=false,attempts=0;
+  let timer:ReturnType<typeof setTimeout>;
+  const stop=(message:string)=>{finished=true;clearTimeout(timer);clearTimeout(deadline);controller.abort();setVerifying(false);setError(message);};
+  const deadline=setTimeout(()=>stop("หยุดตรวจผลอัตโนมัติแล้ว ยังยืนยันผล OCR ไม่ได้ กดตรวจผลอีกครั้งหรือเปิดรายละเอียด งานเดิมยังถูกเก็บไว้"),RESULT_DEADLINE_MS);
+  function recheck(message:string){
+   if(attempts>=RESULT_ATTEMPTS){stop("หยุดตรวจผลอัตโนมัติแล้ว ยังยืนยันผล OCR ไม่ได้ กดตรวจผลอีกครั้งหรือเปิดรายละเอียด งานเดิมยังถูกเก็บไว้");return;}
+   setError(message);timer=setTimeout(verify,RESULT_RECHECK_MS);
   }
-  void verify();return()=>{cancelled=true;clearTimeout(timer);};
- },[job,storageKey]);
+  async function verify(){
+   if(cancelled||finished)return;
+   attempts++;setVerifying(true);
+   try{localStorage.setItem(storageKey,job!.job_id);}catch{/* Saved server job remains authoritative. */}
+   try{
+    const result=await getOCRJobResults(job!.job_id,controller.signal);
+    if(cancelled||finished)return;
+    const usable=result.runs.some(r=>r.fields?.length?r.fields.some(f=>f.status==="success"):r.status==="success");
+    if(!usable){recheck("งานสิ้นสุดแล้ว แต่ยังไม่พบผล OCR ที่ใช้งานได้ กำลังตรวจผลที่บันทึกอีกครั้ง");return;}
+    stop("");
+    try{callbacks.current.onCompleted(job!);navigated.current=job!.job_id;}catch{setError("เปิดหน้า Ground Truth ไม่สำเร็จ กรุณาใช้ลิงก์ผลลัพธ์ด้านล่าง งานเดิมยังถูกเก็บไว้");}
+   }catch(e){if(!cancelled&&!finished){
+    if(e instanceof APIError&&e.status>=400&&e.status<500&&![408,429].includes(e.status)){stop("ไม่สามารถเข้าถึงผล OCR ได้ กรุณาตรวจสอบสิทธิ์หรือลิงก์ผลลัพธ์ก่อนลองอีกครั้ง");return;}
+    recheck("ยังโหลดผลที่บันทึกไม่ได้ ระบบจะตรวจสอบงานเดิมอีกครั้ง หรือเปิดผลลัพธ์ด้านล่าง");
+   }}
+  }
+  void verify();return()=>{cancelled=true;controller.abort();clearTimeout(timer);clearTimeout(deadline);};
+ },[job,storageKey,verification]);
  async function start(){
   if(pending.current)return;pending.current=true;setSubmitting(true);setError("");
   const requestKey=`${storageKey}:request:${JSON.stringify(pipelines)}`;
@@ -67,10 +82,11 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   finally{pending.current=false;setSubmitting(false);}
  }
  const elapsed=Math.max(0,Math.floor((clock-Date.parse(job?.started_at||job?.created_at||new Date(clock).toISOString()))/1000));
- const busy=checking||submitting||!!job&&active(job);
+ const busy=checking||submitting||verifying||!!job&&active(job);
  return <section className="space-y-3" aria-label="สถานะงาน OCR">
   {error&&<p role="alert" className="error-banner">{error}</p>}
-  <button aria-busy={busy} className="button primary" disabled={busy||!pipelines.length} onClick={()=>void start()}>{busy?<><LoaderCircle aria-hidden="true" data-testid="ocr-spinner" className="h-4 w-4 animate-spin"/>กำลังรัน OCR...</>:"Run OCR"}</button>
+  <button aria-busy={busy} className="button primary" disabled={busy||!pipelines.length} onClick={()=>void start()}>{busy?<><LoaderCircle aria-hidden="true" data-testid="ocr-spinner" className="h-4 w-4 animate-spin"/>{verifying?"กำลังตรวจผลที่บันทึก...":"กำลังรัน OCR..."}</>:job&&!active(job)?"รัน OCR ใหม่ (ประมวลผลซ้ำ)":"Run OCR"}</button>
+  {job&&["completed","partial_success"].includes(job.status)&&<button type="button" className="button secondary" disabled={busy} onClick={()=>{navigated.current=null;setVerification(v=>v+1);}}>ตรวจผลอีกครั้ง (ไม่รัน OCR)</button>}
   {job&&<div role="status" className="rounded-lg border border-sky-200 bg-sky-50 p-4 space-y-2" data-testid="ocr-job-progress">
    <p>{job.status==="queued"?"ส่งงานแล้ว — รอ worker รับงาน":job.status==="running"?"กำลังประมวลผล OCR":job.status==="completed"?"ประมวลผล OCR สำเร็จ":job.status==="partial_success"?"OCR เสร็จสิ้น แต่มีบาง Pipeline ที่ไม่สำเร็จ":job.status==="cancelled"?"งาน OCR ถูกยกเลิก":"งาน OCR ไม่สำเร็จ — ตรวจข้อผิดพลาดก่อนลองใหม่"}</p>
    <progress aria-label="ความคืบหน้า OCR" max={100} value={job.progress_percent} className="w-full"/>
