@@ -1,9 +1,9 @@
 """Verified Gateway DET V6 -> ordered line crops -> baseline REC V5 (no model query)."""
 
 import time
-from app.core.batching import IMAGE_BATCH_SIZE
 from uuid import uuid4
 
+from app.core.batching import IMAGE_BATCH_SIZE
 from app.integrations.model_gateway import GatewayError
 from app.pipelines.base import CropInputAdapter
 from app.pipelines.normalizers import (
@@ -62,6 +62,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
             detector_model=self.detector,
             recognizer_model=self.recognizer,
         )
+        self.failure_stage = "input_crop"
         crop = self.prepare_input(original_image, cropped_image, roi)
         self.diagnostics.update(
             input_width=crop.width,
@@ -75,6 +76,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         )
         if not self.config.enabled:
             raise GatewayError("Pipeline is disabled", "PIPELINE_DISABLED")
+        self.failure_stage = "detection_request"
         detection = await self.gateway.send(
             self.batch_request(
                 pngs=[crop.png],
@@ -83,6 +85,8 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                 request_id=request_id + "_det",
             )
         )
+        self.failure_stage = "detection_contract"
+        self.diagnostics["gateway_request_id"] = detection.get("meta", {}).get("request_id")
         data = detection["data"]
         if (
             not isinstance(data, dict)
@@ -111,10 +115,12 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         with self.images.open(crop.png) as image:
             for start in range(0, len(polygons), self.recognition_batch_size):
                 batch = polygons[start : start + self.recognition_batch_size]
+                self.failure_stage = "crop_rectification"
                 try:
                     pngs = [self.images.rectify_quad(image, polygon) for polygon in batch]
                 except (ValueError, TypeError, OverflowError):
                     raise invalid("Detection returned an invalid quadrilateral") from None
+                self.failure_stage = "recognition_request"
                 recognition = await self.gateway.send(
                     self.batch_request(
                         pngs=pngs,
@@ -123,6 +129,8 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                         request_id=f"{request_id}_rec_{len(recognition_batches)}",
                     )
                 )
+                self.failure_stage = "recognition_contract"
+                self.diagnostics["gateway_request_id"] = recognition.get("meta", {}).get("request_id")
                 for index, item in enumerate(recognition_items(recognition["data"], len(batch))):
                     lines.append(dict(polygon=batch[index], det_score=scores[start + index], **item))
                 recognition_batches.append(recognition)
@@ -155,6 +163,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         }
         if self.model_variant is not None:
             payload["composition"].update(detection_version="6", model=self.model_variant)
+        self.failure_stage = "normalization"
         return self.normalize_result(
             payload, crop, roi, round((time.perf_counter() - started) * 1000)
         )
