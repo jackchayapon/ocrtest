@@ -17,13 +17,18 @@ test("38 fields: preview/input focus, missing GT, independent labels and stable 
   const viewer=page.getByTestId("document-viewer");await expect(viewer.locator("canvas").first()).toBeVisible();
   await page.getByRole("button",{name:"Sub-fields",exact:true}).click();
   await expect(page.locator(`[data-field-id="${fields[0].id}"]`)).toHaveAttribute("data-missing-gt","false");
+  const missing=page.locator(`[data-field-id="${fields[37].id}"]`);
+  const red=await page.evaluate(()=>{const e=document.createElement("div");e.style.borderColor="var(--color-red-500)";document.body.appendChild(e);const color=getComputedStyle(e).borderColor;e.remove();return color;});
+  await expect(missing).toHaveCSS("border-color",red);
   const last=page.getByLabel("Ground Truth Field 38",{exact:true});
   const canvas=viewer.locator(".konvajs-content");await canvas.scrollIntoViewIfNeeded();
   const box=await canvas.boundingBox();const scale=Number(await viewer.getAttribute("data-view-scale")),x=Number(await viewer.getAttribute("data-view-x")),y=Number(await viewer.getAttribute("data-view-y")),r=fields[37].roi;
   const scrollBefore=await page.evaluate(()=>window.scrollY);
   await page.mouse.click(box!.x+x+(r.x1+r.x2)*scale/2,box!.y+y+(r.y1+r.y2)*scale/2);
   await expect(last).toBeFocused();expect(await page.evaluate(()=>window.scrollY)).toBe(scrollBefore);
+  await expect(missing.getByTestId("missing-gt-indicator")).toBeVisible();
   await last.fill("กิ่ Thai 123");await expect(page.locator(`[data-field-id="${fields[37].id}"]`)).toHaveAttribute("data-missing-gt","false");
+  await expect(missing.getByTestId("missing-gt-indicator")).toBeHidden();
   await expect(viewer).toHaveAttribute("data-active-field",fields[37].id);
   await viewer.getByRole("button",{name:"แสดงชื่อ Field",exact:true}).click();
   await expect(viewer).toHaveAttribute("data-show-field-labels","false");await expect(viewer).toHaveAttribute("data-show-all-fields","true");

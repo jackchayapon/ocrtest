@@ -97,5 +97,11 @@
     "Uncommitted upstream inference may repeat after interruption",
     "Ephemeral uploads require separate source protection; DB records do not reconstruct files",
     "Historical upstream-model errors and container exit cause remain unconfirmed"
-  ]
+  ],
+  "final_ui_style_delta": {
+    "affected_suite_passed": 36,
+    "failed": 0,
+    "computed_red_border_and_stable_focus_pan": true,
+    "scope": "CSS-only missing-GT indicator correction after full171 run; no third full run claimed"
+  }
 }
