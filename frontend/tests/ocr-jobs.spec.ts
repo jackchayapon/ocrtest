@@ -55,8 +55,11 @@ test("durable OCR refresh resumes the accepted job without submitting another ru
  expect(saved.runs).toHaveLength(1);
 });
 
-test("job UI fixture: partial success stays visible with a results link and never resubmits",async({page,request})=>{
+test("job UI fixture: partial success validates saved results then opens GT with warnings without resubmitting",async({page,request})=>{
  const {caseId,config}=await setup(request);
+ const prepared=await(await request.post(api+`/api/test-cases/${caseId}/jobs`,{data:{pipelines:[config.pipeline_id],idempotency_key:randomUUID()}})).json();
+ await expect.poll(async()=> (await(await request.get(api+`/api/ocr-jobs/${prepared.job_id}`)).json()).status,{timeout:25000}).toBe("completed");
+ const persisted=await(await request.get(api+`/api/ocr-jobs/${prepared.job_id}/results`)).json();
  const extra=await request.post(api+"/api/pipelines",{data:{name:"Synthetic partial fixture "+randomUUID(),source:"custom",execution_mode:"integrated",version:"6",det_weight:"baseline",rec_weight:"thai_ft_v1"}});
  expect(extra.status()).toBe(201);const second=await extra.json();createdPipelines.push(second.pipeline_id);
  let submissions=0;
@@ -69,14 +72,43 @@ test("job UI fixture: partial success stays visible with a results link and neve
   return route.fulfill({json:null});
  });
  await page.route(`**/api/ocr-jobs/${fixture.job_id}`,route=>route.fulfill({json:{...fixture,status:"partial_success",completed_units:2,failed_units:1,completed_pipelines:2,progress_percent:100}}));
+ await page.route(`**/api/ocr-jobs/${fixture.job_id}/results`,route=>route.fulfill({json:persisted}));
+ await page.addInitScript(({key,id})=>sessionStorage.setItem(key,id),{key:`ocrlab-job:${caseId}:opened`,id:prepared.job_id});
  await page.goto(`/workflow/${caseId}/pipelines`);
  await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  for(const name of [config.name,second.name])await page.getByRole("checkbox",{name:`เลือก ${name}`,exact:true}).check();
  await page.getByRole("button",{name:"Run OCR",exact:true}).click();
- await expect(page.getByText("OCR เสร็จสิ้น แต่มีบาง Pipeline ที่ไม่สำเร็จ",{exact:true})).toBeVisible();
- await expect(page.getByRole("link",{name:"ดูผลลัพธ์และรายละเอียดข้อผิดพลาด"})).toHaveAttribute("href",`/workflow/${caseId}/ground-truth`);
- await expect(page).toHaveURL(/\/pipelines$/);expect(submissions).toBe(1);
+ await expect(page).toHaveURL(/ground-truth\?partial=1&edit=1$/);
+ await expect(page.getByRole("alert").filter({hasText:"OCR สำเร็จบางส่วน"})).toBeVisible();
+ expect(submissions).toBe(1);
+});
+
+for(const status of ["failed","cancelled"] as const)test(`terminal ${status} never navigates as success even at 100 percent`,async({page,request})=>{
+ const {caseId,config}=await setup(request);let results=0;
+ const job={job_id:randomUUID(),test_case_id:caseId,status,progress_percent:100,total_fields:1,total_pipelines:1,completed_units:1,failed_units:1,completed_pipelines:1,created_at:new Date().toISOString(),run_ids:[]};
+ await page.route(`**/api/test-cases/${caseId}/jobs`,route=>route.fulfill({json:route.request().method()==="POST"?job:null,status:route.request().method()==="POST"?202:200}));
+ await page.route(`**/api/ocr-jobs/${job.job_id}/results`,route=>{results++;return route.fulfill({json:{runs:[]}});});
+ await page.goto(`/workflow/${caseId}/pipelines`);
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
+ await page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true}).check();await page.getByRole("button",{name:"Run OCR",exact:true}).click();
+ await expect(page.getByTestId("ocr-job-progress")).toContainText(status==="failed"?"งาน OCR ไม่สำเร็จ":"งาน OCR ถูกยกเลิก");
+ await expect(page).toHaveURL(/\/pipelines$/);expect(results).toBe(0);
+});
+
+test("completed job waits for retrievable persisted results before navigating and keeps its local reference",async({page,request})=>{
+ const {caseId,config}=await setup(request);
+ const prepared=await(await request.post(api+`/api/test-cases/${caseId}/jobs`,{data:{pipelines:[config.pipeline_id],idempotency_key:randomUUID()}})).json();
+ await expect.poll(async()=> (await(await request.get(api+`/api/ocr-jobs/${prepared.job_id}`)).json()).status,{timeout:25000}).toBe("completed");
+ let reads=0;
+ await page.route(`**/api/ocr-jobs/${prepared.job_id}/results`,route=>{reads++;return reads===1?route.fulfill({status:503,json:{detail:"Temporary results read unavailable"}}):route.continue();});
+ await page.goto(`/workflow/${caseId}/pipelines`);
+ await expect(page.getByText("ยังโหลดผลที่บันทึกไม่ได้ ระบบจะตรวจสอบงานเดิมอีกครั้ง หรือเปิดผลลัพธ์ด้านล่าง",{exact:true})).toBeVisible();
+ await expect(page).toHaveURL(/\/pipelines$/);
+ await expect(page).toHaveURL(/ground-truth\?edit=1$/,{timeout:15000});
+ expect(await page.evaluate(id=>localStorage.getItem(`ocrlab-job:${id}`),caseId)).toBe(prepared.job_id);
+ expect(reads).toBe(2);
 });
 
 test("accepted job with lost creation response reuses the same key on manual retry",async({page,request})=>{

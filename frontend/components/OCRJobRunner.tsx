@@ -3,16 +3,17 @@
 import Link from "next/link";
 import {LoaderCircle} from "lucide-react";
 import {useEffect,useRef,useState} from "react";
-import {APIError,createOCRJob,getCaseOCRJob,getOCRJob,type OCRJob} from "@/lib/api";
+import {APIError,createOCRJob,getCaseOCRJob,getOCRJob,getOCRJobResults,type OCRJob} from "@/lib/api";
 
 const active=(job:OCRJob)=>job.status==="queued"||job.status==="running";
 
 export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,resultsUrl}:{
- caseId:string;pipelines:string[];names:Record<string,string>;onCompleted:()=>void;onBusy:(busy:boolean)=>void;resultsUrl:string;
+ caseId:string;pipelines:string[];names:Record<string,string>;onCompleted:(job:OCRJob)=>void;onBusy:(busy:boolean)=>void;resultsUrl:string;
 }){
  const [job,setJob]=useState<OCRJob|null>(null),[checking,setChecking]=useState(true),[submitting,setSubmitting]=useState(false),[error,setError]=useState("");
  const [clock,setClock]=useState(()=>Date.now());
  const pending=useRef(false),callbacks=useRef({onCompleted,onBusy});
+ const navigated=useRef<string|null>(null);
  const activeId=job&&active(job)?job.job_id:null;
  useEffect(()=>{if(!activeId)return;const timer=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(timer);},[activeId]);
  useEffect(()=>{callbacks.current={onCompleted,onBusy};},[onCompleted,onBusy]);
@@ -21,7 +22,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   const controller=new AbortController();
   getCaseOCRJob(caseId,controller.signal).then(value=>{
    if(controller.signal.aborted)return;
-   if(value&&(active(value)||localStorage.getItem(storageKey)===value.job_id))setJob(value);
+   if(value)setJob(value);
    setChecking(false);
   }).catch(()=>{if(!controller.signal.aborted){setError("ตรวจสอบงานเดิมไม่ได้ กรุณาลองตรวจสอบอีกครั้งก่อนเริ่มงานใหม่");setChecking(false);}});
   return()=>controller.abort();
@@ -30,18 +31,32 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
  useEffect(()=>{
   if(!job)return;
   if(!active(job)){
-   localStorage.removeItem(storageKey);
-   if(job.status==="completed")callbacks.current.onCompleted();
    return;
   }
   const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;let failures=0;
   async function poll(){
    try{const next=await getOCRJob(job!.job_id,controller.signal);if(controller.signal.aborted)return;setJob(next);setClock(Date.now());setError("");failures=0;}
-   catch(e){if(controller.signal.aborted)return;if(e instanceof APIError&&e.status>=400&&e.status<500){setError(e.status===404?"ไม่พบงาน OCR เดิม กรุณาตรวจสอบประวัติ":e.message);localStorage.removeItem(storageKey);setJob(null);return;}failures++;setError("ไม่สามารถตรวจสอบสถานะได้ชั่วคราว ระบบจะลองเชื่อมต่อเพื่อตรวจสอบงานเดิมอีกครั้ง");}
+   catch(e){if(controller.signal.aborted)return;if(e instanceof APIError&&e.status>=400&&e.status<500){setError(e.status===404?"ไม่พบงาน OCR เดิม กรุณาตรวจสอบประวัติ":e.message);setJob(null);return;}failures++;setError("ไม่สามารถตรวจสอบสถานะได้ชั่วคราว ระบบจะลองเชื่อมต่อเพื่อตรวจสอบงานเดิมอีกครั้ง");}
    if(!controller.signal.aborted)timer=setTimeout(poll,Math.min(15000,2500*(failures+1)));
   }
   timer=setTimeout(poll,2500);
   return()=>{controller.abort();clearTimeout(timer);};
+ },[job,storageKey]);
+ useEffect(()=>{
+  if(!job||!["completed","partial_success"].includes(job.status)||navigated.current===job.job_id||sessionStorage.getItem(`${storageKey}:opened`)===job.job_id)return;
+  let cancelled=false;let timer:ReturnType<typeof setTimeout>;
+  async function verify(){
+   try{
+    const result=await getOCRJobResults(job!.job_id);
+    if(cancelled)return;
+    const usable=result.runs.some(r=>r.status==="success"||r.fields?.some(f=>f.status==="success"));
+    if(!usable){setError("งานสิ้นสุดแล้ว แต่ยังไม่มีผล OCR ที่ใช้งานได้ กรุณาดูรายละเอียดข้อผิดพลาด");return;}
+    localStorage.setItem(storageKey,job!.job_id);
+    navigated.current=job!.job_id;
+    try{callbacks.current.onCompleted(job!);}catch{setError("เปิดหน้า Ground Truth ไม่สำเร็จ กรุณาใช้ลิงก์ผลลัพธ์ด้านล่าง งานเดิมยังถูกเก็บไว้");}
+   }catch{if(!cancelled){setError("ยังโหลดผลที่บันทึกไม่ได้ ระบบจะตรวจสอบงานเดิมอีกครั้ง หรือเปิดผลลัพธ์ด้านล่าง");timer=setTimeout(verify,5000);}}
+  }
+  void verify();return()=>{cancelled=true;clearTimeout(timer);};
  },[job,storageKey]);
  async function start(){
   if(pending.current)return;pending.current=true;setSubmitting(true);setError("");
@@ -57,12 +72,14 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   {error&&<p role="alert" className="error-banner">{error}</p>}
   <button aria-busy={busy} className="button primary" disabled={busy||!pipelines.length} onClick={()=>void start()}>{busy?<><LoaderCircle aria-hidden="true" data-testid="ocr-spinner" className="h-4 w-4 animate-spin"/>กำลังรัน OCR...</>:"Run OCR"}</button>
   {job&&<div role="status" className="rounded-lg border border-sky-200 bg-sky-50 p-4 space-y-2" data-testid="ocr-job-progress">
-   <p>{active(job)?"กำลังประมวลผล OCR":job.status==="completed"?"ประมวลผล OCR สำเร็จ":job.status==="partial_success"?"OCR เสร็จสิ้น แต่มีบาง Pipeline ที่ไม่สำเร็จ":"งาน OCR ไม่สำเร็จ"}</p>
+   <p>{job.status==="queued"?"ส่งงานแล้ว — รอ worker รับงาน":job.status==="running"?"กำลังประมวลผล OCR":job.status==="completed"?"ประมวลผล OCR สำเร็จ":job.status==="partial_success"?"OCR เสร็จสิ้น แต่มีบาง Pipeline ที่ไม่สำเร็จ":job.status==="cancelled"?"งาน OCR ถูกยกเลิก":"งาน OCR ไม่สำเร็จ — ตรวจข้อผิดพลาดก่อนลองใหม่"}</p>
    <progress aria-label="ความคืบหน้า OCR" max={100} value={job.progress_percent} className="w-full"/>
    <p>{job.progress_percent}% · ประมวลผลแล้ว: {job.completed_units} / {job.total_fields*job.total_pipelines} รายการ</p>
+   <p>สำเร็จ: {Math.max(0,job.completed_units-job.failed_units)} · ล้มเหลว: {job.failed_units} · หนึ่งรายการ = หนึ่ง Field × Pipeline</p>
    <p>Pipeline ครบแล้ว: {job.completed_pipelines} / {job.total_pipelines} · รายการผิดพลาด: {job.failed_units}</p>
    {job.current_pipeline_id&&<p>Pipeline ที่กำลังทำงาน: {names[job.current_pipeline_id]||job.current_pipeline_id}</p>}
    <p>เวลาที่ผ่านไป: {String(Math.floor(elapsed/60)).padStart(2,"0")}:{String(elapsed%60).padStart(2,"0")}</p>
+   {job.updated_at&&<p className="text-xs">สถานะจากเซิร์ฟเวอร์ล่าสุด: {new Date(job.updated_at).toLocaleTimeString("th-TH")} · เปอร์เซ็นต์เพิ่มเมื่อบันทึก checkpoint ไม่ใช่เวลา Gateway</p>}
    {active(job)&&<p className="text-sm">ปิดหรือรีเฟรชหน้านี้ได้ งานเดิมจะถูกติดตามจากเซิร์ฟเวอร์</p>}
    {job.safe_error_message&&<p>{job.safe_error_message}</p>}
    {!active(job)&&<Link className="text-sky-800 underline" href={resultsUrl}>ดูผลลัพธ์และรายละเอียดข้อผิดพลาด</Link>}

@@ -1,5 +1,7 @@
 """Canonical layout/GT identities and explicitly evaluated prediction snapshots."""
 
+import logging
+import re
 import time
 from datetime import datetime, timedelta, timezone
 from statistics import fmean
@@ -24,6 +26,7 @@ from app.services.gt_prefill_service import (
 from app.services.metrics_service import normalize_text
 from app.services.pipeline_manager import PipelineManager
 
+logger = logging.getLogger(__name__)
 
 def reading_lines(run):
     """Visual row order within ONE field; raw boxes/envelope are never mutated.
@@ -365,6 +368,15 @@ class GlobalLayoutService:
                             "original_height",
                         )
                         diagnostics = {key: getattr(result, key) for key in trace_keys}
+                        failure = (result.raw_response or {}).get("failure", {})
+                        if result.status != "success":
+                            diagnostics["failure_stage"] = failure.get("stage", "adapter")
+                            diagnostics["http_status"] = failure.get("http_status")
+                            trace = result.gateway_request_id
+                            trace = trace if isinstance(trace, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", trace) else None
+                            logger.warning("event=ocr_field_error pipeline=%s field=%s stage=%s code=%s request=%s gateway_request=%s http_status=%s",
+                                           result.pipeline_id, field.id, diagnostics["failure_stage"], result.error_code,
+                                           result.request_id, trace, diagnostics["http_status"])
                         raw_parts[result.pipeline_id].append(result.raw_text if result.raw_text is not None else result.final_text or "")
                         diagnostics.update(
                             boxes=ordered_detection_boxes(result.boxes),

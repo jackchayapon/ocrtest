@@ -8,6 +8,29 @@ const evaluation={cer:.5,wer:1,exact_match:false,character_edits:1,word_edits:1,
 const record={id:"insights",updated_at:"2026-10-01T00:00:00Z",workflow:"global",categories:[],history_status:"success",has_ground_truth:true,created_at:"2026-10-01T00:00:00Z",ground_truth_raw:"ก้",evaluation_mode:"per_field",layout_confirmed_at:"2026-10-01",global_fields:[{id:"field",field_index:1,roi,source:"manual",ground_truth_raw:"ก้",confirmed_at:"2026-10-01"}],page_number:2,document:{id:"doc",filename:"synthetic.pdf",document_type:"pdf",page_count:3,width:300,height:200,page_number:2,image_url:"/api/preview.svg"},runs:["p1","hidden"].map(p=>({id:p,pipeline_id:p,pipeline_name:p==="p1"?"Pipeline One":"Hidden Pipeline",status:"success",document_evaluation:evaluation,final_text:"ก",confidence:.9,metrics:{cer:.5,wer:1,exact_match:false},fields:[{id:p+"field",global_field_id:"field",field_index:1,status:"success",ocr_text:"ก",confidence:.9,evaluation}]}))};
 const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="1200" height="800" fill="white"/><text x="20" y="40">Synthetic source</text></svg>';
 
+test("field-specific result dialog preserves GT/pipeline identity and restores keyboard focus without OCR",async({page})=>{
+ let posts=0;
+ page.on("request",r=>{if(r.method()==="POST")posts++;});
+ await page.route("**/api/**",route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(path.endsWith("preview.svg"))return route.fulfill({contentType:"image/svg+xml",body:svg});
+  if(path.endsWith("/pipelines"))return route.fulfill({json:[]});
+  return route.fulfill({json:record});
+ });
+ await page.goto("/workflow/insights/ground-truth");
+ const opener=page.getByRole("button",{name:"รายละเอียด Field 01 Pipeline One",exact:true});
+ await opener.click();const dialog=page.getByRole("dialog");
+ await expect(dialog).toContainText("Pipeline One · Field 01");
+ await expect(dialog.getByTestId("expanded-field-result")).toHaveCount(1);
+ await expect(dialog.getByTestId("expanded-field-result")).toContainText("ก้");
+ await page.keyboard.press("Escape");await expect(dialog).toHaveCount(0);await expect(opener).toBeFocused();
+ await page.getByRole("button",{name:"Whole Field",exact:true}).click();
+ await page.getByRole("button",{name:"รายละเอียด Whole Field Pipeline One",exact:true}).click();
+ await expect(dialog).toContainText("Whole Field · Ground Truth");
+ await dialog.getByRole("button",{name:"ปิดพรีวิว Pipeline",exact:true}).click();
+ expect(posts).toBe(0);
+});
+
 test("Deep detail opens all field errors and character buttons filter and reset",async({page})=>{
  await page.route("**/api/**",async route=>{
   const url=new URL(route.request().url());

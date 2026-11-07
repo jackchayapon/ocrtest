@@ -1,16 +1,21 @@
 """Server-only client for the reference Model API Gateway; never logs request bodies."""
 
+import asyncio
 import base64
 import json
 import logging
 import math
+import random
 import re
 import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
 
+from app.core.batching import IMAGE_BATCH_SIZE
 from app.core.config import Settings
 from app.core.runtime_metrics import memory_snapshot
 from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
@@ -26,12 +31,49 @@ class GatewayError(Exception):
         request_id: str | None = None,
         http_status=None,
         details=None,
+        retry_after=None,
     ):
         super().__init__(message)
         self.code = code
         self.request_id = request_id
         self.http_status = http_status
         self.details = details or []
+        self.retry_after = retry_after
+
+
+def retry_after_seconds(value):
+    try:
+        seconds = float(value)
+    except (ValueError, TypeError):
+        try:
+            seconds = (parsedate_to_datetime(value) - datetime.now(timezone.utc)).total_seconds()
+        except (ValueError, TypeError, OverflowError):
+            return None
+    return max(0, seconds) if math.isfinite(seconds) else None
+
+
+def preserve_leaf_predictions(data):
+    """Current CDGS raw-only contract: retain OCR scalars/geometry, never image tensors.
+
+    Existing structured results remain authoritative. Do not invent missing results
+    or turn a count/schema mismatch into successful OCR.
+    """
+    if not isinstance(data, dict) or data.get("contract_version") != "leaf-inference-v1":
+        return
+    kind = data.get("kind")
+    if not isinstance(data.get("results"), list) and not isinstance(data.get("result"), dict):
+        raw = data.get("raw_output")
+        if kind in {"text_detection_batch", "text_recognition_batch"}:
+            keys = ("dt_polys", "dt_scores") if kind == "text_detection_batch" else ("rec_text", "rec_score", "model")
+            required = "dt_polys" if kind == "text_detection_batch" else "rec_text"
+            expected_type = list if kind == "text_detection_batch" else str
+            if not isinstance(raw, list) or len(raw) > IMAGE_BATCH_SIZE or len(raw) != data.get("count") or any(not isinstance(item, dict) or not isinstance(item.get(required), expected_type) for item in raw):
+                raise GatewayError("Leaf result count or schema does not match input", "INVALID_OCR_RESPONSE", http_status=200)
+            items = [{key: item[key] for key in keys if key in item} for item in raw]
+            data["results"] = items
+            if kind == "text_detection_batch":
+                data["result"] = {"results": items}
+    data.pop("raw_output", None)
 
 
 def safe_response(value, secrets=()):
@@ -161,6 +203,7 @@ class ModelGatewayClient:
     async def send(self, request: dict):
         started, status, code = time.perf_counter(), None, None
         details = []
+        retry_count = 0
         ModelGatewayClient.active_requests += 1
         try:
             if origin(request["url"]) != origin(self.base_url):
@@ -186,7 +229,19 @@ class ModelGatewayClient:
                         "The integrated OCR service is not ready",
                         "GATEWAY_SERVICE_UNAVAILABLE",
                     )
-            result = await self._send(request)
+            retry_started = time.monotonic()
+            for attempt in range(3):
+                try:
+                    result = await self._send(request)
+                    break
+                except GatewayError as exc:
+                    if exc.http_status != 429 or attempt == 2:
+                        raise
+                    delay = max(exc.retry_after or 0, 2 ** attempt + random.uniform(0, .5))
+                    if time.monotonic() - retry_started + delay > 30:
+                        raise
+                    retry_count += 1
+                    await asyncio.sleep(delay)
             status = 200
             return result
         except ValueError:
@@ -200,11 +255,11 @@ class ModelGatewayClient:
             raise
         finally:
             try:
-                self.log_request(request, started, status, code, details)
+                self.log_request(request, started, status, code, details, retry_count)
             finally:
                 ModelGatewayClient.active_requests -= 1
 
-    def log_request(self, request, started, status, code, details=()):
+    def log_request(self, request, started, status, code, details=(), retry_count=0):
         categories = {
             401: "authentication",
             403: "authorization",
@@ -217,7 +272,7 @@ class ModelGatewayClient:
         category = categories.get(
             status,
             "response_schema"
-            if code == "INVALID_RESPONSE"
+            if code in {"INVALID_RESPONSE", "INVALID_OCR_RESPONSE"}
             else "timeout"
             if code == "GATEWAY_TIMEOUT"
             else "connection"
@@ -239,6 +294,7 @@ class ModelGatewayClient:
             http_status=status,
             duration_ms=round((time.perf_counter() - started) * 1000, 2),
             error_code=code,
+            retry_count=retry_count,
             failure_category=category,
             model_selection={k: str(v)[:100] for k, v in request.get("params", {}).items()
                              if k in {"version", "model", "engine"}
@@ -284,6 +340,7 @@ class ModelGatewayClient:
                                 f"Gateway request failed (HTTP {response.status_code})",
                                 f"HTTP_{response.status_code}",
                                 http_status=response.status_code,
+                                retry_after=retry_after_seconds(response.headers.get("Retry-After")),
                             ) from None
                         raise GatewayError(
                             "Gateway returned invalid JSON",
@@ -333,6 +390,7 @@ class ModelGatewayClient:
                             str(rid)[:100] if rid else None,
                             http_status=response.status_code,
                             details=details,
+                            retry_after=retry_after_seconds(response.headers.get("Retry-After")),
                         )
                     if (
                         not isinstance(payload, dict)
@@ -347,8 +405,13 @@ class ModelGatewayClient:
                     # The Gateway contract is data/meta. Ignore extra transport archives before
                     # redaction and downstream batching can amplify their allocations.
                     data = payload["data"]
-                    if isinstance(data, dict) and data.get("contract_version") == "leaf-inference-v1":
-                        data.pop("raw_output", None)  # Structured results retain all OCR values.
+                    try:
+                        preserve_leaf_predictions(data)
+                    except GatewayError as exc:
+                        rid = safe_response(payload["meta"].get("request_id"), (self.key, self.settings.database_url.get_secret_value()))
+                        if isinstance(rid, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", rid):
+                            exc.request_id = rid
+                        raise
                     del body
                     return safe_response(
                         {"data": data, "meta": payload["meta"]},

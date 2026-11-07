@@ -48,11 +48,11 @@ class BatchGateway:
                     request_ids[owner].append(upstream_id)
                 data = response.get("data", {})
                 if not isinstance(data, dict):
-                    raise GatewayError("Invalid batch response data", "INVALID_OCR_RESPONSE")
+                    raise GatewayError("Invalid batch response data", "INVALID_OCR_RESPONSE", request_id=upstream_id, http_status=200)
                 nested = isinstance(data.get("result"), dict)
                 items = data["result"].get("results") if nested else data.get("results")
                 if not isinstance(items, list) or len(items) != len(chunk) or data.get("count") != len(chunk):
-                    raise GatewayError("Batch result count does not match input images", "INVALID_OCR_RESPONSE")
+                    raise GatewayError("Batch result count does not match input images", "INVALID_OCR_RESPONSE", request_id=upstream_id, http_status=200)
                 template = response
                 value = response.get("meta", {}).get("duration_ms")
                 if isinstance(value, (int, float)) and value >= 0:

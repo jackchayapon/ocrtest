@@ -424,4 +424,6 @@ Ground Truth & Evaluation provides on-demand character statistics, original Fiel
 
 ### งาน OCR ที่ใช้เวลานาน
 
+รายละเอียดการแก้ CDGS raw-only response, partial-job navigation และการตรวจ preview/GT อยู่ใน [Workflow regression audit](docs/ocr-workflow-regression-audit.md)
+
 Workflow ส่งงานผ่าน `POST /api/test-cases/{id}/jobs` แล้วติดตามสถานะจาก PostgreSQL โดยไม่ต้องเปิด request เดิมค้างไว้ ปิด/refresh browser แล้วติดตาม Job ID เดิมได้ ผลที่ checkpoint แล้วไม่ถูกสร้างซ้ำ การปิด process อาจทำให้เรียก upstream ซ้ำเฉพาะงานที่ยังไม่ commit; source uploads ยังเป็น local storage และอาจสูญหายเมื่อเปลี่ยน container ดู [สถาปัตยกรรมงาน](docs/ocr-background-jobs.md), [การกู้คืนและ rollout](docs/ocr-job-recovery.md), [สาเหตุ timeout/CORS](docs/ocr-timeout-root-cause.md) และ [ผล validation](docs/ocr-production-validation.md)
