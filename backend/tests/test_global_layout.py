@@ -14,10 +14,11 @@ from app.core.config import BACKEND_ROOT
 from tests.test_benchmark_pipeline import parts
 
 PIPELINES = ["mint", "hutch_crop", "hutch_full", "benchmark", "thai_ft_v2"]
+pytestmark = pytest.mark.usefixtures("registered_catalog")
 
 
 def test_synchronized_gt_requires_all_fields_and_matching_document(client, document):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     run(client, case)
     root = f"/api/test-cases/{case['id']}"
     payload = {"mode": "auto", "global_field_ids": [f["id"] for f in fields], "require_complete_gt": True}
@@ -36,7 +37,7 @@ def test_synchronized_gt_requires_all_fields_and_matching_document(client, docum
 
 @pytest.mark.parametrize("whole,sub", [(True, False), (False, True), (True, True), (False, False)])
 def test_smart_calculation_data_presence_and_persistence(client, document, whole, sub):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     runs = run(client, case)
     root = f"/api/test-cases/{case['id']}"
     prediction = runs[0]["final_text"]
@@ -62,13 +63,14 @@ def test_smart_calculation_data_presence_and_persistence(client, document, whole
         assert edited["runs"][0]["fields"][1]["evaluation"] is None
 
 
-def layout(client, document, count=2, confirmed=True):
+def layout(client, document, count=2, confirmed=True, prefill=True):
     case = client.post(
         "/api/test-cases", json={"document_id": document["id"], "workflow": "global"}
     ).json()
     fields = [
         {
             "id": str(uuid4()),
+            **({} if prefill else {"ground_truth_raw": ""}),
             "field_index": i + 1,
             "roi": {"x1": 10 + i * 10, "y1": 20, "x2": 200 + i * 10, "y2": 120},
             "source": "auto" if i == 0 else "manual",
@@ -91,7 +93,7 @@ def run(client, case):
 
 
 def test_layout_identity_confirmation_history_and_crop_fairness(client, document, gateway):
-    case, fields = layout(client, document, confirmed=False)
+    case, fields = layout(client, document, prefill=False, confirmed=False)
     url = f"/api/test-cases/{case['id']}"
     assert client.post(url + "/run", json={"pipelines": PIPELINES}).status_code == 409
     assert client.get("/api/history", params={"document": document["id"]}).json() == []
@@ -113,13 +115,17 @@ def test_layout_identity_confirmation_history_and_crop_fairness(client, document
     calls = gateway[1][before:]
     # Five DET/input requests per field; recognition crops are a separate downstream stage.
     inputs = [
-        next(data for name, data in parts(r) if name in {"image", "images"})
+        data
         for r in calls
         if not r.url.path.endswith("text-recognition-batches")
+        for name, data in parts(r) if name in {"image", "images"}
     ]
     assert len(inputs) == 15
+    from collections import Counter
+    from hashlib import sha256
+    actual_inputs = Counter(sha256(data).hexdigest() for data in inputs)
     for index, field in enumerate(fields):
-        assert len(set(inputs[index * 5 : (index + 1) * 5])) == 1
+        assert actual_inputs[runs[0]["fields"][index]["diagnostics"]["input_sha256"]] == 5
         predictions = [
             next(f for f in r["fields"] if f["global_field_id"] == field["id"]) for r in runs
         ]
@@ -147,7 +153,7 @@ def test_layout_identity_confirmation_history_and_crop_fairness(client, document
 
 @pytest.mark.parametrize("mode", ["per_field"])
 def test_shared_gt_explicit_evaluation_persistence_and_invalidation(client, document, mode):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     runs = run(client, case)
     root = f"/api/test-cases/{case['id']}"
     url = root + f"/global-fields/{fields[1]['id']}"
@@ -202,7 +208,7 @@ def test_shared_gt_explicit_evaluation_persistence_and_invalidation(client, docu
 def test_field_dataset_exact_source_crop_confirmed_gt_and_missing_source(
     client, document, settings, png
 ):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     run(client, case)
     url = f"/api/test-cases/{case['id']}/global-fields/{fields[0]['id']}"
     gt = "ไทย spaces\tline\nend\\"
@@ -241,7 +247,7 @@ def test_field_dataset_exact_source_crop_confirmed_gt_and_missing_source(
 
 
 def test_identity_ownership_delete_add_and_clamping(client, document):
-    case, fields = layout(client, document, confirmed=False)
+    case, fields = layout(client, document, prefill=False, confirmed=False)
     other, _ = layout(client, document, count=1)
     root = f"/api/test-cases/{case['id']}"
     assert (
@@ -289,7 +295,7 @@ def test_detector_order_is_not_global_identity_and_failure_isolation(client, doc
         return value
 
     gateway[0]["handler"] = handler
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     response = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": PIPELINES})
     assert response.status_code == 200
     runs = response.json()["runs"]
@@ -300,7 +306,7 @@ def test_detector_order_is_not_global_identity_and_failure_isolation(client, doc
             for f in result["fields"]
         )
     mint = next(r for r in runs if r["pipeline_id"] == "mint")
-    assert mint["fields"][0]["diagnostics"]["raw_response"]["data"]["lines"][0]["text"] == "ABCD"
+    assert "raw_response" not in mint["fields"][0]["diagnostics"]
     assert mint["fields"][0]["ocr_text"].endswith("ABCD")
 
 
@@ -361,7 +367,10 @@ def test_geometry_order_reorder_identity_and_historical_lock(client, document):
     assert [f["id"] for f in reordered["global_fields"]] == [fields[i]["id"] for i in (0, 2, 1)]
     assert client.post(root + "/run", json={"pipelines": ["mint"]}).status_code == 200
     assert client.put(root + "/global-fields", json={"fields": fields}).status_code == 409
-    assert client.get(root).json()["global_fields"] == reordered["global_fields"]
+    after_run = client.get(root).json()["global_fields"]
+    assert [(f["id"], f["field_index"], f["roi"], f["source"]) for f in after_run] == [
+        (f["id"], f["field_index"], f["roi"], f["source"]) for f in reordered["global_fields"]]
+    assert all(f["confirmed_at"] is None for f in after_run)
 
 
 def test_canonical_document_joins_uuid_mapping_not_prediction_order():
@@ -379,7 +388,7 @@ def test_canonical_document_joins_uuid_mapping_not_prediction_order():
 
 
 def test_whole_document_explicit_evaluation_invalidation_and_no_dataset_labels(client, document):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     runs = run(client, case)
     root = f"/api/test-cases/{case['id']}"
     payload = {"mode": "whole_document"}
@@ -416,7 +425,7 @@ def test_whole_document_explicit_evaluation_invalidation_and_no_dataset_labels(c
 
 
 def test_field_edit_invalidates_only_its_evaluation_and_modes_remain_independent(client, document):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     run(client, case)
     root = f"/api/test-cases/{case['id']}"
     for field in fields:
@@ -438,6 +447,8 @@ def test_field_edit_invalidates_only_its_evaluation_and_modes_remain_independent
         root + f"/global-fields/{fields[1]['id']}/ground-truth",
         json={"ground_truth_raw": "changed"},
     ).json()
+    # Mutations return compact evaluations; compare the same detailed read shape.
+    edited = client.get(root).json()
     for before, after in zip(evaluated["runs"], edited["runs"]):
         assert after["fields"][0]["evaluation"] == before["fields"][0]["evaluation"]
         assert after["fields"][1]["evaluation"] is None

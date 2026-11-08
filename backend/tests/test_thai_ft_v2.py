@@ -16,8 +16,9 @@ from app.pipelines.benchmark import (
 from app.pipelines.thai_ft_v2 import ThaiFTV2PipelineAdapter
 from app.services.field_service import compare_field
 from app.services.image_service import ImageService
-from app.services.pipeline_manager import PipelineManager
 from tests.test_benchmark_pipeline import parts
+
+pytestmark = pytest.mark.usefixtures("registered_catalog")
 
 
 def live_fixtures():
@@ -68,8 +69,8 @@ def test_live_fixture_contract_order_geometry_metadata_and_no_v5_fallback(settin
 def test_multiple_batches_unicode_order_and_missing_selection(settings, gateway):
     det, _ = live_fixtures()
     row = det["data"]["result"]["results"][0]
-    row["dt_polys"] *= 5
-    row["dt_scores"] *= 5
+    row["dt_polys"] *= 17
+    row["dt_scores"] *= 17
     count = 0
 
     def handler(request):
@@ -85,8 +86,8 @@ def test_multiple_batches_unicode_order_and_missing_selection(settings, gateway)
 
     gateway[0]["handler"] = handler
     result, _ = execute(settings)
-    assert result.text == "\n".join(f"ภาษาไทย {i}" for i in range(10))
-    assert [len(parts(r)) for r in gateway[1]] == [1, 8, 2]
+    assert result.text == "\n".join(f"ภาษาไทย {i}" for i in range(34))
+    assert [len(parts(r)) for r in gateway[1]] == [1, 30, 4]
     assert result.confidence is None
     assert result.diagnostics["recognizer_model"] == "Thai FT v2 REC V6"
 
@@ -139,7 +140,7 @@ def test_roi_fields_persistence_and_dynamic_views(client, document, source):
     case = client.post("/api/test-cases", json=dict(
         document_id=document["id"], roi=roi, roi_source=source,
         ground_truth_raw="ภาษาไทย", category_codes=["thai_text"])).json()
-    ids = list(PipelineManager.adapter_classes)
+    ids = [p["pipeline_id"] for p in client.get("/api/pipelines").json()]
     runs = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": ids}).json()["runs"]
     by_id = {r["pipeline_id"]: r for r in runs}
     assert all(r["status"] == "success" for r in runs)
@@ -164,6 +165,10 @@ def test_roi_fields_persistence_and_dynamic_views(client, document, source):
     assert client.post(wrong+"/check", json={"ground_truth_raw": "x"}).status_code == 404
     assert client.get("/api/history", params={"pipeline": "thai_ft_v2"}).json()[0]["id"] == case["id"]
     assert client.get("/api/matrix", params={"pipeline": "thai_ft_v2"}).json()[0]["tests"] == 1
+    # Legacy case analytics require confirmed case GT; field confirmation is scoped to its run.
+    assert client.put(f"/api/test-cases/{case['id']}/ground-truth", json={
+        "ground_truth_raw": "ภาษาไทย", "confirmed": True,
+    }).status_code == 200
     errors = client.get("/api/analytics/errors", params={"pipeline": "thai_ft_v2"}).json()
     assert errors["total"] > 0 and all(e["pipeline_id"] == "thai_ft_v2" for e in errors["items"])
 
@@ -179,4 +184,4 @@ def test_registration_fixed_settings_and_unknown_readiness(client):
     for value in ({"query_params": {"version": "5"}}, {"endpoint": "/other"},
                   {"request_format": "json_base64"}, {"file_field_name": "image"}):
         assert client.put("/api/pipelines/thai_ft_v2", json=value).status_code == 422
-    assert client.post("/api/pipelines/thai_ft_v2/test-connection").json()["status"] == "unknown"
+    assert client.post("/api/pipelines/thai_ft_v2/test-connection").json()["status"] == "gateway_connected"

@@ -1,5 +1,7 @@
 # PR13: แผนรักษา uploads ก่อน cutover
 
+Remediation ตรวจเฉพาะ synthetic local source/recovery เท่านั้น ดู [ผลล่าสุด](pr13-remediation.md) และ [แผนสิทธิ์/ทางเลือก storage](pr13-security-rollout.md) ไม่มีขั้นตอนด้านล่างได้รับการ execute บน Production ในรอบนี้
+
 สถานะ 8 พฤศจิกายน 2569: **แผนเท่านั้น — ไม่ได้ export, restore หรือแก้ production ในการรีวิวนี้**
 หลักฐานเดิม 50/50 Dataset samples มี source ไม่ใช่ inventory ของ originals ทั้งหมด และไม่ใช่ backup
 ฐานข้อมูลเก็บ references/GT ไม่สามารถสร้างภาพ/PDF ต้นฉบับที่สูญหายกลับมาได้

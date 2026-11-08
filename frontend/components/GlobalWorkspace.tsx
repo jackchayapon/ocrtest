@@ -74,7 +74,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  {error&&<div className="error-banner" role="alert">{error}</div>}{busy&&<p role="status" className="notice-banner">กำลังดำเนินการ…</p>}{saveMessage&&<p role="status" className="notice-banner">{saveMessage}</p>}
  {stage==="ground-truth"&&!comparison&&!saved.document_gt_confirmed_at&&!fields.some(f=>f.confirmed_at)&&saved.gt_prefill&&["ready","partial","unavailable","pending"].includes(saved.gt_prefill.status)&&<p role="status" className="notice-banner" data-testid="gt-prefill-notice">{saved.gt_prefill.status==="ready"||saved.gt_prefill.status==="partial"?"เติม GT ฉบับร่างจาก Custom DET v6 (thai_ft_v2) + REC v6 (thai_ft_v1) แล้ว กรุณาตรวจและแก้ไขก่อนยืนยันคำนวณ":"ยังไม่มีข้อความตั้งต้นจาก OCR กรุณากรอก GT ด้วยตนเอง"}{saved.gt_prefill.status==="partial"&&" · บาง Field ยังไม่มีข้อความ กรุณากรอกให้ครบ"}</p>}
  {stage==="ground-truth"&&(searchParams.get("partial")==="1"||latestRuns.some(r=>r.status==="error"))&&<p role="alert" className="rounded-lg border border-amber-400 bg-amber-50 p-3">OCR สำเร็จบางส่วน — มี Field/Pipeline ที่ล้มเหลว ผลที่สำเร็จยังใช้กรอก GT ได้ ตรวจรายละเอียดข้อผิดพลาดก่อนประเมิน</p>}
- {stage==="ground-truth"&&<SafeDebugPanel caseId={saved.id} runs={latestRuns}/>}
+ {stage==="ground-truth"&&<SafeDebugPanel/>}
  {!allowed?<section className="panel panel-body"><p>กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน</p><Link className="button primary" href={workflowUrl(saved.id,locked?"pipelines":"layout")}>กลับไปขั้นตอนก่อนหน้า</Link></section>:<>
  {stage==="ground-truth"&&comparison?<>
  {notice&&<p role="status" className="notice-banner">คำนวณแล้ว — ผลประเมินอยู่ในตาราง</p>}

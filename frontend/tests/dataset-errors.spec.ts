@@ -64,7 +64,7 @@ test("confirmed source crop dataset export and persisted error analysis drilldow
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(768);
   await page.screenshot({ path: "test-results/error-analysis-768.png", fullPage: true });
   await page.goto("/dataset");
-  await page.getByLabel("Document ID").fill(doc.id);
+  await expect(page.getByLabel("Document ID")).toHaveCount(0);
   const row = page
     .locator("tbody tr")
     .filter({ hasText: "dataset-source.png" });
@@ -80,7 +80,7 @@ test("confirmed source crop dataset export and persisted error analysis drilldow
     .toBe(770);
   await row.getByRole("checkbox").check();
   const downloaded = page.waitForEvent("download");
-  await page.getByRole("button", { name: "ส่งออก ZIP (1)" }).click();
+  await page.getByRole("button", { name: "ส่งออก ZIP (1 ที่พร้อม)", exact:true }).click();
   const file = await downloaded;
   expect(file.suggestedFilename()).toBe("dataset.zip");
   expect(await file.failure()).toBeNull();

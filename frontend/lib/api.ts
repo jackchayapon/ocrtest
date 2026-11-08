@@ -112,7 +112,7 @@ export type OCRJob = {
  job_id: string; test_case_id: string; status: "queued"|"running"|"completed"|"partial_success"|"failed"|"cancelled";
  pipeline_ids: string[]; total_fields: number; total_pipelines: number; completed_units: number; failed_units: number;
  completed_pipelines: number; progress_percent: number; current_pipeline_id: string|null; current_field_index: number|null;
- started_at: string|null; created_at: string; updated_at: string; safe_error_message: string|null; run_ids: string[];
+ started_at: string|null; finished_at?: string|null; created_at: string; updated_at: string; safe_error_message: string|null; run_ids: string[];
 };
 export const createOCRJob = (id: string, pipelines: string[], idempotency_key: string) => request<OCRJob>(`/test-cases/${id}/jobs`, {method:"POST",body:JSON.stringify({pipelines,idempotency_key})});
 export const getOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob>(`/ocr-jobs/${id}`, {signal});

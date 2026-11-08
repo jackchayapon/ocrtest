@@ -3,10 +3,10 @@ from urllib.parse import parse_qsl, urlsplit
 
 from app.integrations.model_gateway import GatewayError
 from app.pipelines.benchmark import BenchmarkPipelineAdapter
-from app.pipelines.hutch_fine_tune_v2 import HutchFineTuneV2PipelineAdapter
-from app.services.dynamic_pipeline_service import model_json
-from app.pipelines.mint import MintPipelineAdapter
 from app.pipelines.hutch_crop import HutchCropPipelineAdapter
+from app.pipelines.hutch_fine_tune_v2 import HutchFineTuneV2PipelineAdapter
+from app.pipelines.mint import MintPipelineAdapter
+from app.services.dynamic_pipeline_service import model_json
 
 
 def model_request(gateway, model, pngs, request_id):

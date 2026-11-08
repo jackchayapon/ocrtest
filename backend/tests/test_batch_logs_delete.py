@@ -16,6 +16,8 @@ from app.services.test_case_service import TestCaseService as CaseService
 from tests.test_gateway_and_fairness import envelope, multipart
 from tests.test_pdf import pdf_fixture
 
+pytestmark = pytest.mark.usefixtures("registered_catalog")
+
 
 class LargeJSON(httpx.AsyncByteStream):
     def __init__(self, mb):
@@ -100,13 +102,12 @@ def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeyp
     assert client.get(f"/api/test-cases/{records[2]['id']}").json()["ground_truth_raw"] is None
     logs = client.get("/api/logs?limit=100").json()
     assert "private truth" not in json.dumps(logs) and "test-gateway-secret" not in json.dumps(logs)
-    assert client.get("/api/logs?level=ERROR").json()["total"] == 4
-    assert client.get("/api/logs?event_type=batch_finished").json()["total"] == 1
-    assert client.get("/api/logs?pipeline=mint").json()["total"] == 3
-    assert len(client.get("/api/logs?limit=2&offset=2").json()["items"]) == 2
+    # Public persistent log browsing was retired by the lean-storage release.
+    for query in ("level=ERROR", "event_type=batch_finished", "pipeline=mint", "limit=2&offset=2"):
+        assert client.get("/api/logs?" + query).json() == {"enabled": False, "total": 0, "items": []}
     assert client.get("/api/logs?date_from=2099-01-01T00:00:00Z").json()["total"] == 0
     run_id = records[0]["runs"][0]["request_id"]
-    assert client.get("/api/logs", params={"request_id": run_id}).json()["total"] == 1
+    assert client.get("/api/logs", params={"request_id": run_id}).json()["total"] == 0
     analysis = client.get("/api/analytics/categories?category=blur").json()[0]
     assert analysis["test_cases"] == 3
     assert all(p["successful_runs"] == 2 and p["failed_runs"] == 1
@@ -136,7 +137,7 @@ def test_delete_cascades_preserves_shared_document_and_audit(client, case):
         assert session.scalar(select(func.count()).select_from(test_case_categories)) == 0
         assert session.scalar(select(func.count()).select_from(Category)) > 0
         assert session.get(Document, case["document"]["id"]) is not None
-        assert session.scalar(select(AppLog).where(AppLog.event_type == "history_deleted")) is not None
+        assert session.scalar(select(AppLog).where(AppLog.event_type == "history_deleted")) is None
     assert client.get(f"/api/documents/{case['document']['id']}/image").status_code == 200
 
 
@@ -167,5 +168,6 @@ def test_log_never_accepts_secret_identifiers_or_arbitrary_payload(client, setti
     body = client.get("/api/logs").json()
     assert "private-password" not in json.dumps(body)
     assert settings.model_gateway_api_key.get_secret_value() not in json.dumps(body)
-    assert body["items"][0]["request_id"] is None
-    assert body["items"][0]["gateway_request_id"] is None
+    assert body == {"enabled": False, "total": 0, "items": []}
+    with client.app.state.database.session_factory() as session:
+        assert session.scalar(select(func.count()).select_from(AppLog)) == 0

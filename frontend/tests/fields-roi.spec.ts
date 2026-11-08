@@ -111,16 +111,19 @@ test("legacy compatibility: Dataset stale-file failure stays actionable and does
   expect(path.dirname(source)).toBe(path.resolve("../backend/.pytest_e2e/uploads"));
   const original=fs.readFileSync(source); fs.unlinkSync(source);
   try {
-    await page.getByRole("button",{name:"ส่งออก ZIP (1)"}).click();
+    await page.getByRole("button",{name:"ส่งออก ZIP (1 ที่พร้อม)",exact:true}).click();
     await expect(page.locator("main").getByRole("alert")).toContainText("ไม่พบไฟล์ต้นฉบับ");
     await expect(row).toBeVisible();
     await page.getByRole("button",{name:"รีเฟรช",exact:true}).click();
-    await expect(row.getByRole("checkbox")).toBeDisabled();
+    // Explicit refresh clears selection; unavailable samples can still be excluded in bulk.
+    await expect(row.getByRole("checkbox")).not.toBeChecked();
+    await row.getByRole("checkbox").check();
+    await expect(page.getByRole("button",{name:"ส่งออก ZIP (0 ที่พร้อม)",exact:true})).toBeDisabled();
     await expect(row).toContainText("ไฟล์ต้นฉบับไม่อยู่ใน storage");
   } finally { fs.writeFileSync(source,original); }
   await page.getByRole("button",{name:"รีเฟรช",exact:true}).click();
   await row.getByRole("checkbox").check();
   const download=page.waitForEvent("download");
-  await page.getByRole("button",{name:"ส่งออก ZIP (1)"}).click();
+  await page.getByRole("button",{name:"ส่งออก ZIP (1 ที่พร้อม)",exact:true}).click();
   expect(await (await download).failure()).toBeNull();
 });

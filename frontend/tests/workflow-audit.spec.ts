@@ -1,6 +1,7 @@
 import {test,expect} from "@playwright/test";
 import {randomUUID} from "node:crypto";
 import {readFileSync} from "node:fs";
+import sharp from "sharp";
 import {t} from "../lib/i18n/th";
 
 const api=process.env.E2E_API_URL||"http://127.0.0.1:8100";
@@ -30,15 +31,29 @@ test("38 fields: preview/input focus, missing GT, independent labels and stable 
   await last.fill("กิ่ Thai 123");await expect(page.locator(`[data-field-id="${fields[37].id}"]`)).toHaveAttribute("data-missing-gt","false");
   await expect(missing.getByTestId("missing-gt-indicator")).toBeHidden();
   await expect(viewer).toHaveAttribute("data-active-field",fields[37].id);
+  // Read actual rendered pixels: hiding a label changes its badge but preserves the outline.
+  const sample=async()=>{
+   const r=fields[6].roi,s=Number(await viewer.getAttribute('data-view-scale')),vx=Number(await viewer.getAttribute('data-view-x')),vy=Number(await viewer.getAttribute('data-view-y'));
+   const png=await canvas.screenshot({scale:'css',animations:'disabled'});
+   const px=(left:number,top:number,width:number,height:number)=>sharp(png).extract({left:Math.round(left),top:Math.round(top),width,height}).raw().toBuffer();
+   return {label:await px(vx+r.x1*s,vy+r.y1*s-23,65,20),border:await px(vx+r.x1*s-2,vy+(r.y1+r.y2)*s/2,5,12)};
+  };
+  const labeled=await sample();
   await viewer.getByRole("button",{name:"แสดงชื่อ Field",exact:true}).click();
   await expect(viewer).toHaveAttribute("data-show-field-labels","false");await expect(viewer).toHaveAttribute("data-show-all-fields","true");
+  await expect.poll(async()=>(await sample()).label).not.toEqual(labeled.label);
+  expect((await sample()).border).toEqual(labeled.border);
+  await viewer.getByRole('button',{name:'แสดงกรอบ Global ทั้งหมด',exact:true}).click();
+  await expect.poll(async()=>(await sample()).border).not.toEqual(labeled.border);
+  await viewer.getByRole('button',{name:'แสดงกรอบ Global ทั้งหมด',exact:true}).click();
+  await expect.poll(async()=>(await sample()).border).toEqual(labeled.border);
   await viewer.getByRole("button",{name:t("Zoom in"),exact:true}).click();
   const zoom=await viewer.getAttribute("data-view-scale");
   await page.setViewportSize({width:1180,height:850});await expect(viewer).toHaveAttribute("data-view-scale",zoom!);
   await page.reload();await expect(viewer).toHaveAttribute("data-view-scale",zoom!);
   await viewer.getByRole("button",{name:t("Fit document to view"),exact:true}).click();
-  await page.getByRole("button",{name:"เปิด Debug Mode",exact:true}).click();
-  await expect(page.getByTestId("safe-debug")).toContainText("ไม่ใช่การควบคุมสิทธิ์");
-  await expect(page.getByTestId("safe-debug")).not.toContainText("test-only-credential");
+  await expect(page.getByRole("button",{name:"เปิด Debug Mode",exact:true})).toHaveCount(0);
+  await expect(page.getByTestId("debug-unavailable")).toContainText("ตรวจสิทธิ์");
+  await expect(page.getByTestId("safe-debug")).toHaveCount(0);
  }finally{expect((await request.delete(api+`/api/pipelines/${config.pipeline_id}`)).status()).toBe(204);}
 });

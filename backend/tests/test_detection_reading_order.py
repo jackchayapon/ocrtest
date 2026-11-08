@@ -3,8 +3,8 @@ from types import SimpleNamespace
 
 import httpx
 
-from app.services.global_order import ordered_detection_boxes
 from app.services.global_layout_service import reading_lines
+from app.services.global_order import ordered_detection_boxes
 from tests.test_global_layout import layout
 
 

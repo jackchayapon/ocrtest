@@ -11,6 +11,7 @@ from app.services.image_service import ImageService
 from tests.test_gateway_and_fairness import envelope
 
 PIPELINES = ["mint", "hutch_crop", "hutch_full"]
+pytestmark = pytest.mark.usefixtures("registered_catalog")
 
 
 def run(client, case, pipelines=PIPELINES):
@@ -117,26 +118,30 @@ def test_no_ground_truth_and_empty_ground_truth(client, document):
         f"/api/test-cases/{case['id']}/ground-truth",
         json={"ground_truth_raw": "", "confirmed": True},
     ).json()
-    assert updated["runs"][0]["metrics"] == {"cer": None, "wer": None, "exact_match": False}
+    assert updated["runs"][0]["metrics"] == {"cer": 1.0, "wer": 1.0, "exact_match": False}
 
 
 def test_matrix_latest_runs_filters_and_categories(client, case, document):
     run(client, case)
     run(client, case)
+    assert client.put(f"/api/test-cases/{case['id']}/ground-truth", json={
+        "ground_truth_raw": case["ground_truth_raw"], "confirmed": True,
+    }).status_code == 200
     rows = client.get(
         "/api/matrix", params={"category": "thai_text", "document": document["id"]}
     ).json()
     assert {r["pipeline_id"] for r in rows} == {p["pipeline_id"] for p in client.get("/api/pipelines").json()}
     assert all(row["tests"] == (1 if row["pipeline_id"] in PIPELINES else 0) for row in rows)
-    assert rows[0]["cer"] == 0
-    assert rows[0]["avg_gateway_time_ms"] == 123.4
+    mint = next(row for row in rows if row["pipeline_id"] == "mint")
+    assert mint["cer"] == 0
+    assert mint["avg_gateway_time_ms"] == 123.4
     assert all(
         row["tests"] == 0 for row in client.get("/api/matrix", params={"category": "blur"}).json()
     )
     assert len(client.get("/api/matrix", params={"pipeline": "mint"}).json()) == 1
     category = client.get("/api/analytics/categories", params={"category": "stamp"}).json()[0]
     assert category["test_cases"] == 1
-    assert category["pipelines"][0]["tests"] == 1
+    assert next(p for p in category["pipelines"] if p["pipeline_id"] == "mint")["tests"] == 1
     assert client.get("/api/history", params={"date_from": "2100-01-01"}).json() == []
 
 
@@ -180,7 +185,7 @@ def test_config_validation_and_secret_status(client):
     ):
         assert client.put("/api/pipelines/mint", json=values).status_code == 422
     assert "test-gateway-secret" not in client.get("/api/pipelines").text
-    assert client.post("/api/pipelines/mint/test-connection").json()["status"] == "available"
+    assert client.post("/api/pipelines/mint/test-connection").json()["status"] == "gateway_connected"
 
 
 def test_roi_changes_preserve_old_predictions(client, case):

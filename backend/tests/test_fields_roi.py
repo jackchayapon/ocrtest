@@ -15,6 +15,8 @@ from app.services.field_service import compare_field, field_summary
 from app.services.metrics_service import calculate_metrics, character_text
 from tests.test_benchmark_pipeline import parts
 
+pytestmark = pytest.mark.usefixtures("registered_catalog")
+
 
 @pytest.mark.parametrize(
     "gt,ocr,kind",
@@ -190,6 +192,8 @@ def test_postgresql_field_roundtrip(tmp_path, png, gateway):
         model_gateway_api_key="test-gateway-secret",
     )
     with TestClient(create_app(settings)) as c:
+        from tests.catalog_fixture import register_catalog
+        register_catalog(c)
         doc = c.post("/api/documents", files={"file": ("field.png", png, "image/png")}).json()
         case = c.post(
             "/api/test-cases",

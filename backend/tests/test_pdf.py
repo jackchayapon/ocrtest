@@ -9,6 +9,8 @@ from app.core.errors import AppError
 from app.services.pdf_service import PdfService
 from tests.test_gateway_and_fairness import envelope, multipart
 
+pytestmark = pytest.mark.usefixtures("registered_catalog")
+
 
 def pdf_fixture(pages=2, width=360, height=480):
     """Small, deterministic vector PDF; different dimensions/content on page two."""

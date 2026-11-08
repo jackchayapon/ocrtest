@@ -3,6 +3,25 @@ import {test,expect} from '@playwright/test';
 const job={job_id:'00000000-0000-4000-8000-000000000001',test_case_id:'verify',status:'completed',pipeline_ids:['p'],total_fields:1,total_pipelines:1,completed_units:1,failed_units:0,completed_pipelines:1,progress_percent:100,created_at:'2026-11-08T00:00:00Z',run_ids:['r']};
 const record={id:'verify',workflow:'global',categories:[],ground_truth_raw:'x',evaluation_mode:'per_field',layout_confirmed_at:'2026-11-08',global_fields:[{id:'f',field_index:1,source:'manual',roi:{x1:1,y1:1,x2:90,y2:90},ground_truth_raw:'x'}],document:{id:'d',filename:'synthetic.png',width:100,height:100,image_url:'/api/synthetic.svg'},runs:[]};
 
+for(const status of ['completed','partial_success','failed','cancelled'])test(`terminal elapsed time is persisted and frozen: ${status}`,async({page})=>{
+ let posts=0;
+ await page.clock.install({time:new Date('2026-11-09T00:00:00Z')});
+ await page.route('**/api/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(route.request().method()==='POST')posts++;
+  if(path.endsWith('/jobs'))return route.fulfill({json:{...job,status,finished_at:'2026-11-08T00:01:05Z',updated_at:'2026-11-08T00:01:05Z'}});
+  if(path.endsWith('/results'))return route.fulfill({status:403,json:{detail:'No automatic navigation in this fixture'}});
+  if(path.endsWith('/pipelines'))return route.fulfill({json:[{pipeline_id:'p',name:'Synthetic',enabled:true}]});
+  if(path.endsWith('.svg'))return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>'});
+  return route.fulfill({json:record});
+ });
+ await page.goto('/workflow/verify/pipelines');
+ const progress=page.getByTestId('ocr-job-progress');
+ await expect(progress).toContainText('เวลาที่ผ่านไป: 01:05');
+ await page.clock.runFor(120000);await expect(progress).toContainText('เวลาที่ผ่านไป: 01:05');
+ await page.reload();await expect(progress).toContainText('เวลาที่ผ่านไป: 01:05');expect(posts).toBe(0);
+});
+
 for(const scenario of ['empty-completed','empty-partial','errors','all-failed','forbidden','hanging'] as const){
  test(`terminal results verification: ${scenario}`,async({page})=>{
   let reads=0,posts=0,recover=false;

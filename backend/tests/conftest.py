@@ -48,6 +48,12 @@ def client(settings, gateway):
 
 
 @pytest.fixture
+def registered_catalog(client):
+    from tests.catalog_fixture import register_catalog
+    register_catalog(client)
+
+
+@pytest.fixture
 def png():
     image = Image.new("RGB", (300, 200), "white")
     for x in range(40, 260):

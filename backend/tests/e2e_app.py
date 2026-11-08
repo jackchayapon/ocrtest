@@ -3,7 +3,9 @@
 Requires an explicitly isolated local database. Not copied into production images.
 """
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 from sqlalchemy.engine import make_url
@@ -28,3 +30,18 @@ app = create_app(Settings(
     storage_path=Path(__file__).resolve().parents[1] / ".pytest_e2e" / "uploads",
     cors_origins="http://127.0.0.1:3100,http://localhost:3100",
 ))
+
+# Browser regressions explicitly provision current-schema dynamic definitions.
+# Production startup deliberately has no built-in PipelineConfig rows.
+original_lifespan = app.router.lifespan_context
+
+
+@asynccontextmanager
+async def catalog_lifespan(application):
+    from tests.catalog_fixture import register_catalog
+    async with original_lifespan(application):
+        register_catalog(SimpleNamespace(app=application))
+        yield
+
+
+app.router.lifespan_context = catalog_lifespan

@@ -4,6 +4,7 @@ import Link from "next/link";
 import {LoaderCircle} from "lucide-react";
 import {useEffect,useRef,useState} from "react";
 import {APIError,createOCRJob,getCaseOCRJob,getOCRJob,getOCRJobResults,type OCRJob} from "@/lib/api";
+import {jobElapsedSeconds} from "@/lib/job-timing";
 
 const active=(job:OCRJob)=>job.status==="queued"||job.status==="running";
 const RESULT_ATTEMPTS=6,RESULT_DEADLINE_MS=30_000,RESULT_RECHECK_MS=5_000;
@@ -81,7 +82,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   catch(e){setError(e instanceof Error?e.message:"ส่งงานไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ");}
   finally{pending.current=false;setSubmitting(false);}
  }
- const elapsed=Math.max(0,Math.floor((clock-Date.parse(job?.started_at||job?.created_at||new Date(clock).toISOString()))/1000));
+ const elapsed=jobElapsedSeconds(job,clock);
  const busy=checking||submitting||verifying||!!job&&active(job);
  return <section className="space-y-3" aria-label="สถานะงาน OCR">
   {error&&<p role="alert" className="error-banner">{error}</p>}
@@ -94,7 +95,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
    <p>สำเร็จ: {Math.max(0,job.completed_units-job.failed_units)} · ล้มเหลว: {job.failed_units} · หนึ่งรายการ = หนึ่ง Field × Pipeline</p>
    <p>Pipeline ครบแล้ว: {job.completed_pipelines} / {job.total_pipelines} · รายการผิดพลาด: {job.failed_units}</p>
    {job.current_pipeline_id&&<p>Pipeline ที่กำลังทำงาน: {names[job.current_pipeline_id]||job.current_pipeline_id}</p>}
-   <p>เวลาที่ผ่านไป: {String(Math.floor(elapsed/60)).padStart(2,"0")}:{String(elapsed%60).padStart(2,"0")}</p>
+   <p>เวลาที่ผ่านไป: {elapsed===null?"—":`${String(Math.floor(elapsed/60)).padStart(2,"0")}:${String(elapsed%60).padStart(2,"0")}`}</p>
    {job.updated_at&&<p className="text-xs">สถานะจากเซิร์ฟเวอร์ล่าสุด: {new Date(job.updated_at).toLocaleTimeString("th-TH")} · เปอร์เซ็นต์เพิ่มเมื่อบันทึก checkpoint ไม่ใช่เวลา Gateway</p>}
    {active(job)&&<p className="text-sm">ปิดหรือรีเฟรชหน้านี้ได้ งานเดิมจะถูกติดตามจากเซิร์ฟเวอร์</p>}
    {job.safe_error_message&&<p>{job.safe_error_message}</p>}

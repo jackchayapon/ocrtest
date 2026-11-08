@@ -1,7 +1,11 @@
-from app.services.evaluation_insights_service import attribute_source_fields
-from app.services.evaluation_insights_service import contextual_events, EvaluationInsightsService
-from app.services.metrics_service import align_errors
 import pytest
+
+from app.services.evaluation_insights_service import (
+    EvaluationInsightsService,
+    attribute_source_fields,
+    contextual_events,
+)
+from app.services.metrics_service import align_errors
 
 
 @pytest.mark.parametrize("gt,ocr", [

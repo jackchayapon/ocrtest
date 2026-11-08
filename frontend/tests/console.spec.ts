@@ -120,14 +120,13 @@ test("business library filters, detail tabs, missing metrics and history links",
     .click();
   await expect(page.getByText("SAME INPUT", { exact: true })).toBeVisible();
   await page.goto("/analytics/categories");
-  await page.getByRole("button", { name: "ตัวกรองเอกสารและวันที่", exact: true }).click();
-  await page.getByLabel("ประเภทเอกสาร (ธุรกิจ)").selectOption(documentTypeId);
+  await expect(page.getByRole("tab", {name:"ตามประเภทเอกสาร",exact:true})).toHaveAttribute("aria-selected","true");
   await page.getByText("ดูตารางทุก Pipeline", {exact:true}).click();
   await expect(
     page.getByRole("table", { name: "เปรียบเทียบตามประเภทเอกสาร", exact: true }),
   ).toBeVisible();
   await page.locator('#console-navigation a[href^="/history"]').click();
-  await expect(page.getByLabel("ประเภทเอกสาร (ธุรกิจ)")).toHaveValue(documentTypeId);
+  await expect(page.getByLabel("ค้นหาในหน้านี้",{exact:true})).toBeVisible();
   const original = await (
     await request.get(`${api}/api/test-cases/${caseId}`)
   ).json();
@@ -150,13 +149,13 @@ test("business library filters, detail tabs, missing metrics and history links",
     ).ok(),
   ).toBeTruthy();
   await page.goto("/matrix");
-  await page.getByText("ผลรายชุดทดสอบ", {exact:true}).click();
+  await page.locator('details > summary').filter({hasText:"เปรียบเทียบรายชุดทดสอบ"}).click();
   const row = page
     .getByRole("table", { name: "เปรียบเทียบรายชุดทดสอบ" })
     .getByRole("row")
     .filter({ has: page.locator(`a[href="/test/${noGT.id}"]`) });
   await expect(row).toContainText("รอ Ground Truth");
-  await expect(row).toContainText("CER —");
+  await expect(row).toContainText("CER ของชุดทดสอบนี้ —");
 });
 test("all data routes have recoverable errors and intentional empty states", async ({
   page,
@@ -175,7 +174,7 @@ test("all data routes have recoverable errors and intentional empty states", asy
     const pattern = `**/api/${endpoint}*`;
     await page.route(pattern, (r) => r.fulfill({ json: empty }));
     await page.goto(route);
-    if (route === "/matrix" || route === "/analytics/categories") await page.getByText("ผลรายชุดทดสอบ", {exact:true}).click();
+    if (route === "/matrix" || route === "/analytics/categories") await page.locator('details > summary').filter({hasText:"เปรียบเทียบรายชุดทดสอบ"}).click();
     await expect(
       page.getByRole("heading", { name: title, exact: true }),
     ).toBeVisible();

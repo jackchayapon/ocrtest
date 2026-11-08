@@ -1,5 +1,7 @@
 # OCR workflow regression audit — 7 November 2026
 
+**8 November remediation:** [รายงานล่าสุด](pr13-remediation.md) และ [failure-by-failure triage](pr13-failure-triage.md) supersede baseline-failure/Debug/elapsed assumptions below. Historical counts remain historical; no production release is authorized. REQ12 stays excluded
+
 Base main: `695bf4b0f3355653ea4c82102e6586debaac9c2b` (PR11/PR12).
 Branch: `fix/ocr-workflow-regression-audit`. No database migration or model-registry change.
 

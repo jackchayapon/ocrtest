@@ -20,6 +20,8 @@ from app.pipelines.benchmark import (
 from app.services.image_service import ImageService
 from app.services.metrics_service import calculate_metrics
 
+pytestmark = pytest.mark.usefixtures("registered_catalog")
+
 
 def parts(request):
     message = BytesParser(policy=default).parsebytes(
@@ -198,9 +200,9 @@ def test_benchmark_persistence_metrics_error_analysis_and_dynamic_views(client, 
     assert len(rows) == 1 and rows[0]["tests"] == 1 and rows[0]["evaluated_runs"] == 1
     history = client.get("/api/history", params={"pipeline": "benchmark"}).json()
     assert history[0]["id"] == case["id"]
-    assert client.get(f"/api/test-cases/{case['id']}").json()["runs"][0]["raw_response"][
-        "recognition_batches"
-    ]
+    saved = client.get(f"/api/test-cases/{case['id']}").json()["runs"][0]
+    assert saved["raw_response"]["composition"]["recognition"]["version"] == "5"
+    assert saved["gateway_request_id"] and saved["gateway_duration_ms"] is not None
 
 
 def test_benchmark_failure_isolated_from_existing_pipelines(client, case, gateway):
@@ -244,7 +246,7 @@ def test_additive_seed_and_fixed_benchmark_settings(client, settings):
         {"file_field_name": "image"},
     ):
         assert client.put("/api/pipelines/benchmark", json=payload).status_code == 422
-    assert client.post("/api/pipelines/benchmark/test-connection").json()["status"] == "unknown"
+    assert client.post("/api/pipelines/benchmark/test-connection").json()["status"] == "gateway_connected"
 
 
 @pytest.mark.parametrize(

@@ -58,15 +58,13 @@ test("legacy compatibility: selected PDF pages run separately; logs and confirme
     ).json();
     expect(saved.runs).toHaveLength(enabled.length);
     expect(saved.ground_truth_raw).toBeNull();
+    expect(saved.document_gt_confirmed_at).toBeNull(); // Batch pages do not invent confirmed GT.
   }
   await page.goto(`/logs?test_case_id=${cases[0]}`);
   await expect(
-    page.getByRole("heading", { name: "บันทึกการทำงาน" }),
+    page.getByRole("heading", { name: "บันทึกระบบ" }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("cell", { name: "ocr_run_success", exact: true }),
-  ).toHaveCount(enabled.length);
-  await page.getByLabel("ระดับ", { exact: true }).selectOption("ERROR");
+  await expect(page.getByText("ไม่ได้เปิดการบันทึก System Logs ลงฐานข้อมูล",{exact:true})).toBeVisible();
   await expect(
     page.getByRole("cell", { name: "ocr_run_success", exact: true }),
   ).toHaveCount(0);

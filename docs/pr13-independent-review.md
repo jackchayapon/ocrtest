@@ -1,5 +1,9 @@
 # Independent engineering review — PR #13
 
+> Remediation ต่อเนื่อง: ดู [ผลตรวจล่าสุด](pr13-remediation.md), [triage ทุก 55 backend/34 browser failures](pr13-failure-triage.md) และ [แผน authorization](pr13-security-rollout.md) ก่อนใช้ผล historical ด้านล่าง REQ03 ไม่รวม requirement labels-without-outlines; Debug diagnostics ถูกปิดแทน toggle เดิม คำตัดสิน Production ยังคง NO-GO
+
+**ผลสุดท้าย remediation:** backend **545/545**, full Playwright **188/188**, runner exit code **0 ทั้งคู่**, ไม่ skip; PostgreSQL clean→0011→0012/head และ no-drift ผ่าน TypeScript/ESLint/build ผ่าน Ruff app/tests ผ่าน แต่ทั้ง backend ยังมี baseline I001 หนึ่งจุดใน migration0010 ไม่มีการแก้ migration เก่า REQ03 ตรวจ pixels ของ label/outline, REQ06 ใช้ persisted finish, REQ11 ไม่พบ duplicated full panels ด้วย contract จริง; REQ13 recovery ผ่านใน local แต่ memory headroom ต่ำยังเป็น blocker ไม่ใช่ production capacity proof ไม่มีการอ่าน private production data/uploads
+
 วันที่ 8 พฤศจิกายน 2569 · **คำตัดสิน production: NO-GO** · คง Draft PR
 
 ## 1. ขอบเขตและหลักฐาน

@@ -1,4 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
+import {waitForJobResults} from "./job-results";
 import { t } from "../lib/i18n/th";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
@@ -89,11 +90,7 @@ for (const imageFile of [
         page.getByLabel(`เลือก ${name}`, { exact: true }),
       ).toBeChecked();
     }
-    const responsePromise = page.waitForResponse(
-      (response) =>
-        /\/api\/test-cases\/[^/]+\/run$/.test(response.url()) &&
-        response.request().method() === "POST",
-    );
+    const responsePromise = waitForJobResults(page);
     await page
       .getByRole("button", { name: t("Run all pipelines"), exact: true })
       .click();
@@ -281,7 +278,8 @@ for (const imageFile of [
       ).toHaveCount(0);
     }
     await page.goto("/matrix");
-    await expect(page.locator("table").last().locator("tbody tr")).toHaveCount(configs.length);
+    const ranking=page.getByRole('table',{name:'All Pipelines',exact:true});
+    for(const config of configs)await expect(ranking.getByRole('row').filter({hasText:config.name})).toHaveCount(1);
     await page.screenshot({
       path: "test-results/matrix-desktop.png",
       fullPage: true,
@@ -419,15 +417,13 @@ test("legacy compatibility: ROI move and resize, selectable Auto ROI, and failur
   expect(finalROI[3]).toBeLessThanOrEqual(1320);
   await expect(page.getByTestId("roi-status")).toContainText("กำลังแก้ไข ROI");
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  const pending = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/run") && response.request().method() === "POST",
-  );
+  const pending = waitForJobResults(page);
   await page
     .getByRole("button", { name: t("Run selected"), exact: true })
     .click();
   const result = await (await pending).json();
-  expect(result.runs).toHaveLength(6);
+  const enabledConfigs=(await(await request.get(`${backend}/api/pipelines`)).json()).filter((c:{enabled:boolean})=>c.enabled);
+  expect(result.runs.map((r:PipelineRun)=>r.pipeline_id).sort()).toEqual(enabledConfigs.map((c:{pipeline_id:string})=>c.pipeline_id).sort());
   for (const run of result.runs.filter((r: PipelineRun) => r.pipeline_id !== "hutch_full")) {
     expect(run.roi).toEqual({ x1: finalROI[0], y1: finalROI[1], x2: finalROI[2], y2: finalROI[3] });
     expect(run.input_width).toBe(finalROI[2] - finalROI[0]);
@@ -455,28 +451,30 @@ test("legacy compatibility: settings save and upstream connection test", async (
   const card = page
     .locator("section")
     .filter({
-      has: page.getByRole("heading", { name: t("Mint Custom"), exact: true }),
+      has: page.getByRole("heading", { name: "Mint Custom OCR", exact: true }),
     });
-  const enabled = card.getByLabel(t("Pipeline enabled"));
+  await card.getByRole("button",{name:"แก้ไข",exact:true}).click();
+  const enabled = card.getByLabel("เปิดใช้งานสำหรับทดสอบ OCR",{exact:true});
   await enabled.uncheck();
   await expect(
-    card.getByRole("button", { name: t("Test connection"), exact: true }),
+    card.getByRole("button", { name: "ทดสอบ Gateway", exact: true }),
   ).toBeDisabled();
   await card
-    .getByRole("button", { name: t("Save changes"), exact: true })
+    .getByRole("button", { name: "บันทึก Pipeline", exact: true })
     .click();
-  await expect(card.getByText(t("Pipeline settings saved."))).toBeVisible();
+  await expect(card.getByText("ปิดใช้งานสำหรับทดสอบ OCR",{exact:true})).toBeVisible();
+  await card.getByRole("button",{name:"แก้ไข",exact:true}).click();
   await enabled.check();
   await card
-    .getByRole("button", { name: t("Save changes"), exact: true })
+    .getByRole("button", { name: "บันทึก Pipeline", exact: true })
     .click();
   await expect(
-    card.getByRole("button", { name: t("Saved"), exact: true }),
+    card.getByText("เปิดใช้งานสำหรับทดสอบ OCR",{exact:true}),
   ).toBeVisible();
   await card
-    .getByRole("button", { name: t("Test connection"), exact: true })
+    .getByRole("button", { name: "ทดสอบ Gateway", exact: true })
     .click();
   await expect(
-    card.getByText("พร้อมใช้งาน", { exact: true }).first(),
+    card.getByRole("status").filter({hasText:"พร้อมใช้งาน · Gateway"}),
   ).toBeVisible();
 });
