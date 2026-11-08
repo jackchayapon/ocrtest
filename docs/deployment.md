@@ -1,5 +1,7 @@
 # Deployment and migration
 
+> Current pre-release decision (9 November 2026): use [production-release-readiness.md](production-release-readiness.md). The historical sections below are not authorization to deploy. Current source migration head is `0012_ocr_jobs`; Production revision remains unverified in the latest read-only check. The user now explicitly chooses a public shared workspace and accepts possible historical ephemeral-upload loss. Do not infer authorization or durable storage from older wording below.
+
 ## Existing release path
 
 Local validation -> explicit source/test/docs commit -> normal GitHub main push -> existing Railway backend and Vercel frontend integrations. Both integrations reported successful deployments for Release A `941d356`. Verify fresh statuses for every release; this does not prove dashboard watch-path settings. Do not create duplicate manual deployments when auto-deploy is active.
