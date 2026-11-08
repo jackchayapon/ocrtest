@@ -5,6 +5,7 @@ import {LoaderCircle} from "lucide-react";
 import {useEffect,useRef,useState} from "react";
 import {APIError,createOCRJob,getCaseOCRJob,getOCRJob,getOCRJobResults,type OCRJob} from "@/lib/api";
 import {jobElapsedSeconds} from "@/lib/job-timing";
+import {jobWasOpened,rememberJob} from "@/lib/job-navigation";
 
 const active=(job:OCRJob)=>job.status==="queued"||job.status==="running";
 const RESULT_ATTEMPTS=6,RESULT_DEADLINE_MS=30_000,RESULT_RECHECK_MS=5_000;
@@ -17,6 +18,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
  const [verifying,setVerifying]=useState(false),[verification,setVerification]=useState(0);
  const pending=useRef(false),callbacks=useRef({onCompleted,onBusy});
  const navigated=useRef<string|null>(null);
+ const pendingKeys=useRef(new Map<string,string>());
  const activeId=job&&active(job)?job.job_id:null;
  useEffect(()=>{if(!activeId)return;const timer=setInterval(()=>setClock(Date.now()),1000);return()=>clearInterval(timer);},[activeId]);
  useEffect(()=>{callbacks.current={onCompleted,onBusy};},[onCompleted,onBusy]);
@@ -25,7 +27,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   const controller=new AbortController();
   getCaseOCRJob(caseId,controller.signal).then(value=>{
    if(controller.signal.aborted)return;
-   if(value)setJob(value);
+   if(value){rememberJob(caseId,value.job_id);setJob(value);}
    setChecking(false);
   }).catch(()=>{if(!controller.signal.aborted){setError("ตรวจสอบงานเดิมไม่ได้ กรุณาลองตรวจสอบอีกครั้งก่อนเริ่มงานใหม่");setChecking(false);}});
   return()=>controller.abort();
@@ -47,7 +49,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
  },[job,storageKey]);
  useEffect(()=>{
   if(!job||!["completed","partial_success"].includes(job.status)||navigated.current===job.job_id)return;
-  try{if(!verification&&sessionStorage.getItem(`${storageKey}:opened`)===job.job_id)return;}catch{/* Optional navigation acknowledgement. */}
+  if(!verification&&jobWasOpened(caseId,job.job_id))return;
   const controller=new AbortController();let cancelled=false,finished=false,attempts=0;
   let timer:ReturnType<typeof setTimeout>;
   const stop=(message:string)=>{finished=true;clearTimeout(timer);clearTimeout(deadline);controller.abort();setVerifying(false);setError(message);};
@@ -59,7 +61,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   async function verify(){
    if(cancelled||finished)return;
    attempts++;setVerifying(true);
-   try{localStorage.setItem(storageKey,job!.job_id);}catch{/* Saved server job remains authoritative. */}
+   rememberJob(caseId,job!.job_id);
    try{
     const result=await getOCRJobResults(job!.job_id,controller.signal);
     if(cancelled||finished)return;
@@ -73,12 +75,20 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
    }}
   }
   void verify();return()=>{cancelled=true;controller.abort();clearTimeout(timer);clearTimeout(deadline);};
- },[job,storageKey,verification]);
+ },[job,caseId,storageKey,verification]);
  async function start(){
   if(pending.current)return;pending.current=true;setSubmitting(true);setError("");
   const requestKey=`${storageKey}:request:${JSON.stringify(pipelines)}`;
-  const key=localStorage.getItem(requestKey)||crypto.randomUUID();localStorage.setItem(requestKey,key);
-  try{const next=await createOCRJob(caseId,pipelines,key);localStorage.setItem(storageKey,next.job_id);localStorage.removeItem(requestKey);setJob(next);}
+  try{
+   let key=pendingKeys.current.get(requestKey);
+   // An explicit new run after a known terminal job must not reuse a stale stored key.
+   if(!key&&!job)try{key=localStorage.getItem(requestKey)||undefined;}catch{/* Memory preserves retries in this mounted runner. */}
+   key??=crypto.randomUUID();pendingKeys.current.set(requestKey,key);
+   try{localStorage.setItem(requestKey,key);}catch{/* Optional persistence; never regenerate the in-flight key. */}
+   const next=await createOCRJob(caseId,pipelines,key);
+   setJob(next);rememberJob(caseId,next.job_id);pendingKeys.current.delete(requestKey);
+   try{localStorage.removeItem(requestKey);}catch{/* Server accepted the job; storage cannot turn acceptance into failure. */}
+  }
   catch(e){setError(e instanceof Error?e.message:"ส่งงานไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่อ");}
   finally{pending.current=false;setSubmitting(false);}
  }

@@ -13,6 +13,7 @@ import {completeGT,fieldLineCounts,joinFieldGT,splitDocumentGT} from "@/lib/grou
 import WorkflowSteps,{stageTitles,stages,workflowUrl,type WorkflowStage} from "./WorkflowSteps";
 import OCRJobRunner from "./OCRJobRunner";
 import SafeDebugPanel from "./SafeDebugPanel";
+import {acknowledgeJob} from "@/lib/job-navigation";
 import GlobalGroundTruthForm from "./GlobalGroundTruthForm";
 import GlobalFieldEvaluation from "./GlobalFieldEvaluation";
 const DocumentViewer=dynamic(()=>import("./DocumentViewer"),{ssr:false});
@@ -54,7 +55,10 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
   else setSaveMessage("บันทึก GT ฉบับร่างแล้ว — ยังไม่ได้คำนวณผลประเมิน");
  });}
  const allowed=stage==="layout"||stage==="pipelines"&&locked||(stage==="ground-truth")&&hasRuns;
- useEffect(()=>{if(stage==="ground-truth"&&hasRuns){const key=`ocrlab-job:${saved.id}`,id=localStorage.getItem(key);if(id)sessionStorage.setItem(`${key}:opened`,id);}},[stage,hasRuns,saved.id]);
+ useEffect(()=>{
+  if(stage!=="ground-truth"||!hasRuns)return;
+  acknowledgeJob(saved.id);
+ },[stage,hasRuns,saved.id]);
  const layoutDirty=JSON.stringify(fields)!==JSON.stringify(saved.global_fields??[]);
  async function saveLayout(confirmed:boolean){
   if(hasRuns||saved.layout_locked_at){

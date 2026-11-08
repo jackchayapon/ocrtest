@@ -3,6 +3,27 @@ import {test,expect} from '@playwright/test';
 const job={job_id:'00000000-0000-4000-8000-000000000001',test_case_id:'verify',status:'completed',pipeline_ids:['p'],total_fields:1,total_pipelines:1,completed_units:1,failed_units:0,completed_pipelines:1,progress_percent:100,created_at:'2026-11-08T00:00:00Z',run_ids:['r']};
 const record={id:'verify',workflow:'global',categories:[],ground_truth_raw:'x',evaluation_mode:'per_field',layout_confirmed_at:'2026-11-08',global_fields:[{id:'f',field_index:1,source:'manual',roi:{x1:1,y1:1,x2:90,y2:90},ground_truth_raw:'x'}],document:{id:'d',filename:'synthetic.png',width:100,height:100,image_url:'/api/synthetic.svg'},runs:[]};
 
+for(const blocked of ['read','write'] as const)test(`GT remains editable when navigation acknowledgement storage blocks ${blocked}`,async({page})=>{
+ const errors:string[]=[],mutations:string[]=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.addInitScript(({blocked,jobId})=>{
+  const read=Storage.prototype.getItem,write=Storage.prototype.setItem;
+  Storage.prototype.getItem=function(key){if(key==='ocrlab-job:verify'){if(blocked==='read')throw new DOMException('Synthetic storage denied','SecurityError');return jobId;}return read.call(this,key);};
+  Storage.prototype.setItem=function(key,value){if(blocked==='write'&&key==='ocrlab-job:verify:opened')throw new DOMException('Synthetic storage quota','QuotaExceededError');return write.call(this,key,value);};
+ },{blocked,jobId:job.job_id});
+ await page.route('**/api/**',route=>{
+  const path=new URL(route.request().url()).pathname;
+  if(route.request().method()!=='GET')mutations.push(path);
+  if(path.endsWith('/pipelines'))return route.fulfill({json:[]});
+  if(path.endsWith('.svg'))return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>'});
+  return route.fulfill({json:{...record,runs:[{id:'r',pipeline_id:'p',status:'success',final_text:'x',fields:[]}]}});
+ });
+ await page.goto('/workflow/verify/ground-truth?edit=1');
+ const input=page.getByLabel('Ground Truth Field 01',{exact:true});
+ await expect(input).toHaveValue('x');await input.fill('Thai กิ่');await expect(input).toHaveValue('Thai กิ่');
+ expect(errors).toEqual([]);expect(mutations).toEqual([]);
+});
+
 for(const status of ['completed','partial_success','failed','cancelled'])test(`terminal elapsed time is persisted and frozen: ${status}`,async({page})=>{
  let posts=0;
  await page.clock.install({time:new Date('2026-11-09T00:00:00Z')});

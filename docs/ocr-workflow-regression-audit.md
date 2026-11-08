@@ -32,7 +32,7 @@ Branch: `fix/ocr-workflow-regression-audit`. No database migration or model-regi
 | REQ-11 | Existing concise default summaries and on-demand full detail retained; no duplicate full error panels added and no evidence discarded. |
 | REQ-12 | **OUT OF SCOPE** — not implemented. |
 | REQ-13 | PostgreSQL jobs/leases/heartbeat/checkpoints/idempotency retained. Poll/result guards remain compact; no synchronous browser `/run` restored. Missing source fails safely.494-unit isolated acceptance required below. |
-| REQ-14 | Safe allowlisted diagnostic toggle implemented, no OCR request. **Internal-only access BLOCKED:** current production has no authentication/roles. The UI explicitly states this is not access control; no secret-environment/raw-response viewer or misleading permission claim. |
+| REQ-14 | Debug UI is disabled, with no toggle or diagnostic payload, pending genuine authorization. **Internal-only access BLOCKED:** existing APIs lack authentication/ownership controls; disabling this UI is not API access control. See the [final independent audit](pr13-final-independent-audit.md). |
 
 ## Compatibility and privacy
 
