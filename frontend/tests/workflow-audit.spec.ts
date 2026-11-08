@@ -33,8 +33,20 @@ test("38 fields: preview/input focus, missing GT, independent labels and stable 
   await expect(viewer).toHaveAttribute("data-active-field",fields[37].id);
   // Read actual rendered pixels: hiding a label changes its badge but preserves the outline.
   const sample=async()=>{
-   const r=fields[6].roi,s=Number(await viewer.getAttribute('data-view-scale')),vx=Number(await viewer.getAttribute('data-view-x')),vy=Number(await viewer.getAttribute('data-view-y'));
-   const png=await canvas.screenshot({scale:'css',animations:'disabled'});
+   const r=fields[6].roi;
+   const readView=()=>viewer.evaluate(el=>JSON.stringify([
+    el.getAttribute('data-view-scale'),el.getAttribute('data-view-x'),el.getAttribute('data-view-y'),
+   ]));
+   let png:Buffer=Buffer.alloc(0),capturedView='';
+   // Screenshot auto-scroll/layout can resize the fitted viewer. Sample pixels
+   // only when the transform belongs to the captured frame, not the prior frame.
+   await expect.poll(async()=>{
+    const before=await readView(),shot=await canvas.screenshot({scale:'css',animations:'disabled'});
+    const after=await readView();
+    if(before!==after)return false;
+    png=shot;capturedView=after;return true;
+   }).toBe(true);
+   const [s,vx,vy]=(JSON.parse(capturedView) as string[]).map(Number);
    const px=(left:number,top:number,width:number,height:number)=>sharp(png).extract({left:Math.round(left),top:Math.round(top),width,height}).raw().toBuffer();
    return {label:await px(vx+r.x1*s,vy+r.y1*s-23,65,20),border:await px(vx+r.x1*s-2,vy+(r.y1+r.y2)*s/2,5,12)};
   };

@@ -685,18 +685,16 @@ export default function DocumentViewer({
         )}
       </div>
 
-      <div className="flex min-h-10 flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-white px-3 py-2 text-[10px] text-slate-400">
+      <div className="grid min-h-10 shrink-0 gap-1 border-t border-slate-200 bg-white px-3 py-2 text-[10px] text-slate-400">
         {reviewMode&&<span className="w-full text-xs text-slate-500">{globalFields?.find(f=>f.id===selectedGlobalFieldId)?`Field ${String(globalFields.find(f=>f.id===selectedGlobalFieldId)!.field_index).padStart(2,"0")} · `:""}ลากด้วยเครื่องมือมือเพื่อเลื่อน · Ctrl + ล้อเมาส์เพื่อซูม · ปุ่มลูกศรเลื่อนภาพ · 0 พอดีหน้าจอ</span>}
-        <span className="font-mono">
+        <span className="min-w-0 overflow-x-auto whitespace-nowrap font-mono">
           {width.toLocaleString()} × {height.toLocaleString()} px
-          {pointerCoordinates && (
-            <span className="ml-3">
-              x {pointerCoordinates.x} · y {pointerCoordinates.y}
-            </span>
-          )}
+          <span className="ml-3 inline-block w-[20ch] tabular-nums">
+            x {pointerCoordinates?.x ?? "—"} · y {pointerCoordinates?.y ?? "—"}
+          </span>
         </span>
         {roi ? (
-          <span className="font-mono text-indigo-500" aria-live="polite">
+          <span className="min-w-0 overflow-x-auto whitespace-nowrap font-mono text-indigo-500" aria-live="polite">
             {t("ROI (")}
             {roi.x1}, {roi.y1}) — ({roi.x2}, {roi.y2}) · {roi.x2 - roi.x1} ×{" "}
             {roi.y2 - roi.y1} px

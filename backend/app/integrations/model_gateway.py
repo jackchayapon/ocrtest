@@ -10,14 +10,17 @@ import re
 import time
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from tempfile import SpooledTemporaryFile
 from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
+import ijson
 
 from app.core.batching import IMAGE_BATCH_SIZE
 from app.core.config import Settings
 from app.core.runtime_metrics import memory_snapshot
+from app.integrations.gateway_response import READ_CHUNK_BYTES, EnvelopeParser, redacted_key
 from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
 
 logger = logging.getLogger(__name__)
@@ -81,21 +84,7 @@ def safe_response(value, secrets=()):
     if isinstance(value, dict):
         output = {}
         for key, item in value.items():
-            lowered = str(key).lower()
-            if any(
-                part in lowered
-                for part in ("api_key", "apikey", "authorization", "password", "token")
-            ) or lowered in {
-                "image",
-                "images",
-                "input_img",
-                "output_img",
-                "image_base64",
-                "image_data",
-                "base64",
-                "input_image",
-                "database_url",
-            }:
+            if redacted_key(key):
                 output[key] = "[redacted]"
             else:
                 output[key] = safe_response(item, secrets)
@@ -324,17 +313,34 @@ class ModelGatewayClient:
                             "GATEWAY_REDIRECT_BLOCKED",
                             http_status=response.status_code,
                         )
-                    body = bytearray()
-                    async for chunk in response.aiter_bytes():
-                        body.extend(chunk)
-                        if len(body) > self.settings.model_gateway_max_response_mb * 1024 * 1024:
-                            raise GatewayError(
-                                f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB",
-                                "RESPONSE_TOO_LARGE",
-                            )
+                    limit = self.settings.model_gateway_max_response_mb * 1024 * 1024
+                    def oversized():
+                        return GatewayError(
+                            f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB",
+                            "RESPONSE_TOO_LARGE",
+                        )
+                    length = response.headers.get("Content-Length", "").lstrip("0") or "0"
+                    if (not response.headers.get("Content-Encoding") and length.isdecimal()
+                            and (len(length.lstrip("0")) > 20 or int(length) > limit)):
+                        raise oversized()
+                    parser = EnvelopeParser(lambda value: safe_response(
+                        value, (self.key, self.settings.database_url.get_secret_value())))
                     try:
-                        payload = json.loads(body)
-                    except (ValueError, UnicodeDecodeError):
+                        # Bound RAM independently of body length. Spill only transient
+                        # responses to an OS-private temporary file, never upload storage.
+                        # Oversized bodies are rejected before any JSON token allocation.
+                        with SpooledTemporaryFile(max_size=1024 * 1024, mode="w+b") as body:
+                            size = 0
+                            async for chunk in response.aiter_bytes(chunk_size=READ_CHUNK_BYTES):
+                                size += len(chunk)
+                                if size > limit:
+                                    raise oversized()
+                                body.write(chunk)
+                            body.seek(0)
+                            while chunk := body.read(READ_CHUNK_BYTES):
+                                parser.feed(chunk)
+                            payload = parser.finish()
+                    except (ijson.JSONError, ValueError, UnicodeDecodeError):
                         if response.is_error:
                             raise GatewayError(
                                 f"Gateway request failed (HTTP {response.status_code})",
@@ -347,6 +353,13 @@ class ModelGatewayClient:
                             "INVALID_RESPONSE",
                             http_status=response.status_code,
                         ) from None
+                    except OSError:
+                        raise GatewayError(
+                            "Temporary Gateway response buffering is unavailable",
+                            "RESPONSE_BUFFER_UNAVAILABLE",
+                        ) from None
+                    finally:
+                        parser.close()
                     if response.is_error or isinstance(payload, dict) and "error" in payload:
                         error = payload.get("error", {}) if isinstance(payload, dict) else {}
                         if not isinstance(error, dict):
@@ -412,11 +425,8 @@ class ModelGatewayClient:
                         if isinstance(rid, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", rid):
                             exc.request_id = rid
                         raise
-                    del body
-                    return safe_response(
-                        {"data": data, "meta": payload["meta"]},
-                        (self.key, self.settings.database_url.get_secret_value()),
-                    )
+                    # Strings/images were sanitized during parsing; no second object tree.
+                    return {"data": data, "meta": payload["meta"]}
         except httpx.TimeoutException:
             raise GatewayError("Gateway request timed out", "GATEWAY_TIMEOUT") from None
         except httpx.RequestError:

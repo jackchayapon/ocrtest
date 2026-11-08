@@ -53,9 +53,11 @@ class ImageService:
                     if getattr(image, "n_frames", 1) > 1:
                         raise AppError("Upload a single image or one document page at a time", 415)
                     image.load()
-                    canonical = ImageOps.exif_transpose(image).convert("RGB")
-                    encoded = self.encode_png(canonical)
-                    return encoded, canonical.width, canonical.height
+                    ImageOps.exif_transpose(image, in_place=True)
+                    if image.mode == "RGB":
+                        return self.encode_png(image), image.width, image.height
+                    with image.convert("RGB") as canonical:
+                        return self.encode_png(canonical), canonical.width, canonical.height
         except (
             UnidentifiedImageError,
             OSError,
@@ -81,13 +83,28 @@ class ImageService:
 
     @staticmethod
     def open(data: bytes) -> Image.Image:
-        with Image.open(io.BytesIO(data)) as image:
-            return image.convert("RGB")
+        with io.BytesIO(data) as buffer:
+            image = Image.open(buffer)
+            try:
+                if image.mode == "RGB":
+                    image.load()  # Detach the pixels before closing the temporary input.
+                    image.format = None  # Match the former convert("RGB") return value.
+                    return image
+                with image:
+                    return image.convert("RGB")
+            except BaseException:
+                image.close()
+                raise
 
     def crop(self, original: Image.Image, roi: dict | None) -> Image.Image:
         self.validate_roi(roi, original.width, original.height)
         if roi is None:
             return original.copy()
+        if original.mode == "RGB" and all(isinstance(roi[k], int) for k in ("x1", "y1", "x2", "y2")):
+            # Pillow copies only the ROI; np.asarray(original) copied the entire page.
+            region = original.crop(tuple(roi[k] for k in ("x1", "y1", "x2", "y2")))
+            region.info.clear()  # Preserve the former Image.fromarray PNG metadata contract.
+            return region
         # OpenCV operates on the stored original pixel grid. No rescaling occurs here.
         pixels = np.asarray(original)
         region = pixels[roi["y1"] : roi["y2"], roi["x1"] : roi["x2"]]

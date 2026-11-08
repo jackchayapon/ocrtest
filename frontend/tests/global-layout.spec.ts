@@ -163,6 +163,11 @@ test('global boxes move/resize/delete/add without losing other identities or zoo
  const viewer=page.getByTestId('document-viewer'),canvas=viewer.locator('.konvajs-content');await viewer.getByRole('button',{name:'แก้ไขพื้นที่',exact:true}).click();await page.getByRole('button',{name:'Field 02',exact:true}).click();await canvas.scrollIntoViewIfNeeded();
  const point=async(x:number,y:number)=>{await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));const b=(await canvas.boundingBox())!,s=Number(await viewer.getAttribute('data-view-scale'));return {x:b.x+Number(await viewer.getAttribute('data-view-x'))+x*s,y:b.y+Number(await viewer.getAttribute('data-view-y'))+y*s};};
  const coords=async()=>(await viewer.getByText(/^พื้นที่ที่เลือก \(ROI\) \(/).textContent())!.match(/\d+/g)!.slice(0,4).map(Number);
+ const transform=()=>viewer.evaluate(el=>JSON.stringify(['data-view-scale','data-view-x','data-view-y'].map(k=>el.getAttribute(k))));
+ await page.mouse.move(0,0);await point(0,0);const idleTransform=await transform();
+ const selected=await coords(),inside=await point((selected[0]+selected[2])/2,(selected[1]+selected[3])/2);
+ await page.mouse.move(inside.x,inside.y);await point(0,0);await expect.poll(transform).toBe(idleTransform);
+ await page.mouse.move(0,0);await point(0,0);await expect.poll(transform).toBe(idleTransform);
  const before=await coords(),cx=(before[0]+before[2])/2,cy=(before[1]+before[3])/2,start=await point(cx,cy),end=await point(cx+50,cy+50);await page.mouse.move(start.x,start.y);await page.mouse.down();await page.mouse.move(end.x,end.y,{steps:10});await page.mouse.up();const moved=await coords();
  // Each browser pointer endpoint is quantized to a CSS pixel at the current zoom.
  const tolerance=Math.ceil(2/Number(await viewer.getAttribute('data-view-scale')));
