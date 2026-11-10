@@ -1,6 +1,10 @@
 # Deployment and migration
 
-> Current pre-release decision (9 November 2026): use [production-release-readiness.md](production-release-readiness.md). The historical sections below are not authorization to deploy. Current source migration head is `0012_ocr_jobs`; Production revision remains unverified in the latest read-only check. The user now explicitly chooses a public shared workspace and accepts possible historical ephemeral-upload loss. Do not infer authorization or durable storage from older wording below.
+> Final candidate: [G6 evidence](g6-release-evidence.json), [supported workload](supported-workload.md), [gate ledger](production-release-gates.json). Fresh650backend/208Playwright pass; worstsupportedlocalpeak404.20MB/512MB. ExistingRailwayFree/VercelHobby targets retained;`/api/health`180s and existingPDFDPI140 prepared for nextdeployment. NormalPRmerge/auto-deploy/liveChromiumverification follow; this pre-merge record does not claim deployed E2E success. Older blocked snapshots below are historical.
+
+> Latest internship-prototype candidate, 10 November: [supported 2 MP / PDF 140 DPI workload](supported-workload.md), [current report](production-release-and-live-e2e.md), [current gates](production-release-gates.json). Fresh combined local backend630/browser208 pass. Supported mixed PDF/image workflows exceeded the conservative memory target; current provider eligibility/quotas are not fully verified. No merge/deploy/config change was made. The 9 November report and commands below are historical/reference material, not evidence of a new deployment.
+
+> Current zero-cost decision (9 November 2026): [final report](production-release-and-live-e2e.md), [gates](production-release-gates.json), [hosting assessment](zero-cost-hosting-assessment.md). Final image fixes pass fresh backend616/browser206; local1GB comparison is improved, but RailwayFREE512MB lacks40MPmargin and sustainedzero-cost/providereligibility is unverified. Paidplans/resources are explicitly rejected. Production schema0012 was verified read-only in the prior same-day audit; no schema/prod migration in this remediation. Publicsharedworkspace/possiblehistoricalephemeral-loss remain accepted risks. No merge/deploy until all gates pass; historical deployment commands below are not current authorization.
 
 ## Existing release path
 

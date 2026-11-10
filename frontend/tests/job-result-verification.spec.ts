@@ -33,6 +33,7 @@ for(const status of ['completed','partial_success','failed','cancelled'])test(`t
   if(path.endsWith('/jobs'))return route.fulfill({json:{...job,status,finished_at:'2026-11-08T00:01:05Z',updated_at:'2026-11-08T00:01:05Z'}});
   if(path.endsWith('/results'))return route.fulfill({status:403,json:{detail:'No automatic navigation in this fixture'}});
   if(path.endsWith('/pipelines'))return route.fulfill({json:[{pipeline_id:'p',name:'Synthetic',enabled:true}]});
+  if(path.endsWith('/upload-config'))return route.fulfill({json:{max_upload_mb:10,max_image_pixels:4000000,max_image_dimension:8000,max_pdf_pages:20,pdf_render_dpi:200,max_job_fields:12,max_job_pipelines:6,ocr_queue_capacity:5}});
   if(path.endsWith('.svg'))return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>'});
   return route.fulfill({json:record});
  });
@@ -92,6 +93,7 @@ test('GT loading failure retains the saved job; reload and back do not submit OC
  await page.route('**/api/**',route=>{
   const path=new URL(route.request().url()).pathname;
   if(route.request().method()==='POST'){posts++;return route.fulfill({status:500,json:{detail:'Unexpected inference'}});}
+  if(path.endsWith('/upload-config'))return route.fulfill({json:{max_upload_mb:10,max_image_pixels:4000000,max_image_dimension:8000,max_pdf_pages:20,pdf_render_dpi:200,max_job_fields:12,max_job_pipelines:6,ocr_queue_capacity:5}});
   if(path.endsWith('/results'))return route.fulfill({json:{runs:[{id:'r',status:'success'}]}});
   if(path.endsWith('/jobs'))return route.fulfill({json:job});
   if(path.endsWith('/pipelines'))return route.fulfill({json:[{pipeline_id:'p',name:'Synthetic',enabled:true}]});

@@ -18,6 +18,9 @@ def settings(tmp_path):
         storage_path=tmp_path / "uploads",
         model_gateway_base_url="https://gateway.example",
         model_gateway_api_key="test-gateway-secret",
+        # Preserve the explicit 200-DPI geometry regression profile; every fixture
+        # page is still below the release pixel ceiling. Default 140 tested separately.
+        pdf_render_dpi=200,
     )
 
 

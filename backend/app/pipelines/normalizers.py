@@ -3,6 +3,7 @@
 import math
 from dataclasses import dataclass, field
 
+from app.core.config import MAX_OCR_TEXT_CHARACTERS
 from app.integrations.model_gateway import GatewayError
 
 
@@ -82,7 +83,7 @@ def geometry(line, offset, crop_size):
 
 
 def bounded_text(value):
-    if not isinstance(value, str) or len(value) > 100000:
+    if not isinstance(value, str) or len(value) > MAX_OCR_TEXT_CHARACTERS:
         raise GatewayError("Gateway returned invalid or excessive OCR text", "INVALID_OCR_RESPONSE")
     return value
 

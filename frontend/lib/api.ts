@@ -56,7 +56,7 @@ function query(filters?: QueryFilters): string {
   return params.size ? `?${params}` : "";
 }
 
-export const getUploadConfig = () => request<{ max_upload_mb: number; pdf_render_dpi: number }>("/upload-config");
+export const getUploadConfig = () => request<{ max_upload_mb: number; pdf_render_dpi: number; max_image_pixels: number; max_image_dimension: number; max_pdf_pages: number; ocr_queue_capacity: number; max_job_fields: number; max_job_pipelines: number; max_job_units?: number; max_detection_regions?: number; max_ocr_text_characters?: number }>("/upload-config");
 export const getDocumentPage = (id: string, page_number?: number) => request<Document>(`/documents/${id}${page_number === undefined ? "" : `?page_number=${page_number}`}`);
 export const getGatewayStatus = () => request<import("@/types").GatewayStatus>("/integrations/model-gateway/status");
 export const getAutoROIs = (id: string, auto_roi_mode = "text-line", page_number: number | null = null) => request<import("@/types").AutoROIResponse>(`/documents/${id}/auto-rois`, { method: "POST", body: JSON.stringify({ auto_roi_mode, expand_text_rois: false, page_number }) });

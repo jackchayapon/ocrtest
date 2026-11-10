@@ -30,9 +30,9 @@ class LargeJSON(httpx.AsyncByteStream):
         yield b'","text":"okay"},"meta":{"request_id":"large-fixture","duration_ms":1}}'
 
 
-@pytest.mark.parametrize("mb,limit,success", [(17, 64, True), (63, 64, True), (65, 64, False), (2, 1, False)])
+@pytest.mark.parametrize("mb,limit,success", [(2, 8, True), (7, 8, True), (9, 8, False), (2, 1, False)])
 def test_bounded_gateway_response(settings, monkeypatch, mb, limit, success):
-    assert settings.model_gateway_max_response_mb == 64
+    assert settings.model_gateway_max_response_mb == 8
     settings.model_gateway_max_response_mb = limit
     gateway = ModelGatewayClient(settings)
     monkeypatch.setattr(gateway, "_client", lambda: httpx.AsyncClient(
@@ -55,7 +55,8 @@ def test_bounded_gateway_response(settings, monkeypatch, mb, limit, success):
 
 
 def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeypatch):
-    doc = client.post("/api/documents", files={"file": ("pages.pdf", pdf_fixture(3), "application/pdf")}).json()
+    # Three distinct 200-DPI pages, each below the bounded 2-MP ceiling.
+    doc = client.post("/api/documents", files={"file": ("pages.pdf", pdf_fixture(3, width=320, height=400), "application/pdf")}).json()
     state = {"active": 0, "max": 0, "order": []}
     original_run = PipelineManager.run
 
@@ -75,7 +76,7 @@ def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeyp
         fields = multipart(request)
         assert set(fields) <= {"image", "text_det_unclip_ratio", "text_det_thresh", "text_det_box_thresh"}
         width = Image.open(io.BytesIO(fields["image"])).width
-        if width == 1200:
+        if width == 1089:
             return httpx.Response(503, json={"error": {"code": "MODEL_UNAVAILABLE", "message": "test-gateway-secret"}})
         return httpx.Response(200, json=envelope(request.url.params["engine"]))
     gateway[0]["handler"] = upstream
@@ -89,7 +90,7 @@ def test_batch_order_failure_independence_and_safe_logs(client, gateway, monkeyp
     completed = [e for e in events if e["event"] in ("page_success", "page_error")]
     assert [e["status"] for e in completed] == ["success", "error", "success"]
     assert state["max"] == 1
-    assert state["order"] == [(kind, width) for width in (1000, 1200, 1400) for kind in ("start", "end")]
+    assert state["order"] == [(kind, width) for width in (889, 1089, 1289) for kind in ("start", "end")]
     records = [client.get(f"/api/test-cases/{e['test_case_id']}").json() for e in completed]
     assert len({r["id"] for r in records}) == 3
     assert all(len(r["runs"]) == 3 and r["ground_truth_raw"] is None for r in records)

@@ -8,6 +8,13 @@ let cropId: string, fullId: string;
 const fixtureSuffix = `${Date.now()}-${process.pid}`;
 const cropName = `Console Crop ${fixtureSuffix}`;
 const fullName = `Console Full ${fixtureSuffix}`;
+
+test.afterAll(async ({request})=>{
+  // Do not leak these two extra enabled configurations into later Run-all tests.
+  // Deleting a definition preserves the historical results tested above.
+  for(const id of [cropId,fullId].filter(Boolean))
+    expect((await request.delete(`${api}/api/pipelines/${id}`)).status()).toBe(204);
+});
 test.beforeAll(async ({ request }) => {
   const kind = await request.post(`${api}/api/document-types`, {data:{name:`Console Document ${fixtureSuffix}`}});
   expect(kind.ok()).toBeTruthy();

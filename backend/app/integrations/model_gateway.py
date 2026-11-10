@@ -8,8 +8,10 @@ import math
 import random
 import re
 import time
+from contextlib import AsyncExitStack
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from io import BytesIO
 from tempfile import SpooledTemporaryFile
 from urllib.parse import urlsplit
 from uuid import uuid4
@@ -24,6 +26,24 @@ from app.integrations.gateway_response import READ_CHUNK_BYTES, EnvelopeParser, 
 from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
 
 logger = logging.getLogger(__name__)
+
+
+def streamed_uploads(request, owner):
+    """HTTPX streams file objects in64KiB chunks; raw bytes are one giant write.
+
+    Give each attempt its own read cursor and deterministic close, retaining the
+    immutable canonical bytes. Never take ownership of caller-supplied file handles.
+    """
+    files = request.get("files")
+    if not files:
+        return request
+    pairs = files.items() if isinstance(files, dict) else files
+    streamed = []
+    for name, part in pairs:
+        if isinstance(part, tuple) and len(part) >= 2 and isinstance(part[1], bytes):
+            part = (part[0], owner.enter_context(BytesIO(part[1])), *part[2:])
+        streamed.append((name, part))
+    return {**request, "files": dict(streamed) if isinstance(files, dict) else streamed}
 
 
 class GatewayError(Exception):
@@ -305,8 +325,8 @@ class ModelGatewayClient:
         if not self.key:
             raise GatewayError("ยังไม่ได้ตั้งค่า API Key สำหรับ Gateway", "MISSING_GATEWAY_KEY")
         try:
-            async with self._client() as client:
-                async with client.stream(**request) as response:
+            async with self._client() as client, AsyncExitStack() as uploads:
+                async with client.stream(**streamed_uploads(request, uploads)) as response:
                     if response.is_redirect:
                         raise GatewayError(
                             "Gateway redirect was blocked",

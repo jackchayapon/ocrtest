@@ -29,6 +29,7 @@ app = create_app(Settings(
     model_gateway_api_key="test-only-credential",
     storage_path=Path(__file__).resolve().parents[1] / ".pytest_e2e" / "uploads",
     cors_origins="http://127.0.0.1:3100,http://localhost:3100",
+    pdf_render_dpi=200,  # Explicit legacy-coordinate profile; pages remain <=2 MP.
 ))
 
 # Browser regressions explicitly provision current-schema dynamic definitions.

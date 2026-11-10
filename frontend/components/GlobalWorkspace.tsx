@@ -24,6 +24,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  const [activeId,setActiveId]=useState<string|null>(stage==="layout"?null:((stage==="ground-truth"?fields.find(f=>f.confirmed_at)?.id:undefined)??fields[0]?.id??null));
  const [drawing,setDrawing]=useState(false);
  const [configs,setConfigs]=useState<PipelineConfig[]>([]),[pipelineIds,setPipelineIds]=useState<string[]>([]);
+ const [workload,setWorkload]=useState({max_job_fields:12,max_job_pipelines:6,max_job_units:24});
  const [mode,setMode]=useState<EvaluationMode>(saved.evaluation_mode??"per_field"),[documentGT,setDocumentGT]=useState(saved.ground_truth_raw??"");
  const [lineCounts,setLineCounts]=useState(()=>fieldLineCounts(fields));
  const [busy,setBusy]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState(false);
@@ -35,7 +36,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  const fieldRows=useRef(new Map<string,HTMLDivElement>());
  const doc=saved.document,active=fields.find(f=>f.id===activeId)??null,locked=stage!=="layout"&&!!saved.layout_confirmed_at,hasRuns=!!saved.runs.length;
  const latestRuns=[...new Set(saved.runs.map(r=>r.pipeline_id))].flatMap(id=>{const r=[...saved.runs].reverse().find(r=>r.pipeline_id===id);return r?[r]:[];});
- useEffect(()=>{let alive=true;api.getPipelines().then(p=>{if(alive){setConfigs(p);setPipelineIds(initialCase.runs.length?[...new Set(initialCase.runs.map(r=>r.pipeline_id))].filter(id=>p.some(c=>c.pipeline_id===id&&c.enabled)):p.filter(c=>c.enabled).map(c=>c.pipeline_id));}}).catch(e=>{if(alive)setError(e.message);});return()=>{alive=false;};},[initialCase]);
+ useEffect(()=>{let alive=true;Promise.all([api.getPipelines(),api.getUploadConfig()]).then(([p,limits])=>{if(alive){setWorkload({...limits,max_job_fields:limits.max_job_fields??12,max_job_pipelines:limits.max_job_pipelines??6,max_job_units:limits.max_job_units??24});setConfigs(p);const selected=initialCase.runs.length?[...new Set(initialCase.runs.map(r=>r.pipeline_id))].filter(id=>p.some(c=>c.pipeline_id===id&&c.enabled)):p.filter(c=>c.enabled).map(c=>c.pipeline_id);const budget=Math.min(limits.max_job_pipelines??6,Math.max(1,Math.floor((limits.max_job_units??24)/Math.max(1,initialCase.global_fields?.length??1))));setPipelineIds(selected.slice(0,budget));}}).catch(e=>{if(alive)setError(e.message);});return()=>{alive=false;};},[initialCase]);
  async function act(fn:()=>Promise<void>){if(actionPending.current)return;actionPending.current=true;setBusy(true);setError("");setNotice(false);setSaveMessage("");try{await fn();}catch(e){setError(userError(e instanceof Error?e.message:"ดำเนินการไม่สำเร็จ"));}finally{actionPending.current=false;setBusy(false);}}
  function adopt(c:TestCase){setSaved(c);setFields(c.global_fields??[]);const ids=new Set(c.global_fields?.map(f=>f.id));setActiveId(old=>old&&ids.has(old)?old:null);}
  function selectField(id:string){if(busy)return;setDrawing(false);setActiveId(id);}
@@ -61,6 +62,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  },[stage,hasRuns,saved.id]);
  const layoutDirty=JSON.stringify(fields)!==JSON.stringify(saved.global_fields??[]);
  async function saveLayout(confirmed:boolean){
+  if(fields.length>workload.max_job_fields)throw new Error(`กรุณาเลือกไม่เกิน ${workload.max_job_fields} Fields ต่อครั้ง / Too many Fields`);
   if(hasRuns||saved.layout_locked_at){
    if(!layoutDirty)return saved;
    const revision=await api.createTestCase({workflow:"global",document_id:doc.id,page_number:doc.page_number,roi:null,ground_truth_raw:null,category_codes:saved.categories.map(c=>c.code)});
@@ -76,6 +78,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  <PageHeader title={stageTitles[stages.indexOf(stage)]} description={`${doc.filename} · ${doc.document_type_name||"ไม่ระบุประเภท"} · หน้า ${doc.page_number??1}`} actions={<Link href="/history" className="button secondary">ประวัติ</Link>}/>
  <WorkflowSteps stage={stage} saved={saved} uploadUrl={`/?document=${doc.id}${doc.document_type==="pdf"?`&page=${doc.page_number??1}`:""}`} busy={busy}/>
  {error&&<div className="error-banner" role="alert">{error}</div>}{busy&&<p role="status" className="notice-banner">กำลังดำเนินการ…</p>}{saveMessage&&<p role="status" className="notice-banner">{saveMessage}</p>}
+ <p className="text-sm text-slate-600" data-testid="job-workload-limits">รองรับไม่เกิน {workload.max_job_fields} Fields และ {workload.max_job_pipelines} Pipelines ต่อครั้ง โดย Fields × Pipelines ไม่เกิน {workload.max_job_units} ประมวลผลตามลำดับ · เลือกเริ่มต้นจากรายการแรกไม่เกินขีดจำกัด เปลี่ยนชุดที่เลือกได้ / Bounded sequential OCR.</p>
  {stage==="ground-truth"&&!comparison&&!saved.document_gt_confirmed_at&&!fields.some(f=>f.confirmed_at)&&saved.gt_prefill&&["ready","partial","unavailable","pending"].includes(saved.gt_prefill.status)&&<p role="status" className="notice-banner" data-testid="gt-prefill-notice">{saved.gt_prefill.status==="ready"||saved.gt_prefill.status==="partial"?"เติม GT ฉบับร่างจาก Custom DET v6 (thai_ft_v2) + REC v6 (thai_ft_v1) แล้ว กรุณาตรวจและแก้ไขก่อนยืนยันคำนวณ":"ยังไม่มีข้อความตั้งต้นจาก OCR กรุณากรอก GT ด้วยตนเอง"}{saved.gt_prefill.status==="partial"&&" · บาง Field ยังไม่มีข้อความ กรุณากรอกให้ครบ"}</p>}
  {stage==="ground-truth"&&(searchParams.get("partial")==="1"||latestRuns.some(r=>r.status==="error"))&&<p role="alert" className="rounded-lg border border-amber-400 bg-amber-50 p-3">OCR สำเร็จบางส่วน — มี Field/Pipeline ที่ล้มเหลว ผลที่สำเร็จยังใช้กรอก GT ได้ ตรวจรายละเอียดข้อผิดพลาดก่อนประเมิน</p>}
  {stage==="ground-truth"&&<SafeDebugPanel/>}

@@ -3,6 +3,7 @@ import time
 from uuid import uuid4
 
 from app.core.concurrency import ordered_map
+from app.core.native_memory import release_native_memory
 from app.db.models import PipelineRun
 from app.integrations.batch_gateway import BatchGateway, BatchingClient
 from app.integrations.model_gateway import GatewayError
@@ -122,5 +123,8 @@ class PipelineManager:
                     return result
                 finally:
                     window[1] = time.perf_counter()
+                    # Each adapter's owned temporary pixels/uploads are closed.
+                    # Borrowed source pixels remain live and cannot be reclaimed.
+                    release_native_memory()
 
         return await ordered_map(configs, bounded, self.settings.ocr_max_concurrent_tasks)

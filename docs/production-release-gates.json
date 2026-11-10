@@ -1,0 +1,238 @@
+{
+  "date_local": "2026-11-10",
+  "scope": "Pre-merge release gates for the approved limited personal educational prototype;live verification follows merge",
+  "application_candidate": {
+    "base_commit": "b0a3a167e4c8f9f92c0e9e93d2deb6a70b1ac688",
+    "commit": null,
+    "state": "tested source ready for commit;fingerprint binds the code",
+    "source_and_test_sha256": "e7de2ddaee80e93eef18014aca7c9770d70b8bc469fc1fece21dd306a71c9da3",
+    "files": 271,
+    "docker_backend_files": 82,
+    "docker_source_match": true
+  },
+  "backend": {
+    "tests": "650",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "169.543",
+    "exit_code": 0,
+    "reported_duration": "169.75s"
+  },
+  "playwright": {
+    "passed": 208,
+    "failed": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "duration": "5.6m"
+  },
+  "static_checks": [
+    {
+      "name": "typecheck",
+      "command": [
+        "npm.cmd",
+        "run",
+        "typecheck"
+      ],
+      "exit_code": 0,
+      "duration_s": 2.032
+    },
+    {
+      "name": "eslint",
+      "command": [
+        "npm.cmd",
+        "run",
+        "lint"
+      ],
+      "exit_code": 0,
+      "duration_s": 9.187
+    },
+    {
+      "name": "ruff",
+      "command": [
+        "backend\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "backend/app",
+        "backend/tests",
+        "postman/staging/memory_transport_probe.py",
+        "postman/staging/memory_image_probe.py",
+        "postman/staging/plot_memory_report.py"
+      ],
+      "exit_code": 0,
+      "duration_s": 0.094
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "duration_s": 0.062
+    }
+  ],
+  "production_build": "PASS,standaloneexists",
+  "local_schema": {
+    "isolated_local": true,
+    "clean_upgrade_via_0011_to_head": true,
+    "revision": "0012_ocr_jobs",
+    "schema_drift": false,
+    "table_count": 15
+  },
+  "production_database": {
+    "fresh_read_only": true,
+    "revision": "0012_ocr_jobs",
+    "metadata_columns_compatible": true,
+    "database_bytes": 53354496,
+    "scope": "metadata/aggregate only;no user row access;not complete index/type/constraint drift",
+    "schema_change_required": false,
+    "migration_performed": false
+  },
+  "workload": {
+    "image_pixels": 2000000,
+    "pdf_dpi": 140,
+    "upload_mib": 10,
+    "pdf_pages": 20,
+    "fields": 12,
+    "pipelines": 6,
+    "field_pipeline_units": 24,
+    "detection_regions_per_field": 128,
+    "ocr_characters_per_field": 32768
+  },
+  "memory": {
+    "status": "PASS_SUPPORTED_ENVELOPE",
+    "limit_bytes": 512000000,
+    "target_bytes": 409600000,
+    "worst_total_peak_bytes": 404197376,
+    "minimum_headroom_percent": 21.0552,
+    "evidence": "g6-release-evidence.json",
+    "chart": "g6-memory-comparison.png"
+  },
+  "policy": {
+    "workspace": "PUBLICSHARED,no login/roles/ownership/capabilitytokens",
+    "accepted_risk": "Anyone reaching URL can read/write/delete shared data/admin configuration;not restricted to employees",
+    "historical_ephemeral_upload_loss": "accepted;no intentional deletion/access/export",
+    "budget_additional_monthly_thb": 0,
+    "req12": "OUT OF SCOPE"
+  },
+  "costs": {
+    "status": "PASS_SCOPED_EXISTING_PROTOTYPE",
+    "railway_plan": "FREE",
+    "vercel_plan": "Hobby,active,nontrial",
+    "railway_remaining_credit_usd": 0.7460524307162345,
+    "paid_plan_or_resources_changed": false,
+    "new_cloud_projects": 0,
+    "limitations": "No unlimitedquota/24x7guarantee. Neonaccountbilling/CUremainingandCDGSaccountbudgetnotexposed;not falselyreportedverified. No new integration/plan/compute purchased;boundeduseofexistingservices andsleep/quotaexhaustion accepted."
+  },
+  "operations": {
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 180,
+    "sleep": true,
+    "pdf_dpi_prepared_skip_deploys": 140,
+    "previous_railway_id": "468e0200-d1be-41b9-a201-2288b8be0fc0",
+    "previous_vercel_id": "dpl_G1EMQukFRhHdtVp2chQcCmj98nbT",
+    "rollback": "No destructive DB downgrade. Do not blindly restore old unboundedallocationcode;redeploytestedcandidate/forward-fixthroughnormalPR,stopinferenceoncriticalincident. Code rollbackcannotrestoreephemeraluploads."
+  },
+  "integration": {
+    "branch": "perf/ocr-memory-reliability",
+    "pr13_head_before_update": "607af992867dd33425597d22efb5d7f489fbadc7",
+    "origin_main_before_merge": "695bf4b0f3355653ea4c82102e6586debaac9c2b",
+    "normal_pr_merge_only": true,
+    "force_push": false,
+    "required_status_contexts": [],
+    "rulesets": [],
+    "fresh_checks_after_push": "REQUIRED before merge;no checksuccess claimed in advance"
+  },
+  "release_gates": [
+    {
+      "id": "G1",
+      "status": "PASS",
+      "evidence": "Final combined diff reviewed;82backend source hashes match tested image; source/test fingerprint recorded."
+    },
+    {
+      "id": "G2",
+      "status": "PASS",
+      "evidence": "Fresh650backend tests including localPostgreSQL;0failed/errors/skipped;childexit0."
+    },
+    {
+      "id": "G3",
+      "status": "PASS",
+      "evidence": "Final650-source-compatible fullPlaywright208passed/0failed/skipped,exit0;typecheck/ESLint/build pass;rollingAPIcompatibility fixed and full suite rerun."
+    },
+    {
+      "id": "G4",
+      "status": "PASS",
+      "evidence": "Public shared workspace intentional;baseline input/path/body/output/admission/secrets tests pass;no auth claim."
+    },
+    {
+      "id": "G5",
+      "status": "PASS",
+      "evidence": "Fresh production read-only0012_ocr_jobs/columncompatibility;53.35MBaggregate;localcleanupgrade/driftpass;no schema change/migration required."
+    },
+    {
+      "id": "G6",
+      "status": "PASS",
+      "evidence": "Mixed3trials393707520/384008192/383287296bytes;max-stress404197376bytes;all<=409600000target;cacheincluded/topupto220MB;noOOM/maxpressure."
+    },
+    {
+      "id": "G7",
+      "status": "PASS",
+      "evidence": "Contracts/routes/order/geometry preserved;liveCDGSsyntheticDET6/REC5HTTP200;Railwaykeyhealthconnected/DETRECreadinessavailable;officialintegratedunavailabletruthfully."
+    },
+    {
+      "id": "G8",
+      "status": "PASS",
+      "evidence": "Final24-unit envelope workerSIGKILLrecovery24uniqueoutputs/12preservedcheckpoints/attempt2;WebStorage/refreshedresults/idempotencytests pass."
+    },
+    {
+      "id": "G9",
+      "status": "PASS",
+      "evidence": "Existing main auto-deploy configs verified;nextRailwayhealthcheck/api/health180s,sleep=true;existingPDFDPI140preparedskipDeploys;monitor/logaccessandnon-destructiveforward-recoveryplan ready."
+    },
+    {
+      "id": "G10",
+      "status": "PASS",
+      "evidence": "Scoped unpaid personal educational prototype usesexistingVercelHobby/RailwayFREE512MB1CPU1replica;remainingcredit0.746USD;existingNeon53.35MB/CDGSauthorizedintegration;no new subscription/paidresource/project."
+    },
+    {
+      "id": "G11",
+      "status": "PASS",
+      "evidence": "Reviewed source/test/docs ready for normalcommit andfast-forwardPR13head update;mainprotectedfalse/requiredcontexts[]/rulesets[]verified;no bypass/forcepush;remoteheads unchanged."
+    }
+  ],
+  "deployment_verification": {
+    "status": "NOT RUN AT PRE-MERGE RECORD",
+    "journal": ".runtime/memory-reliability/live-release/",
+    "no_preemptive_live_success_claim": true
+  },
+  "artifact_sha256": {
+    ".runtime/memory-reliability/release-mixed-1/results-1.json": "463f3f022d6a46053530217a2568798cce8916b17c97af5eb07a6d558f017d52",
+    ".runtime/memory-reliability/release-mixed-1/container.json": "7337d0cb3027a5db01754f88c000037b946a760bf636657a0598faca7e867582",
+    ".runtime/memory-reliability/release-mixed-1/process.jsonl": "fe5dbebdf4bcd7fcc6f0ea77f315137db09a45a59cb3b083c4acddb8396f08c1",
+    ".runtime/memory-reliability/release-mixed-2/results-1.json": "2a275b64f6d0f6a9a597a91e74730b99e41983e94b2315670f6028f3e7243d0c",
+    ".runtime/memory-reliability/release-mixed-2/container.json": "2218af4a9cfb5f3badb4e06b1bc88d6d0f68ee6b7cd3b33479bedbc6c7232eff",
+    ".runtime/memory-reliability/release-mixed-2/process.jsonl": "dbdd6edc32645d1fb2bc20f2ff84d8b01278b8a0b3db9c0279dd44ffd86580c8",
+    ".runtime/memory-reliability/release-mixed-3/results-1.json": "9cb03463c0c612c29d244c96dc6a85c85739558fb470bdcba112266d0b321556",
+    ".runtime/memory-reliability/release-mixed-3/container.json": "4d781e3c796b9af7acacd89f4e154ccb7adfbc3624f5f567ae68ce7d3c8d5b54",
+    ".runtime/memory-reliability/release-mixed-3/process.jsonl": "d73f3ee80675a5b7cdbae12e9b52ecd638f72906949c5839509f5fe786f8573d",
+    ".runtime/memory-reliability/release-resource-1/interrupted-container.json": "3bac6f176dbd054c4696b46f2384ce20a8592f5166b037fafb4d687d472edb6f",
+    ".runtime/memory-reliability/release-resource-1/results-1.json": "04638f98dd49eed44a148e49d575732945db8a16064e632ea0d97ae25a3cdc3d",
+    ".runtime/memory-reliability/release-resource-1/container.json": "3bc1ffdafff8f603e0f7ec24324bc7a2e7947a07d68bb34e6df1c90197dd9d7a",
+    ".runtime/memory-reliability/release-resource-1/process.jsonl": "223d97eb9ad86ab0c308e5436860aca2ac269718002697468f382e3ddec6cc04",
+    ".runtime/memory-reliability/validation-release/pytest.xml": "b334afcae53217e6ea07c0fe3060cbc7138c56387d8584bff0307edf4c7371ff",
+    ".runtime/memory-reliability/validation-release/pytest.log": "6f7c9a3143d0174cdc9fd11511ab7c784c890e13a4ba4892e342034b2535b8f8",
+    ".runtime/memory-reliability/validation-release/backend-exit.json": "11584687f11d2780dd1656c4c677c8c65bc5db4c933b886ab0b3c76250b8eb91",
+    ".runtime/memory-reliability/validation-release/database-check.json": "e9b6bda1e1bf0b01cfcbd685ec5d59be963f00cb3663901afa7d947dfcacae1f",
+    ".runtime/memory-reliability/validation-release-final/playwright-full.log": "552f15dfb822d2f50f01fc534e482c84f2f0d235f8bb2f35080ae27e71a5bc2d",
+    ".runtime/memory-reliability/validation-release-final/playwright-exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    ".runtime/memory-reliability/validation-release-final/web-build.log": "a8ac31e48748d337846efc71f76027d9b0a807c95924a9a969f06442f7c7c636",
+    ".runtime/memory-reliability/validation-release-final/static-checks.json": "70f2f99eb4ea113736db976dbf19164c294024c39ce5bc5dc784ead18742b9de",
+    ".runtime/memory-reliability/gateway-release-preflight.json": "f507ff366ad3b234abc1ad99877d5a9f256dbd62e7c48bb77d63a106a5eb4aa2",
+    ".runtime/memory-reliability/neon-release-budget.json": "c15ecbdbd3bb94801c9adccd18fc3e4682c836c077cb9dbbb6169d3a6a6253df",
+    ".runtime/memory-reliability/railway-config-preflight.json": "9e74b581ad8d883a546f53df8d82ae2c943d96a94e7520939b79c3cde0e97123"
+  },
+  "verdict": "PRE-MERGE GATES PASS — PROCEED WITH APPROVED RELEASE WORKFLOW"
+}

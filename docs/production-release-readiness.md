@@ -1,5 +1,11 @@
 # OCRLab — Production release readiness
 
+> Final G6 remediation now passes the declared prototype envelope: [evidence](g6-release-evidence.json), [gates](production-release-gates.json). Fresh650backend/208Playwright pass. Current instructions authorize normalPRmerge→existingauto-deploy→realE2E; this is not another approval pause. Older NO-GO snapshots are retained history and are superseded by the final record.
+
+> Latest scope is an internship prototype, 10 November: [current report](production-release-and-live-e2e.md), [2 MP workload](supported-workload.md), [gates](production-release-gates.json). Actual combined local validation630/backend and208/Playwright passed. Memory acceptance and current free-hosting eligibility/quotas remain incomplete. No release has occurred; the snapshots below are historical.
+
+> Historical preparation snapshot; [final zero-cost gates](production-release-and-live-e2e.md) supersede verdict/approval/memory/Neon statementsด้านล่าง ผู้ใช้กำหนด0THBและปฏิเสธpaidplan/RAMแล้ว Finalimagefixesผ่านbackend616/Playwright206และlocal1GBcomparison แต่512MB/40MPยังไม่มีmarginและhostingeligibility/quotasไม่ครบ จึงยัง RELEASE BLOCKED ไม่มีmerge/deploy ไม่ใช่รอgeneralapprovalซ้ำ
+
 ตรวจ 9 พฤศจิกายน 2569 · **NO-GO / BLOCKED — รออนุมัติ release แยก** · REQ-12 OUT OF SCOPE
 
 ## Candidate และขอบเขต

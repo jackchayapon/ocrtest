@@ -1,8 +1,10 @@
 import re
+from contextlib import closing
 from hashlib import sha256
 
 from sqlalchemy import delete, select
 
+from app.core.config import MAX_JOB_FIELDS, MAX_JOB_PIPELINES, MAX_JOB_UNITS
 from app.core.errors import AppError
 from app.db.models import Document, Metric, TestCase, new_id, now
 from app.repositories.benchmark_repository import BenchmarkRepository
@@ -191,6 +193,7 @@ class TestCaseService:
 
     async def run(self, case_id, pipeline_ids, *, checkpoint=None):
         record = self.repository.test_case(case_id)
+        self.validate_workload(record, pipeline_ids)
         if record.workflow == "global":
             from app.services.global_layout_service import GlobalLayoutService
             return await GlobalLayoutService(self).run(case_id, pipeline_ids, checkpoint=checkpoint)
@@ -203,7 +206,8 @@ class TestCaseService:
         original = self.images.open(page_data)
         try:
             crop = (
-                self.images.canonical_crop(original, record.roi)
+                self.images.canonical_crop(original, record.roi, share_source=True,
+                                           encoded_source=page_data)
                 if any(PipelineManager.requires_crop(config) for config in configs)
                 else None
             )
@@ -232,12 +236,13 @@ class TestCaseService:
         session = self.repository.session
         parents = [session.get(PipelineRun, rid) for rid in checkpoint.job.run_ids.values()]
         page_data, _, _ = self.page_image(record.document, record.page_number)
-        with self.images.open(page_data) as original:
+        with closing(self.images.open(page_data)) as original:
             manager = PipelineManager(self.settings)
             for config in checkpoint.configs:
                 if any(p.pipeline_id == config.pipeline_id for p in parents):
                     continue
-                crop = self.images.canonical_crop(original, record.roi) if manager.requires_crop(config) else None
+                crop = self.images.canonical_crop(original, record.roi, share_source=True,
+                                                  encoded_source=page_data) if manager.requires_crop(config) else None
                 result = (await manager.run([config], original, crop, record.roi, record.roi_source))[0]
                 checkpoint.fence()
                 session.refresh(record, attribute_names=["ground_truth_raw", "status"])
@@ -266,17 +271,47 @@ class TestCaseService:
 
     def page_image(self, document, page_number=None):
         page_number = self.page_number(document, page_number)
-        data = self.storage.read(document.storage_key)
+        data = self.processing_source(document)
         if page_number is not None:
             page = self.pdfs.render(data, page_number, document.pdf_render_dpi)
             return page.png, page.width, page.height
+        self.images.inspect(data)
         return data, document.width, document.height
+
+    def validate_processing_source(self, document, page_number=None):
+        selected = self.page_number(document, page_number)
+        if selected is not None:
+            data = self.processing_source(document)
+            self.pdfs.render(data, selected, document.pdf_render_dpi, validate_only=True)
+        else:
+            self.images.inspect(self.storage.read_prefix(document.storage_key, 65536))
+
+    def processing_source(self, document):
+        limit = self.settings.max_upload_mb * 1024 * 1024
+        if document.document_type != "pdf":
+            self.images.inspect(self.storage.read_prefix(document.storage_key, 65536))
+            # Canonical PNG may exceed the compressed upload size; do not apply
+            # the JPEG/PDF upload byte cap to the lossless stored encoding.
+            limit += self.settings.max_image_pixels * 4
+        return self.storage.read_bounded(document.storage_key, limit)
+
+    @staticmethod
+    def validate_workload(case, pipeline_ids):
+        fields = len(case.global_fields) if case.workflow == "global" else 1
+        if len(pipeline_ids) > MAX_JOB_PIPELINES or (
+                case.workflow == "global" and len(case.global_fields) > MAX_JOB_FIELDS):
+            raise AppError(f"งานเกินขีดจำกัด / Job exceeds {MAX_JOB_FIELDS} Fields or {MAX_JOB_PIPELINES} Pipelines", 413)
+        if fields * len(pipeline_ids) > MAX_JOB_UNITS:
+            raise AppError(f"งานเกินขีดจำกัด กรุณาลด Fields หรือ Pipelines / Fields × Pipelines must not exceed {MAX_JOB_UNITS}", 413)
 
     def page_metadata(self, document_id, page_number=None):
         from app.services.serializers import document_json
 
         document = self.repository.document(document_id)
         selected = self.page_number(document, page_number)
+        # Historical metadata/results remain accessible even if reprocessing is unsupported.
+        if selected is None:
+            return document_json(document)
         _, width, height = self.page_image(document, selected)
         return document_json(document, selected, (width, height))
 

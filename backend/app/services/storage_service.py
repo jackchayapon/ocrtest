@@ -5,6 +5,15 @@ from app.core.errors import AppError
 
 
 class StorageService(ABC):
+    def read_prefix(self, key: str, limit: int) -> bytes:
+        return self.read(key)[:limit]
+
+    def read_bounded(self, key: str, limit: int) -> bytes:
+        data = self.read(key)
+        if len(data) > limit:
+            raise AppError("ไฟล์เกินขีดจำกัดการประมวลผล / Stored source exceeds processing limit", 413)
+        return data
+
     def exists(self, key: str) -> bool:
         try:
             self.read(key)
@@ -52,6 +61,19 @@ class LocalStorageService(StorageService):
             return self._path(key).read_bytes()
         except FileNotFoundError:
             raise AppError("Stored image is unavailable", 404) from None
+
+    def read_prefix(self, key, limit):
+        try:
+            with self._path(key).open("rb") as source:
+                return source.read(limit)
+        except FileNotFoundError:
+            raise AppError("Stored image is unavailable", 404) from None
+
+    def read_bounded(self, key, limit):
+        data = self.read_prefix(key, limit + 1)
+        if len(data) > limit:
+            raise AppError("ไฟล์เกินขีดจำกัดการประมวลผล / Stored source exceeds processing limit", 413)
+        return data
 
     def exists(self, key):
         return self._path(key).is_file()

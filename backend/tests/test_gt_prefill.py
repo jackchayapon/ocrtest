@@ -24,6 +24,10 @@ def official(client):
 
 
 def test_prefill_uses_exact_batches_and_stays_unconfirmed_without_extra_result(client, document, gateway):
+    # Explicit multi-image engine test; the bounded release default is sequential.
+    client.app.state.settings.ocr_max_concurrent_fields = 2
+    client.app.state.settings.ocr_max_concurrent_tasks = 4
+    client.app.state.settings.ocr_gateway_batch_size = 2
     case, fields = layout(client, document)
     pipeline = official(client)
     gateway[0]["handler"] = batch_response
@@ -57,6 +61,9 @@ def test_prefill_uses_exact_batches_and_stays_unconfirmed_without_extra_result(c
 
 
 def test_reuse_selected_matching_custom_without_duplicate_requests(client, document, gateway):
+    client.app.state.settings.ocr_max_concurrent_fields = 2
+    client.app.state.settings.ocr_max_concurrent_tasks = 4
+    client.app.state.settings.ocr_gateway_batch_size = 2
     case, _ = layout(client, document)
     with client.app.state.database.session_factory() as session:
         config = prefill_pipeline([])

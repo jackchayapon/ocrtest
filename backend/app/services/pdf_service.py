@@ -9,6 +9,7 @@ import pypdfium2 as pdfium
 import pypdfium2.raw as pdfium_raw
 
 from app.core.errors import AppError
+from app.core.native_memory import release_native_memory
 from app.services.image_service import ImageService
 
 # PDFium is not thread safe, even across different documents. Close every native
@@ -29,7 +30,15 @@ class PdfService:
     def __init__(self, settings):
         self.settings = settings
 
-    def render(self, data: bytes, page_number: int, dpi: int | None = None) -> PdfPageImage:
+    def render(self, data: bytes, page_number: int, dpi: int | None = None, *, validate_only=False) -> PdfPageImage | None:
+        try:
+            return self._render(data, page_number, dpi, validate_only=validate_only)
+        finally:
+            # PDFium/Pillow handles have closed, including error paths. Returning
+            # free native arenas avoids retaining raster peaks for the next OCR.
+            release_native_memory()
+
+    def _render(self, data, page_number, dpi=None, *, validate_only=False):
         if len(data) > self.settings.max_upload_mb * 1024 * 1024:
             raise AppError("ไฟล์มีขนาดใหญ่เกินกำหนด", 413)
         if not data.lstrip().startswith(b"%PDF-"):
@@ -52,15 +61,15 @@ class PdfService:
                     # API/UI are one-based; the renderer alone uses zero-based indexes.
                     with closing(pdf[page_number - 1]) as page:
                         width, height = (math.ceil(v * scale) for v in page.get_size())
-                        if (
-                            min(width, height) < 1
-                            or width * height > self.settings.max_image_pixels
-                            or max(width, height) > self.settings.max_image_dimension
-                        ):
-                            raise AppError("ขนาดหน้า PDF เกินกำหนด กรุณาเลือกเอกสารที่มีขนาดเล็กลง", 413)
+                        try:
+                            ImageService(self.settings).validate_dimensions(width, height)
+                        except AppError as exc:
+                            raise AppError("ขนาดหน้า PDF เกินกำหนด / PDF page: " + exc.message, 413) from None
+                        if validate_only:
+                            return None
                         with closing(page.render(scale=scale, rev_byteorder=True)) as bitmap:
-                            with bitmap.to_pil() as raster:
-                                with raster.convert("RGB") as rgb:
+                            with closing(bitmap.to_pil()) as raster:
+                                with closing(raster.convert("RGB")) as rgb:
                                     return PdfPageImage(
                                         ImageService.encode_png(rgb),
                                         rgb.width,

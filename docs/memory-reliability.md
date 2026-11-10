@@ -1,5 +1,74 @@
 # OCRLab memory reliability — local pre-release evidence
 
+## Final G6 fix — 10 November 2026
+
+**PASS for the explicitly bounded prototype envelope**, not unlimited public capacity. [Final evidence](g6-release-evidence.json) contains source/image fingerprints, full-suite artifacts and per-phase cgroup/RSS/stat/events/recovery measurements. Backend650 and Playwright208 pass with no failures/skips for the final combined source.
+
+The mixed workflow first evaluates legacy PDF GT, then processes a high-entropy2MP image across multiple Fields/configurations and GT prefill. Heap profiling identified approximately60MB of persistent `pythainlp.util.trie` nodes/dicts. `word_lexicon.py` passes a read-only sorted dictionary to the **same pinned newmm algorithm**, retaining identical stripped corpus words, prefix order and token decisions. Tests compare every corpus word at zero/non-zero offsets, random concatenations, Thai combining marks/English/numbers and WER counts with PyThaiNLP's original Trie. No whitespace-tokenizer substitution or formula change was made.
+
+`native_memory.py` uses the GNU `malloc_trim(0)` hint only after owned PDF/adapter temporaries have closed. It returns free allocator pages, never live pixels/bytes, and is a safe no-op on unsupported platforms. There is no forced GC, TLS change, resolution reduction, new package or environment variable. Exact crop/polygon/PNG contracts remain tested.
+
+The stress envelope also exposed retained output growth across12Fields×6Pipelines. The final declared admission is therefore24 selected Field/Pipeline outputs,128DETregions and32768OCRcharacters perField. Twelve Fields and six Pipeline options remain individually available; oversized combinations/outputs fail explicitly instead of truncating OCR. Accepted geometry coverage now tests128lines;129/256regions reject beforeREC. Historical over-limit records remain readable.
+
+| Final measured case,512MB/1CPU/no swap | Total cgroup peak |
+|---|---:|
+| Mixed PDF/image/prefill,trial1 |393,707,520bytes|
+| Same,trial2 |384,008,192bytes|
+| Same,trial3 |383,287,296bytes|
+|128DET,24outputs,12Fields×2Pipelines,rejections/errors and worker recovery|404,197,376bytes|
+
+Worst headroom is21.0552%; all runs include charged file cache topped up to220MB, with no cache subtraction/drop. SIGKILL recovery produced24unique outputs preserving12committed checkpoints,attempt2,controlledexit137/OOMfalse. Before/after candidates and failed larger-envelope trials remain in the historical sections/evidence. This is not a claim that historical production502 was OOM.
+
+## Previous candidate snapshots — superseded by final evidence above
+
+## Latest candidate — 10 November 2026
+
+Current scope is an **internship prototype / development and demonstration environment**, with no additional hosting expenditure. The old 40 MP envelope below is historical; the explicitly reduced candidate is [2 MP / PDF 140 DPI](supported-workload.md). Full validation of this combined candidate is **630 backend tests including local PostgreSQL and 208 Playwright tests**, with no failures or skips. TypeScript, ESLint, Ruff, production build and local clean migration/schema checks passed. These are actual `validation-bounded` artifacts, not the older 616/206 reports.
+
+Current metrics and artifact hashes: [bounded workload evidence](bounded-workload-evidence.json). [Release decision](production-release-and-live-e2e.md) / [gates](production-release-gates.json).
+
+The remaining counterexample is a supported 2 MP high-entropy image after PDF processing, four Fields, six selected configurations and automatic GT prefill: two fresh-container peaks **452,136,960 / 452,472,832 bytes**. This fits below the hard 512,000,000-byte cap in those trials but misses the conservative 409,600,000-byte acceptance target. No OOM or max-pressure event was observed. Do not call it an OOM, or a successful 20% margin.
+
+At the highest sampled point, approximately **217 MB anon +220 MB file +10 MB kernel** were charged. RSS high-water was about 269 MB. Much of file memory was inactive and reclaimable, but excluding it from total is not equivalent to passing the target. Fresh containers and warm host filesystem caches also give lower totals; retain both. No kernel cache was manually dropped.
+
+Allocation paths reviewed: incremental `ijson` parsing and bounded response spooling (already present); early raw tensor exclusion; response slicing/metadata ownership; canonical PNG reuse; Pillow/OpenCV crop/native-buffer scopes; PDFium page/bitmap/raster closure; multipart write chunks; sequential adapters/Fields; shared image admission and durable queue bounds. No routing, OCR text, geometry or metric change was used as a memory shortcut.
+
+Diagnostic-only full cyclic GC after 34 PipelineManager calls released **0 RSS bytes** at the measured boundaries; live SSL contexts went from at most four to zero but total peak remained **452,608,000 bytes**. This does not support adding forced GC or altering TLS behavior. GNU `malloc_trim` diagnostics sometimes returned native pages, but file-cache charging differed between trials; no repeatable causal total-peak improvement was established. Neither diagnostic monkeypatch is in application code.
+
+Small/typical images and repeated PDF/global-ROI/prefill tests pass locally. They do not invalidate the larger supported counterexample. No blanket 512 MB safety claim or historical HTTP502 root-cause claim is made. There is no paid resource upgrade, merge or deployment.
+
+## Historical evidence — 9 November, superseded workload and test counts
+
+> ผลล่าสุด 9 พฤศจิกายน: [zero-cost release report](production-release-and-live-e2e.md), [17-trial evidence](high-entropy-memory-evidence.json), [hosting audit](zero-cost-hosting-assessment.md). Image/stream fixes เป็น uncommitted source บน HEADb0a3a16; fullbackend616/fullPlaywright206ผ่านใหม่ แต่ **512MB/40MPยังไม่ผ่านmargin และไม่อนุญาตpaidresources** จึงยัง RELEASE BLOCKED ไม่มีการเปลี่ยนProduction
+
+## Current high-entropy remediation
+
+Stage profileยืนยัน decodedPILbuffersหลายชุดค้างขณะawaitRECจนชน1GBก่อนแก้ แก้ให้borrow decodedsourceอย่างมีowner,explicitcloseownedpixelsก่อนawait,errorและcancel,stream-comparecanonicalPNGเพื่อreuseเฉพาะbytesที่ตรง,และส่งmultipartผ่านownedfilecursor64KiB โดยไม่เปลี่ยนwirecontract/coordinates/PNG/GT/JobIDs/defaultlimits
+
+Perspectiveใช้originและmatrixเดิม;prefixcopyที่เล็กมากลดNumPyfull-pagecopies แต่กรณีใหญ่ยังใช้เดิม Tight-bboxtranslationถูกปฏิเสธเพราะ1/1000ทดลองpixelsต่าง ไม่ใช้การresizeหรือqualitylossเพื่อให้memoryดูดี
+
+![Final measured container peaks](high-entropy-memory-comparison.png)
+
+| Final combined candidate | Repeated functional result | Worst cgrouppeak | Memory result |
+|---|---|---:|---|
+| 512MB/40MPJPEG/fullROI/4configs/no-swap | 3/3,OOM0,hashตรง | 517,574,656bytes | FAIL:pressure/ไม่มีmargin |
+| Local1024MB comparisonของcaseเดียวกัน | 3/3,OOM0,hashตรง | 635,899,904bytes | PASS boundedfixture,37.90%free;ไม่ได้อนุมัติdeploy |
+| 512MB/compressible40MP | scenariosผ่าน3/3 | 512,000,000bytes | FAIL20%target |
+| 512MB/12.8MPmultiplefields | scenariosผ่าน3/3 | 475,385,856bytes | FAIL20%target |
+| 512MB/0.8MP,4fields/4configs | 3/3,16uniqueoutputs | 346,275,840bytes | PASSเฉพาะmeasuredcase,32.37%free |
+
+SIGKILLและSIGTERMrecoveryผ่านบนfinalsource:48uniqueoutputs,32เดิมcheckpointsครบ,attempt2ทั้งคู่ SIGKILL137เป็นcontrolledkill/OOM=false;SIGTERMexit0 ไม่สับสนกับbaselineOOM=true ภาพเดิม119,861,390-bytecanonicalPNGตรงinputhash;response65MiB/1001geometry/100001charsและsynthetic503ถูกจัดfailureตามจริง
+
+Separateheap-run1GB:tracedPythonpeak198,242,715bytes;RSShigh-water629,104,640bytes;kernelpeak766,087,168bytes แยกจากnormalcapacity/latencycomparison ตัวเลขtransport-only21.32→1.66MBในhistoricalsectionไม่ใช่heapของ40MPimagecaseนี้ Filecache/nativepixels/kernelและrestartsมีrawsamplesพร้อมartifacthashes
+
+Cold/filecachechargingต่างระหว่างtrial ห้ามยกobservedmaxที่ลดลงไปอ้างเป็นcausaleffectเฉพาะหนึ่งpatch และไม่ใช้localOOMสรุปhistoricalproduction502 CPythonBytesIO(immutablebytes)probeไม่พบwhole-bodyPythonallocationเพิ่ม จึงไม่ยืนยันข้อสันนิษฐานเดิมว่าobserverBytesIOcopyPNGทั้งหมด
+
+Source/testfingerprint `a31402926ea4059f4297db06e5fd3b743e286aea26bf34c400c682fc3782d45c`;Dockerbackend79/79ตรง ไม่มีnewmigration/env/dependency/schema/prodresourcechanges Newtests33cases,backend616/616และPlaywright206/206เป็นfreshresults. Reproducefixture: `backend/.venv/Scripts/python.exe postman/staging/high_entropy_fixture.py --output .runtime/high-entropy.jpg` (refuseoverwrite)
+
+ยังไม่ลด40MP/upload/concurrencylimits ผล0.8MPไม่ใช่สิทธิ์ลดproductcapabilityหรือpass40MP. No paidplan/upgrade/migration/merge/deploy;budget0THB. Fullreportอธิบายhostingeligibilityและข้อจำกัดของoverlappingrequests/metadata/JSONBase64/largePDFที่ยังไม่เป็นuniversalcapacityproof
+
+## Historical snapshot — 607af99 → f8c7949 (ไม่ใช่ final source ล่าสุด)
+
 ตรวจ 8–9 พฤศจิกายน 2569 จาก baseline `607af992867dd33425597d22efb5d7f489fbadc7` บน branch `perf/ocr-memory-reliability`; code candidate `f8c7949ba5e11e162e59b340b37d0dc607a38b54`. ผลสำหรับ **512 MB: NO-GO** ไม่มีการปรับ Production resources
 
 ## สิ่งที่แก้

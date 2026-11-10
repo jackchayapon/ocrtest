@@ -1,5 +1,7 @@
 # OCR Testing & Benchmark Platform
 
+> Local bounded-release candidate: [ขีดจำกัดและพฤติกรรมที่รองรับ](docs/supported-workload.md) · [release gates ล่าสุด](docs/production-release-gates.json) ยังเป็นเงื่อนไขก่อน merge/deploy ไม่ใช่ประกาศว่าปล่อย Production แล้ว
+
 ## 1. ภาพรวมระบบ
 
 ระบบสำหรับทดสอบ OCR หลาย Pipeline บนภาพหรือ PDF เปรียบเทียบกับข้อความถูกต้องที่ผู้ใช้ยืนยัน และนำ crop พร้อม Ground Truth ไปสร้าง Dataset เหมาะกับผู้ทดสอบ ผู้พัฒนา และทีมที่ต้องเลือกโมเดลจากผลจริงบนเอกสารของตนเอง

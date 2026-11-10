@@ -1,3 +1,4 @@
+from contextlib import closing
 from tempfile import SpooledTemporaryFile
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
@@ -87,7 +88,7 @@ class DatasetService:
                         if exc.status_code == 404:
                             raise self.missing_source(case.id) from None
                         raise
-                    with self.cases.images.open(source) as image:
+                    with closing(self.cases.images.open(source)) as image:
                         crop = self.cases.images.canonical_crop(image, case.roi)
                     byte_count += len(crop.png)
                     if byte_count > 512 * 1024 * 1024:

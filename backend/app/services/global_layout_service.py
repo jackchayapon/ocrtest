@@ -3,6 +3,7 @@
 import logging
 import re
 import time
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from statistics import fmean
 
@@ -312,7 +313,7 @@ class GlobalLayoutService:
             checkpoint.save(list(parents.values()), prefill_results)
         raw_parts = {p.pipeline_id: [f.diagnostics.get("raw_text", f.ocr_text) for f in p.fields]
                      for p in parents.values()}
-        with self.cases.images.open(source) as image:
+        with closing(self.cases.images.open(source)) as image:
             manager = PipelineManager(self.cases.settings)
             fields = sorted(case.global_fields, key=lambda field: field.field_index)
             # Process bounded groups; the manager combines matching DET/REC requests.
@@ -329,7 +330,8 @@ class GlobalLayoutService:
                     (missing_configs if checkpoint else configs) +
                     ([prefill] if prefill is not None and prefill not in (missing_configs if checkpoint else configs) else []),
                     image,
-                    [(self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
+                    [(self.cases.images.canonical_crop(image, field.roi, share_source=True,
+                                                     encoded_source=source), field.roi, field.source)
                      for field in batch],
                 )
                 if checkpoint:
