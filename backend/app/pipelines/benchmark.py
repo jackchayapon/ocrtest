@@ -1,9 +1,10 @@
 """Verified Gateway DET V6 -> ordered line crops -> baseline REC V5 (no model query)."""
 
 import time
-from app.core.batching import IMAGE_BATCH_SIZE
 from uuid import uuid4
 
+from app.core.batching import IMAGE_BATCH_SIZE
+from app.core.config import MAX_DETECTION_REGIONS, MAX_OCR_TEXT_CHARACTERS
 from app.integrations.model_gateway import GatewayError
 from app.pipelines.base import CropInputAdapter
 from app.pipelines.normalizers import (
@@ -31,6 +32,22 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
     recognition_batch_size = IMAGE_BATCH_SIZE
     recognition_version = 5
     model_variant = None
+
+    def line_batches(self, polygons):
+        """Retain order, bound small-line groups to 1 MP; one large line at a time."""
+        batch, pixels = [], 0
+        for polygon in polygons:
+            try:
+                width, height = self.images.rectified_size(polygon)
+            except (ValueError, TypeError, OverflowError):
+                raise invalid("Detection returned an invalid quadrilateral") from None
+            if batch and (pixels + width * height > 1_000_000 or len(batch) >= self.recognition_batch_size):
+                yield batch
+                batch, pixels = [], 0
+            batch.append(polygon)
+            pixels += width * height
+        if batch:
+            yield batch
 
     def batch_request(self, **kwargs):
         request = self.gateway.build_batch_request(**kwargs)
@@ -62,6 +79,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
             detector_model=self.detector,
             recognizer_model=self.recognizer,
         )
+        self.failure_stage = "input_crop"
         crop = self.prepare_input(original_image, cropped_image, roi)
         self.diagnostics.update(
             input_width=crop.width,
@@ -75,6 +93,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         )
         if not self.config.enabled:
             raise GatewayError("Pipeline is disabled", "PIPELINE_DISABLED")
+        self.failure_stage = "detection_request"
         detection = await self.gateway.send(
             self.batch_request(
                 pngs=[crop.png],
@@ -83,6 +102,8 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
                 request_id=request_id + "_det",
             )
         )
+        self.failure_stage = "detection_contract"
+        self.diagnostics["gateway_request_id"] = detection.get("meta", {}).get("request_id")
         data = detection["data"]
         if (
             not isinstance(data, dict)
@@ -102,30 +123,41 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
             raise invalid("Detection result count does not match the input batch")
         polygons = results[0].get("dt_polys")
         scores = results[0].get("dt_scores")
-        if not isinstance(polygons, list) or len(polygons) > 1000:
-            raise invalid("Invalid or excessive detection regions")
+        if not isinstance(polygons, list) or len(polygons) > MAX_DETECTION_REGIONS:
+            raise invalid(f"Detection exceeds supported {MAX_DETECTION_REGIONS} regions per Field")
         if scores is not None and (not isinstance(scores, list) or len(scores) != len(polygons)):
             raise invalid("Detection scores do not match regions")
         scores = scores or [None] * len(polygons)
         lines, recognition_batches = [], []
-        with self.images.open(crop.png) as image:
-            for start in range(0, len(polygons), self.recognition_batch_size):
-                batch = polygons[start : start + self.recognition_batch_size]
+        text_size = 0
+        start = 0
+        for batch in self.line_batches(polygons):
+            self.failure_stage = "crop_rectification"
+            # CPU-only pixel scope: do not keep a decoded full page alive while
+            # awaiting REC and admitting the next adapter. Routes/order stay unchanged.
+            with crop.pixels(self.images) as image:
                 try:
                     pngs = [self.images.rectify_quad(image, polygon) for polygon in batch]
                 except (ValueError, TypeError, OverflowError):
                     raise invalid("Detection returned an invalid quadrilateral") from None
-                recognition = await self.gateway.send(
-                    self.batch_request(
-                        pngs=pngs,
-                        endpoint=self.recognition_endpoint,
-                        version=self.recognition_version,
-                        request_id=f"{request_id}_rec_{len(recognition_batches)}",
-                    )
+            self.failure_stage = "recognition_request"
+            recognition = await self.gateway.send(
+                self.batch_request(
+                    pngs=pngs,
+                    endpoint=self.recognition_endpoint,
+                    version=self.recognition_version,
+                    request_id=f"{request_id}_rec_{len(recognition_batches)}",
                 )
-                for index, item in enumerate(recognition_items(recognition["data"], len(batch))):
-                    lines.append(dict(polygon=batch[index], det_score=scores[start + index], **item))
-                recognition_batches.append(recognition)
+            )
+            self.failure_stage = "recognition_contract"
+            self.diagnostics["gateway_request_id"] = recognition.get("meta", {}).get("request_id")
+            for index, item in enumerate(recognition_items(recognition["data"], len(batch))):
+                text_size += len(item["text"]) + bool(lines)
+                if text_size > MAX_OCR_TEXT_CHARACTERS:
+                    raise invalid("Gateway returned invalid or excessive OCR text")
+                lines.append(dict(polygon=batch[index], det_score=scores[start + index], **item))
+            start += len(batch)
+            recognition_batches.append(recognition)
         text = bounded_text("\n".join(line["text"] for line in lines))
         responses = [detection, *recognition_batches]
         durations = [number(response["meta"].get("duration_ms")) for response in responses]
@@ -155,6 +187,7 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         }
         if self.model_variant is not None:
             payload["composition"].update(detection_version="6", model=self.model_variant)
+        self.failure_stage = "normalization"
         return self.normalize_result(
             payload, crop, roi, round((time.perf_counter() - started) * 1000)
         )

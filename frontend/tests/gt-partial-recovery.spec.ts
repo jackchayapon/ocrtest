@@ -4,6 +4,11 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 const api = process.env.E2E_API_URL || "http://127.0.0.1:8100";
+const createdPipelines:string[]=[];
+test.afterEach(async({request})=>{
+  for(const id of createdPipelines.splice(0))
+    expect((await request.delete(`${api}/api/pipelines/${id}`)).status()).toBe(204);
+});
 for (const populated of ["subfields", "whole"] as const) {
   test(`recover saved GT when only ${populated} has text`, async ({ page, request }) => {
     const upload = await request.post(`${api}/api/documents`, { multipart: { file: {
@@ -20,6 +25,7 @@ for (const populated of ["subfields", "whole"] as const) {
     expect(layout.status()).toBe(200);
     const pipeline = await request.post(`${api}/api/pipelines`, { data: { name: "GT Recovery " + randomUUID(), source: "custom", execution_mode: "integrated", version: "6", det_weight: "baseline", rec_weight: "baseline" } });
     const p = await pipeline.json();
+    expect(pipeline.status()).toBe(201);createdPipelines.push(p.pipeline_id);
     const run = await request.post(`${api}/api/test-cases/${record.id}/run`, { data: { pipelines: [p.pipeline_id] } });
     expect(run.status()).toBe(200);
     const text = "ข้อความสังเคราะห์ 123";

@@ -13,6 +13,8 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  record.runs[0].fields![0].diagnostics={boxes:[{bbox:[12,13,90,24],crop_bbox:[2,3,80,14],polygon:[[12,13],[90,13],[90,24],[12,24]],text:"Detected text",confidence:.92},{bbox:[92,13,140,24],text:"Second detection",confidence:.9}]};
  const mutationRequests:string[]=[];
  record.global_fields![0].ground_truth_raw="GT 1\nLine2!";
+ record.runs[0].fields![0].ocr_text="GT 1\nLineX";
+ record.runs[0].final_text="Whole G";
  record.runs[0].fields![0].evaluation={...evaluation,exact_match:false,normalized_ground_truth:"GT 1 Line2!",normalized_ocr:"GT 1 LineX",spans:[{kind:"equal",text:"GT 1 Line"},{kind:"substitution",text:"X",missing:"2"},{kind:"deletion",text:"",missing:"!"}]};
  record.runs[0].document_evaluation={...evaluation,exact_match:false,normalized_ground_truth:"Whole GT",normalized_ocr:"Whole G",spans:[{kind:"equal",text:"Whole G"},{kind:"deletion",text:"",missing:"T"}]} as NonNullable<typeof record.runs[0]["document_evaluation"]>;
  page.on("request",req=>{if(req.method()!=="GET")mutationRequests.push(req.url());});
@@ -20,6 +22,17 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
   const req=route.request(),url=new URL(req.url()).pathname;
   if(url.endsWith("preview.svg"))return route.fulfill({contentType:"image/svg+xml",body:'<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="300" height="200" fill="white"/><text x="20" y="30">Preview</text></svg>'});
   if(url.endsWith("/pipelines"))return route.fulfill({json:[]}); // Historical results survive a missing config.
+  if(url.endsWith("/error-summary")){
+   const query=new URL(req.url()).searchParams,run=record.runs.find(r=>r.pipeline_id===query.get("pipeline_id"))!;
+   const whole=query.get("mode")==="whole_document",fid=query.get("field_id");
+   const chosen=whole?null:record.global_fields!.find(f=>f.id===fid);
+   const gt=whole?record.ground_truth_raw!:chosen?.ground_truth_raw??"";
+   const ocr=whole?run.final_text!:run.fields!.find(f=>f.global_field_id===fid)?.ocr_text??"";
+   const spans=whole?run.document_evaluation!.spans:run.fields!.find(f=>f.global_field_id===fid)!.evaluation!.spans;
+   const details=spans.filter(s=>s.kind!=="equal").map(s=>({error_type:s.kind,ground_truth_unit:s.missing??null,ocr_unit:s.text||null,line_number:1,ground_truth_excerpt:gt,ocr_excerpt:ocr,explanation:s.kind==="deletion"?`ขาด: ${s.missing}`:`อ่านผิด: ${s.text}`,ocr_highlight:{start:s.kind==="deletion"?ocr.length:Math.max(0,ocr.indexOf(s.text)),length:s.text.length}}));
+   const statistics={character_edits:details.length,substitution:details.filter(d=>d.error_type==="substitution").length,deletion:details.filter(d=>d.error_type==="deletion").length,insertion:details.filter(d=>d.error_type==="insertion").length,characters:[],confusion_pairs:[]};
+   return route.fulfill({json:{document_id:"doc",filename:"synthetic.png",page_number:null,test_case_id:record.id,evaluation_mode:whole?"whole_document":"per_field",rules_version:"test",pipelines:[{run_id:run.id,pipeline_id:run.pipeline_id,pipeline_name:run.pipeline_name,status:run.status,statistics,evaluated_scopes:1,total_scopes:1,scopes:[{field_id:fid,global_field_id:fid,field_index:chosen?.field_index??null,roi:chosen?.roi??record.global_fields![0].roi,state:"ready",statistics,display_ground_truth:gt,display_ocr_text:ocr,details_truncated:false,details}]}]}});
+  }
   if(url.endsWith("/evaluation-mode"))record.evaluation_mode=req.postDataJSON().mode;
   if(!url.includes("/global-fields/")&&url.endsWith("/ground-truth"))record.ground_truth_raw=req.postDataJSON().ground_truth_raw;
   if(url.includes("/global-fields/")&&url.endsWith("/ground-truth")){
@@ -88,13 +101,12 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await expect(resultCell.getByTestId("highlight-output")).toBeVisible();
  await expect(analysisToggle).toHaveAttribute("aria-pressed","true");
  await expect(page.getByRole("button",{name:"Error Analysis Pipeline 2",exact:true})).toHaveAttribute("aria-pressed","true");
- const analysis=first.getByTestId("global-metrics-pipeline-0").getByTestId("error-analysis-line");
- await expect(analysis).toHaveCount(2);
- await expect(analysis.nth(1)).toContainText("GT: Line2!");
- await expect(analysis.nth(1)).toContainText("OCR: LineX");
- await expect(analysis.nth(1).locator('[data-error-type="deletion"]')).toHaveClass(/comparison-span deletion/);
- await expect(analysis.nth(1)).toContainText("⟦ขาด: !⟧");
- const detailsPosition=await first.getByRole("region",{name:"Error Analysis details"}).boundingBox();
+ const analysis=first.getByTestId("global-metrics-pipeline-0").getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"});
+ await expect(analysis.getByTestId("field-error-ground-truth")).toHaveCount(1);
+ await expect(analysis.getByTestId("field-error-ground-truth")).toContainText("Line2!");
+ await expect(analysis.getByTestId("field-error-raw-ocr")).toContainText("LineX");
+ await expect(analysis.getByText("ขาด: !",{exact:true})).toBeVisible();
+ const detailsPosition=await analysis.boundingBox();
  expect(detailsPosition!.y).toBeGreaterThan(metricPosition!.y+metricPosition!.height);
  await expect(resultCell.getByTestId("global-prediction")).toHaveCount(0);
  const gtPane=await first.getByTestId("gt-pane").boundingBox();
@@ -108,7 +120,7 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await page.getByRole("checkbox",{name:"HIGHLIGHT",exact:true}).uncheck();
  await page.getByRole("checkbox",{name:"Deep detail",exact:true}).uncheck();
  await page.keyboard.press("Escape");
- await expect(first.getByTestId("global-result-pipeline-0").getByTestId("global-prediction")).toHaveText("OCR 1 / 1");
+ await expect(first.getByTestId("global-result-pipeline-0").getByTestId("global-prediction")).toHaveText("GT 1\nLineX");
  const beforeRequests=mutationRequests.length;
  await expect(scroll.locator("tbody").getByRole("button",{name:/Expand/})).toHaveCount(0);
  await page.getByRole("button",{name:"Expand Pipeline 1",exact:true}).click();
@@ -117,7 +129,7 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await expect(modal.getByTestId("det-box-count")).toContainText("2");
  await expect(modal.getByTestId("expanded-field-result")).toHaveCount(8);
  if(width>=1024){const columns=modal.locator("section.lg\\:sticky").locator("..");const left=await columns.locator(":scope > section").nth(0).boundingBox();const right=await columns.locator(":scope > section").nth(1).boundingBox();expect(Math.abs(left!.width-right!.width)).toBeLessThan(2);}
- await expect(modal.getByTestId("expanded-field-result").first()).toContainText("OCR 1 / 1");
+ await expect(modal.getByTestId("expanded-field-result").first()).toContainText("LineX");
  await expect(modal.getByRole("button",{name:"แสดงกรอบ Global ทั้งหมด",exact:true})).toHaveCount(1);
  await modal.getByRole("button",{name:"Field 01",exact:true}).click();
  await expect(modal.getByTestId("document-viewer")).toHaveAttribute("data-active-field","field-0");
@@ -157,7 +169,7 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await page.getByRole("button",{name:"Whole Field",exact:true}).click();
  await expect(scroll.getByTestId("comparison-text-row")).toHaveCount(1);
  await expect(scroll.getByRole("rowheader")).toContainText("Whole GT");
- await expect(scroll.getByTestId("global-result-pipeline-0")).toContainText("Whole OCR 1");
+ await expect(scroll.getByTestId("global-result-pipeline-0")).toContainText("Whole G");
  const wholeMetrics=await scroll.getByTestId("global-metrics-pipeline-0").getByRole("region",{name:"Metrics"}).boundingBox();
  const longMetrics=await scroll.getByTestId("global-metrics-pipeline-1").getByRole("region",{name:"Metrics"}).boundingBox();
  expect(Math.abs(wholeMetrics!.y-longMetrics!.y)).toBeLessThan(2);
@@ -167,9 +179,8 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
  await page.getByRole("checkbox",{name:"Deep detail",exact:true}).check();
  await page.getByRole("checkbox",{name:"HIGHLIGHT",exact:true}).check();
  await page.keyboard.press("Escape");
- await expect(scroll.getByTestId("global-metrics-pipeline-0").locator('[data-error-type="deletion"]')).toHaveClass(/comparison-span deletion/);
- await expect(scroll.getByTestId("global-metrics-pipeline-0")).toContainText("⟦ขาด: T⟧");
- await expect(scroll.getByTestId("global-metrics-pipeline-0").getByTestId("error-analysis-line")).toContainText("GT: Whole GT");
+ await expect(scroll.getByTestId("global-metrics-pipeline-0")).toContainText("ขาด: T");
+ await expect(scroll.getByTestId("global-metrics-pipeline-0").getByTestId("field-error-ground-truth")).toContainText("Whole GT");
  await page.screenshot({path:`test-results/comparison-inline-analysis-${width}.png`,fullPage:true});
  await page.getByRole("button",{name:"Sub-fields",exact:true}).click();
  expect(calculations).toBe(0);

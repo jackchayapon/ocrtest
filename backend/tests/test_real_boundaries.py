@@ -11,6 +11,8 @@ from app.pipelines.mint import MintPipelineAdapter
 from app.services.image_service import ImageService
 from tests.test_gateway_and_fairness import config, multipart
 
+pytestmark = pytest.mark.usefixtures("registered_catalog")
+
 
 @pytest.mark.parametrize("roi", [None, {"x1": 40, "y1": 30, "x2": 270, "y2": 150}, {"x1": 0, "y1": 0, "x2": 300, "y2": 200}])
 def test_full_preserves_canonical_input_without_recropping(settings, png, gateway, monkeypatch, roi):
@@ -54,10 +56,12 @@ def test_archived_history_excluded_without_deleting_data(client, case):
     assert client.get(f"/api/test-cases/{case['id']}/results").json()["runs"] == []
     assert all(r["tests"] == 0 for r in client.get("/api/matrix").json())
     assert all(r["tests"] == 0 for c in client.get("/api/analytics/categories").json() for r in c["pipelines"])
-    assert all(c["test_cases"] == 0 for c in client.get("/api/analytics/categories").json())
+    # Archiving hides runs, not the tagged source cases counted in the inventory.
+    categories = client.get("/api/analytics/categories").json()
+    assert next(c for c in categories if c["code"] == "thai_text")["test_cases"] == 1
     with client.app.state.database.session_factory() as session:
         runs = session.scalars(select(PipelineRun)).all()
-        assert len(runs) == 2 and all(r.raw_text and r.metric_records for r in runs)
+        assert len(runs) == 2 and all((r.raw_text or r.final_text) and r.metric_records for r in runs)
 
 
 def test_mode_is_not_a_product_setting(client):

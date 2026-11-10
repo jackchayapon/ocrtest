@@ -1,6 +1,9 @@
 """Canonical layout/GT identities and explicitly evaluated prediction snapshots."""
 
+import logging
+import re
 import time
+from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from statistics import fmean
 
@@ -24,6 +27,7 @@ from app.services.gt_prefill_service import (
 from app.services.metrics_service import normalize_text
 from app.services.pipeline_manager import PipelineManager
 
+logger = logging.getLogger(__name__)
 
 def reading_lines(run):
     """Visual row order within ONE field; raw boxes/envelope are never mutated.
@@ -309,7 +313,7 @@ class GlobalLayoutService:
             checkpoint.save(list(parents.values()), prefill_results)
         raw_parts = {p.pipeline_id: [f.diagnostics.get("raw_text", f.ocr_text) for f in p.fields]
                      for p in parents.values()}
-        with self.cases.images.open(source) as image:
+        with closing(self.cases.images.open(source)) as image:
             manager = PipelineManager(self.cases.settings)
             fields = sorted(case.global_fields, key=lambda field: field.field_index)
             # Process bounded groups; the manager combines matching DET/REC requests.
@@ -326,7 +330,8 @@ class GlobalLayoutService:
                     (missing_configs if checkpoint else configs) +
                     ([prefill] if prefill is not None and prefill not in (missing_configs if checkpoint else configs) else []),
                     image,
-                    [(self.cases.images.canonical_crop(image, field.roi), field.roi, field.source)
+                    [(self.cases.images.canonical_crop(image, field.roi, share_source=True,
+                                                     encoded_source=source), field.roi, field.source)
                      for field in batch],
                 )
                 if checkpoint:
@@ -365,6 +370,15 @@ class GlobalLayoutService:
                             "original_height",
                         )
                         diagnostics = {key: getattr(result, key) for key in trace_keys}
+                        failure = (result.raw_response or {}).get("failure", {})
+                        if result.status != "success":
+                            diagnostics["failure_stage"] = failure.get("stage", "adapter")
+                            diagnostics["http_status"] = failure.get("http_status")
+                            trace = result.gateway_request_id
+                            trace = trace if isinstance(trace, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", trace) else None
+                            logger.warning("event=ocr_field_error pipeline=%s field=%s stage=%s code=%s request=%s gateway_request=%s http_status=%s",
+                                           result.pipeline_id, field.id, diagnostics["failure_stage"], result.error_code,
+                                           result.request_id, trace, diagnostics["http_status"])
                         raw_parts[result.pipeline_id].append(result.raw_text if result.raw_text is not None else result.final_text or "")
                         diagnostics.update(
                             boxes=ordered_detection_boxes(result.boxes),

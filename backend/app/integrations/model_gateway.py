@@ -1,21 +1,49 @@
 """Server-only client for the reference Model API Gateway; never logs request bodies."""
 
+import asyncio
 import base64
 import json
 import logging
 import math
+import random
 import re
 import time
+from contextlib import AsyncExitStack
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
+from io import BytesIO
+from tempfile import SpooledTemporaryFile
 from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
+import ijson
 
+from app.core.batching import IMAGE_BATCH_SIZE
 from app.core.config import Settings
 from app.core.runtime_metrics import memory_snapshot
+from app.integrations.gateway_response import READ_CHUNK_BYTES, EnvelopeParser, redacted_key
 from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
 
 logger = logging.getLogger(__name__)
+
+
+def streamed_uploads(request, owner):
+    """HTTPX streams file objects in64KiB chunks; raw bytes are one giant write.
+
+    Give each attempt its own read cursor and deterministic close, retaining the
+    immutable canonical bytes. Never take ownership of caller-supplied file handles.
+    """
+    files = request.get("files")
+    if not files:
+        return request
+    pairs = files.items() if isinstance(files, dict) else files
+    streamed = []
+    for name, part in pairs:
+        if isinstance(part, tuple) and len(part) >= 2 and isinstance(part[1], bytes):
+            part = (part[0], owner.enter_context(BytesIO(part[1])), *part[2:])
+        streamed.append((name, part))
+    return {**request, "files": dict(streamed) if isinstance(files, dict) else streamed}
 
 
 class GatewayError(Exception):
@@ -26,12 +54,49 @@ class GatewayError(Exception):
         request_id: str | None = None,
         http_status=None,
         details=None,
+        retry_after=None,
     ):
         super().__init__(message)
         self.code = code
         self.request_id = request_id
         self.http_status = http_status
         self.details = details or []
+        self.retry_after = retry_after
+
+
+def retry_after_seconds(value):
+    try:
+        seconds = float(value)
+    except (ValueError, TypeError):
+        try:
+            seconds = (parsedate_to_datetime(value) - datetime.now(timezone.utc)).total_seconds()
+        except (ValueError, TypeError, OverflowError):
+            return None
+    return max(0, seconds) if math.isfinite(seconds) else None
+
+
+def preserve_leaf_predictions(data):
+    """Current CDGS raw-only contract: retain OCR scalars/geometry, never image tensors.
+
+    Existing structured results remain authoritative. Do not invent missing results
+    or turn a count/schema mismatch into successful OCR.
+    """
+    if not isinstance(data, dict) or data.get("contract_version") != "leaf-inference-v1":
+        return
+    kind = data.get("kind")
+    if not isinstance(data.get("results"), list) and not isinstance(data.get("result"), dict):
+        raw = data.get("raw_output")
+        if kind in {"text_detection_batch", "text_recognition_batch"}:
+            keys = ("dt_polys", "dt_scores") if kind == "text_detection_batch" else ("rec_text", "rec_score", "model")
+            required = "dt_polys" if kind == "text_detection_batch" else "rec_text"
+            expected_type = list if kind == "text_detection_batch" else str
+            if not isinstance(raw, list) or len(raw) > IMAGE_BATCH_SIZE or len(raw) != data.get("count") or any(not isinstance(item, dict) or not isinstance(item.get(required), expected_type) for item in raw):
+                raise GatewayError("Leaf result count or schema does not match input", "INVALID_OCR_RESPONSE", http_status=200)
+            items = [{key: item[key] for key in keys if key in item} for item in raw]
+            data["results"] = items
+            if kind == "text_detection_batch":
+                data["result"] = {"results": items}
+    data.pop("raw_output", None)
 
 
 def safe_response(value, secrets=()):
@@ -39,21 +104,7 @@ def safe_response(value, secrets=()):
     if isinstance(value, dict):
         output = {}
         for key, item in value.items():
-            lowered = str(key).lower()
-            if any(
-                part in lowered
-                for part in ("api_key", "apikey", "authorization", "password", "token")
-            ) or lowered in {
-                "image",
-                "images",
-                "input_img",
-                "output_img",
-                "image_base64",
-                "image_data",
-                "base64",
-                "input_image",
-                "database_url",
-            }:
+            if redacted_key(key):
                 output[key] = "[redacted]"
             else:
                 output[key] = safe_response(item, secrets)
@@ -161,6 +212,7 @@ class ModelGatewayClient:
     async def send(self, request: dict):
         started, status, code = time.perf_counter(), None, None
         details = []
+        retry_count = 0
         ModelGatewayClient.active_requests += 1
         try:
             if origin(request["url"]) != origin(self.base_url):
@@ -186,7 +238,19 @@ class ModelGatewayClient:
                         "The integrated OCR service is not ready",
                         "GATEWAY_SERVICE_UNAVAILABLE",
                     )
-            result = await self._send(request)
+            retry_started = time.monotonic()
+            for attempt in range(3):
+                try:
+                    result = await self._send(request)
+                    break
+                except GatewayError as exc:
+                    if exc.http_status != 429 or attempt == 2:
+                        raise
+                    delay = max(exc.retry_after or 0, 2 ** attempt + random.uniform(0, .5))
+                    if time.monotonic() - retry_started + delay > 30:
+                        raise
+                    retry_count += 1
+                    await asyncio.sleep(delay)
             status = 200
             return result
         except ValueError:
@@ -200,11 +264,11 @@ class ModelGatewayClient:
             raise
         finally:
             try:
-                self.log_request(request, started, status, code, details)
+                self.log_request(request, started, status, code, details, retry_count)
             finally:
                 ModelGatewayClient.active_requests -= 1
 
-    def log_request(self, request, started, status, code, details=()):
+    def log_request(self, request, started, status, code, details=(), retry_count=0):
         categories = {
             401: "authentication",
             403: "authorization",
@@ -217,7 +281,7 @@ class ModelGatewayClient:
         category = categories.get(
             status,
             "response_schema"
-            if code == "INVALID_RESPONSE"
+            if code in {"INVALID_RESPONSE", "INVALID_OCR_RESPONSE"}
             else "timeout"
             if code == "GATEWAY_TIMEOUT"
             else "connection"
@@ -239,6 +303,7 @@ class ModelGatewayClient:
             http_status=status,
             duration_ms=round((time.perf_counter() - started) * 1000, 2),
             error_code=code,
+            retry_count=retry_count,
             failure_category=category,
             model_selection={k: str(v)[:100] for k, v in request.get("params", {}).items()
                              if k in {"version", "model", "engine"}
@@ -260,36 +325,61 @@ class ModelGatewayClient:
         if not self.key:
             raise GatewayError("ยังไม่ได้ตั้งค่า API Key สำหรับ Gateway", "MISSING_GATEWAY_KEY")
         try:
-            async with self._client() as client:
-                async with client.stream(**request) as response:
+            async with self._client() as client, AsyncExitStack() as uploads:
+                async with client.stream(**streamed_uploads(request, uploads)) as response:
                     if response.is_redirect:
                         raise GatewayError(
                             "Gateway redirect was blocked",
                             "GATEWAY_REDIRECT_BLOCKED",
                             http_status=response.status_code,
                         )
-                    body = bytearray()
-                    async for chunk in response.aiter_bytes():
-                        body.extend(chunk)
-                        if len(body) > self.settings.model_gateway_max_response_mb * 1024 * 1024:
-                            raise GatewayError(
-                                f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB",
-                                "RESPONSE_TOO_LARGE",
-                            )
+                    limit = self.settings.model_gateway_max_response_mb * 1024 * 1024
+                    def oversized():
+                        return GatewayError(
+                            f"ผลลัพธ์ที่ Gateway ส่งกลับมีขนาดใหญ่เกินขีดจำกัด {self.settings.model_gateway_max_response_mb} MB",
+                            "RESPONSE_TOO_LARGE",
+                        )
+                    length = response.headers.get("Content-Length", "").lstrip("0") or "0"
+                    if (not response.headers.get("Content-Encoding") and length.isdecimal()
+                            and (len(length.lstrip("0")) > 20 or int(length) > limit)):
+                        raise oversized()
+                    parser = EnvelopeParser(lambda value: safe_response(
+                        value, (self.key, self.settings.database_url.get_secret_value())))
                     try:
-                        payload = json.loads(body)
-                    except (ValueError, UnicodeDecodeError):
+                        # Bound RAM independently of body length. Spill only transient
+                        # responses to an OS-private temporary file, never upload storage.
+                        # Oversized bodies are rejected before any JSON token allocation.
+                        with SpooledTemporaryFile(max_size=1024 * 1024, mode="w+b") as body:
+                            size = 0
+                            async for chunk in response.aiter_bytes(chunk_size=READ_CHUNK_BYTES):
+                                size += len(chunk)
+                                if size > limit:
+                                    raise oversized()
+                                body.write(chunk)
+                            body.seek(0)
+                            while chunk := body.read(READ_CHUNK_BYTES):
+                                parser.feed(chunk)
+                            payload = parser.finish()
+                    except (ijson.JSONError, ValueError, UnicodeDecodeError):
                         if response.is_error:
                             raise GatewayError(
                                 f"Gateway request failed (HTTP {response.status_code})",
                                 f"HTTP_{response.status_code}",
                                 http_status=response.status_code,
+                                retry_after=retry_after_seconds(response.headers.get("Retry-After")),
                             ) from None
                         raise GatewayError(
                             "Gateway returned invalid JSON",
                             "INVALID_RESPONSE",
                             http_status=response.status_code,
                         ) from None
+                    except OSError:
+                        raise GatewayError(
+                            "Temporary Gateway response buffering is unavailable",
+                            "RESPONSE_BUFFER_UNAVAILABLE",
+                        ) from None
+                    finally:
+                        parser.close()
                     if response.is_error or isinstance(payload, dict) and "error" in payload:
                         error = payload.get("error", {}) if isinstance(payload, dict) else {}
                         if not isinstance(error, dict):
@@ -333,6 +423,7 @@ class ModelGatewayClient:
                             str(rid)[:100] if rid else None,
                             http_status=response.status_code,
                             details=details,
+                            retry_after=retry_after_seconds(response.headers.get("Retry-After")),
                         )
                     if (
                         not isinstance(payload, dict)
@@ -347,13 +438,15 @@ class ModelGatewayClient:
                     # The Gateway contract is data/meta. Ignore extra transport archives before
                     # redaction and downstream batching can amplify their allocations.
                     data = payload["data"]
-                    if isinstance(data, dict) and data.get("contract_version") == "leaf-inference-v1":
-                        data.pop("raw_output", None)  # Structured results retain all OCR values.
-                    del body
-                    return safe_response(
-                        {"data": data, "meta": payload["meta"]},
-                        (self.key, self.settings.database_url.get_secret_value()),
-                    )
+                    try:
+                        preserve_leaf_predictions(data)
+                    except GatewayError as exc:
+                        rid = safe_response(payload["meta"].get("request_id"), (self.key, self.settings.database_url.get_secret_value()))
+                        if isinstance(rid, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,100}", rid):
+                            exc.request_id = rid
+                        raise
+                    # Strings/images were sanitized during parsing; no second object tree.
+                    return {"data": data, "meta": payload["meta"]}
         except httpx.TimeoutException:
             raise GatewayError("Gateway request timed out", "GATEWAY_TIMEOUT") from None
         except httpx.RequestError:

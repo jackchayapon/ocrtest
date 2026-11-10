@@ -1,8 +1,9 @@
+from uuid import NAMESPACE_URL, uuid5
+
 from sqlalchemy import delete, select
 
 from app.core.config import Settings
-from app.db.models import Category, DocumentType, PipelineConfig, OCRModel
-from uuid import NAMESPACE_URL, uuid5
+from app.db.models import Category, DocumentType, OCRModel, PipelineConfig
 from app.services.document_type_service import DEFAULT_TYPES, normalized_name
 
 CATEGORIES = {

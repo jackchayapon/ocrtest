@@ -1,10 +1,21 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
+
+# Release ceiling; stale environment overrides must not bypass admission.
+WORKLOAD_LIMITS = dict(max_upload_mb=10, max_image_pixels=2_000_000,
+                       max_image_dimension=8000, max_pdf_pages=20,
+                       model_gateway_max_response_mb=8, ocr_max_concurrent_tasks=1,
+                       ocr_max_concurrent_fields=1, ocr_gateway_batch_size=1)
+MAX_JOB_FIELDS = 12
+MAX_JOB_PIPELINES = 6
+MAX_JOB_UNITS = 24
+MAX_DETECTION_REGIONS = 128
+MAX_OCR_TEXT_CHARACTERS = 32768
 
 
 class Settings(BaseSettings):
@@ -16,27 +27,33 @@ class Settings(BaseSettings):
     database_url: SecretStr = SecretStr("")
     storage_mode: Literal["local"] = "local"
     storage_path: Path = BACKEND_ROOT / "storage" / "uploads"
-    max_upload_mb: int = Field(default=20, ge=1, le=100)
-    max_image_pixels: int = Field(default=40_000_000, ge=1)
-    max_image_dimension: int = Field(default=20000, ge=1)
-    pdf_render_dpi: int = Field(default=200, ge=72, le=400)
-    max_pdf_pages: int = Field(default=500, ge=1, le=5000)
+    max_upload_mb: int = Field(default=10, ge=1, le=100)
+    max_image_pixels: int = Field(default=2_000_000, ge=1)
+    max_image_dimension: int = Field(default=8000, ge=1)
+    pdf_render_dpi: int = Field(default=140, ge=72, le=400)
+    max_pdf_pages: int = Field(default=20, ge=1, le=5000)
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     model_gateway_base_url: str = "http://107.129.186.30:62051"
     # Optional same-origin API prefixes, independently verified per service.
     model_gateway_service_prefixes: dict[str, str | None] = Field(default_factory=dict)
     model_gateway_api_key: SecretStr = SecretStr("")
     model_gateway_timeout_seconds: float = Field(default=240, gt=0, le=600)
-    model_gateway_max_response_mb: int = Field(default=64, ge=1, le=256)
-    ocr_max_concurrent_tasks: int = Field(default=4, ge=1, le=8)
-    ocr_max_concurrent_fields: int = Field(default=8, ge=1, le=8)
-    ocr_gateway_batch_size: int = Field(default=4, ge=1, le=30)
+    model_gateway_max_response_mb: int = Field(default=8, ge=1, le=256)
+    ocr_max_concurrent_tasks: int = Field(default=1, ge=1, le=8)
+    ocr_max_concurrent_fields: int = Field(default=1, ge=1, le=8)
+    ocr_gateway_batch_size: int = Field(default=1, ge=1, le=30)
     ocr_jobs_enabled: bool = True
     mint_ocr_endpoint: str = "/api/v1/ocr-results"
     mint_ocr_engine: str = "custom"
     hutch_crop_endpoint: str = "/api/v1/ocr-results"
     hutch_crop_engine: str = "paddle"
     hutch_full_endpoint: str = ""
+
+    @model_validator(mode="after")
+    def release_ceiling(self):
+        for name, ceiling in WORKLOAD_LIMITS.items():
+            setattr(self, name, min(getattr(self, name), ceiling))
+        return self
 
     @property
     def sqlalchemy_url(self) -> str:

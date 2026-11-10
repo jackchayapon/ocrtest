@@ -1,5 +1,7 @@
 # OCR Testing & Benchmark Platform
 
+> Local bounded-release candidate: [ขีดจำกัดและพฤติกรรมที่รองรับ](docs/supported-workload.md) · [release gates ล่าสุด](docs/production-release-gates.json) ยังเป็นเงื่อนไขก่อน merge/deploy ไม่ใช่ประกาศว่าปล่อย Production แล้ว
+
 ## 1. ภาพรวมระบบ
 
 ระบบสำหรับทดสอบ OCR หลาย Pipeline บนภาพหรือ PDF เปรียบเทียบกับข้อความถูกต้องที่ผู้ใช้ยืนยัน และนำ crop พร้อม Ground Truth ไปสร้าง Dataset เหมาะกับผู้ทดสอบ ผู้พัฒนา และทีมที่ต้องเลือกโมเดลจากผลจริงบนเอกสารของตนเอง
@@ -423,5 +425,7 @@ README อธิบายพฤติกรรมคงที่ ไม่ฝั
 Ground Truth & Evaluation provides on-demand character statistics, original Field Crop inspection, a visible-pipeline single-sheet Excel report, and an advanced all-pipeline Evaluation ZIP. History loads a compact list and fetches errors only after a click. See [the feature guide](docs/character-insights.md) and [validation/transfer evidence](docs/character-insights-validation.md).
 
 ### งาน OCR ที่ใช้เวลานาน
+
+รายละเอียดการแก้ CDGS raw-only response, partial-job navigation และการตรวจ preview/GT อยู่ใน [Workflow regression audit](docs/ocr-workflow-regression-audit.md)
 
 Workflow ส่งงานผ่าน `POST /api/test-cases/{id}/jobs` แล้วติดตามสถานะจาก PostgreSQL โดยไม่ต้องเปิด request เดิมค้างไว้ ปิด/refresh browser แล้วติดตาม Job ID เดิมได้ ผลที่ checkpoint แล้วไม่ถูกสร้างซ้ำ การปิด process อาจทำให้เรียก upstream ซ้ำเฉพาะงานที่ยังไม่ commit; source uploads ยังเป็น local storage และอาจสูญหายเมื่อเปลี่ยน container ดู [สถาปัตยกรรมงาน](docs/ocr-background-jobs.md), [การกู้คืนและ rollout](docs/ocr-job-recovery.md), [สาเหตุ timeout/CORS](docs/ocr-timeout-root-cause.md) และ [ผล validation](docs/ocr-production-validation.md)

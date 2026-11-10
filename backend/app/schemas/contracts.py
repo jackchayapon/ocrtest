@@ -6,6 +6,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.core.config import MAX_JOB_FIELDS, MAX_JOB_PIPELINES
+
 
 class InputModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -59,7 +61,7 @@ class GlobalFieldInput(InputModel):
 
 
 class GlobalLayoutUpdate(InputModel):
-    fields: list[GlobalFieldInput] = Field(max_length=50)
+    fields: list[GlobalFieldInput] = Field(max_length=MAX_JOB_FIELDS)
     confirmed: bool = False
 
     @model_validator(mode="after")
@@ -96,7 +98,7 @@ class GlobalEvaluation(EvaluationMode):
 
 
 class RunRequest(InputModel):
-    pipelines: list[Annotated[str, Field(min_length=1, max_length=50, pattern=r"^[a-z][a-z0-9_]*$")]] = Field(min_length=1, max_length=100)
+    pipelines: list[Annotated[str, Field(min_length=1, max_length=50, pattern=r"^[a-z][a-z0-9_]*$")]] = Field(min_length=1, max_length=MAX_JOB_PIPELINES)
 
     @field_validator("pipelines")
     @classmethod

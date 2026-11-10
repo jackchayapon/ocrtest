@@ -13,6 +13,7 @@ from tests.upstream_fixture import response
 
 SLUG = "hutch_fine_tune_v2"
 ENDPOINT = "/api/v1/text-recognition-batches"
+pytestmark = pytest.mark.usefixtures("registered_catalog")
 
 
 @pytest.mark.parametrize("leaf", [False, True])
@@ -54,16 +55,18 @@ def test_requires_prebuilt_crop(settings):
 
 
 def test_global_identity_order_shared_gt_history_and_partial_failure(client, document, gateway, settings, png):
-    case, fields = layout(client, document)
+    case, fields = layout(client, document, prefill=False)
     root = f"/api/test-cases/{case['id']}"
     seen = []
 
     def handler(request):
         if request.url.path != ENDPOINT:
             return response(request)
-        seen.append(parts(request))
-        return httpx.Response(200, json={"data": {"count": 1, "results": [
-            {"text": f"ไทย {len(seen)}", "confidence": 0.9}]}, "meta": {}})
+        batch = parts(request)
+        start = len(seen)
+        seen.extend([part] for part in batch)
+        return httpx.Response(200, json={"data": {"count": len(batch), "results": [
+            {"text": f"ไทย {start+i+1}", "confidence": 0.9} for i in range(len(batch))]}, "meta": {}})
 
     gateway[0]["handler"] = handler
     result = client.post(root + "/run", json={"pipelines": ["mint", SLUG]})
@@ -103,4 +106,4 @@ def test_registration_fixed_route_unknown_readiness(client):
     assert config["query_params"] == {"version": "5", "model": "thai_ft_v2"}
     for change in ({"query_params": {"version": "6"}}, {"endpoint": "/other"}, {"file_field_name": "image"}):
         assert client.put(f"/api/pipelines/{SLUG}", json=change).status_code == 422
-    assert client.post(f"/api/pipelines/{SLUG}/test-connection").json()["status"] == "unknown"
+    assert client.post(f"/api/pipelines/{SLUG}/test-connection").json()["status"] == "gateway_connected"

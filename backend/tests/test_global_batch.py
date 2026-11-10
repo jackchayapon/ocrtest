@@ -11,6 +11,7 @@ def test_global_crops_are_batched_and_results_keep_field_identity(client, docume
     # This test deliberately exercises a single 3-image batch; defaults are tested separately.
     client.app.state.settings.ocr_max_concurrent_fields = 3
     client.app.state.settings.ocr_max_concurrent_tasks = 8
+    client.app.state.settings.ocr_gateway_batch_size = 3
     case, fields = layout(client, document, count=3)
     models = client.get("/api/pipelines/models").json()
     selected = {kind: next(m["id"] for m in models if m["kind"] == kind and m["source"] == "custom" and m["version"] == "5" and m["weight"] == "baseline") for kind in ("det", "rec")}

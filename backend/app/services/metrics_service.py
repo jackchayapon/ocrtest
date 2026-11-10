@@ -4,6 +4,8 @@ from collections.abc import Sequence
 
 from pythainlp.tokenize import word_tokenize
 
+from app.services.word_lexicon import thai_lexicon
+
 
 def normalize_text(text: str) -> str:
     """NFC, normalize newlines, collapse whitespace and trim."""
@@ -22,7 +24,7 @@ def tokenize_words(text: str, thai: bool = True) -> list[str]:
     if not text:
         return []
     if thai:
-        return [word for word in word_tokenize(text, engine="newmm") if word.strip()]
+        return [word for word in word_tokenize(text, engine="newmm", custom_dict=thai_lexicon()) if word.strip()]
     return text.split()
 
 

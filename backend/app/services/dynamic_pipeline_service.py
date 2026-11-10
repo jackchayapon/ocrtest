@@ -1,4 +1,5 @@
 from uuid import uuid4
+
 from sqlalchemy import or_, select
 
 from app.core.errors import AppError

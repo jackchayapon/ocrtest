@@ -56,7 +56,7 @@ function query(filters?: QueryFilters): string {
   return params.size ? `?${params}` : "";
 }
 
-export const getUploadConfig = () => request<{ max_upload_mb: number; pdf_render_dpi: number }>("/upload-config");
+export const getUploadConfig = () => request<{ max_upload_mb: number; pdf_render_dpi: number; max_image_pixels: number; max_image_dimension: number; max_pdf_pages: number; ocr_queue_capacity: number; max_job_fields: number; max_job_pipelines: number; max_job_units?: number; max_detection_regions?: number; max_ocr_text_characters?: number }>("/upload-config");
 export const getDocumentPage = (id: string, page_number?: number) => request<Document>(`/documents/${id}${page_number === undefined ? "" : `?page_number=${page_number}`}`);
 export const getGatewayStatus = () => request<import("@/types").GatewayStatus>("/integrations/model-gateway/status");
 export const getAutoROIs = (id: string, auto_roi_mode = "text-line", page_number: number | null = null) => request<import("@/types").AutoROIResponse>(`/documents/${id}/auto-rois`, { method: "POST", body: JSON.stringify({ auto_roi_mode, expand_text_rois: false, page_number }) });
@@ -112,12 +112,12 @@ export type OCRJob = {
  job_id: string; test_case_id: string; status: "queued"|"running"|"completed"|"partial_success"|"failed"|"cancelled";
  pipeline_ids: string[]; total_fields: number; total_pipelines: number; completed_units: number; failed_units: number;
  completed_pipelines: number; progress_percent: number; current_pipeline_id: string|null; current_field_index: number|null;
- started_at: string|null; created_at: string; updated_at: string; safe_error_message: string|null; run_ids: string[];
+ started_at: string|null; finished_at?: string|null; created_at: string; updated_at: string; safe_error_message: string|null; run_ids: string[];
 };
 export const createOCRJob = (id: string, pipelines: string[], idempotency_key: string) => request<OCRJob>(`/test-cases/${id}/jobs`, {method:"POST",body:JSON.stringify({pipelines,idempotency_key})});
 export const getOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob>(`/ocr-jobs/${id}`, {signal});
 export const getCaseOCRJob = (id: string, signal?: AbortSignal) => request<OCRJob|null>(`/test-cases/${id}/jobs`, {signal});
-export const getOCRJobResults = (id: string) => request<RunResponse>(`/ocr-jobs/${id}/results`);
+export const getOCRJobResults = (id: string, signal?: AbortSignal) => request<RunResponse>(`/ocr-jobs/${id}/results`, signal ? {signal} : undefined);
 export const checkField = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string) => request<import("@/types").FieldComparison>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/check`, { method: "POST", body: JSON.stringify({ ground_truth_raw }) });
 export const saveFieldGT = (caseId: string, runId: string, fieldId: string, ground_truth_raw: string, confirmed: boolean) => request<import("@/types").OCRField>(`/test-cases/${caseId}/runs/${runId}/fields/${fieldId}/ground-truth`, { method: "PUT", body: JSON.stringify({ ground_truth_raw, confirmed }) });
 export const getHistory = (filters?: QueryFilters, signal?: AbortSignal, compact = false) => request<TestCase[]>(`/history${query(filters)}${query(filters) ? "&" : "?"}view=summary&latest=true${compact ? "&compact=true" : ""}`, { signal });

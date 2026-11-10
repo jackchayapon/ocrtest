@@ -3,6 +3,7 @@ import time
 from uuid import uuid4
 
 from app.core.concurrency import ordered_map
+from app.core.native_memory import release_native_memory
 from app.db.models import PipelineRun
 from app.integrations.batch_gateway import BatchGateway, BatchingClient
 from app.integrations.model_gateway import GatewayError
@@ -88,23 +89,25 @@ class PipelineManager:
                 )
             except GatewayError as exc:
                 diagnostics = dict(adapter.diagnostics)
-                diagnostics["gateway_request_id"] = exc.request_id
+                diagnostics["gateway_request_id"] = exc.request_id or diagnostics.get("gateway_request_id")
                 return PipelineRun(
                     pipeline_id=config.pipeline_id,
                     pipeline_name=config.name,
                     status="error",
                     error_message=str(exc),
                     error_code=exc.code,
+                    raw_response={"failure": {"stage": getattr(adapter, "failure_stage", "gateway_request").replace("_request", "_contract") if exc.code in {"INVALID_RESPONSE", "INVALID_OCR_RESPONSE"} else getattr(adapter, "failure_stage", "gateway_request"), "http_status": exc.http_status}},
                     boxes=[],
                     **diagnostics,
                 )
-            except Exception:
+            except Exception as exc:
                 return PipelineRun(
                     pipeline_id=config.pipeline_id,
                     pipeline_name=config.name,
                     status="error",
                     error_message="Pipeline failed unexpectedly; verify adapter configuration",
                     error_code="PIPELINE_ERROR",
+                    raw_response={"failure": {"stage": getattr(adapter, "failure_stage", "adapter"), "exception_type": type(exc).__name__}},
                     boxes=[],
                     **adapter.diagnostics,
                 )
@@ -120,5 +123,8 @@ class PipelineManager:
                     return result
                 finally:
                     window[1] = time.perf_counter()
+                    # Each adapter's owned temporary pixels/uploads are closed.
+                    # Borrowed source pixels remain live and cannot be reclaimed.
+                    release_native_memory()
 
         return await ordered_map(configs, bounded, self.settings.ocr_max_concurrent_tasks)

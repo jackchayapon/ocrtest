@@ -8,7 +8,6 @@ from app.pipelines.normalizers import confidence, number
 from app.repositories.benchmark_repository import BenchmarkRepository
 from app.services.test_case_service import TestCaseService
 
-
 TEXT_REGION_TYPES = {
     "text", "text_line", "text_block", "paragraph", "paragraph_title", "title",
     "heading", "header", "footer", "caption", "figure_caption", "table_caption",

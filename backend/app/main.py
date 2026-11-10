@@ -22,6 +22,7 @@ from app.api.routes import (
 )
 from app.core.config import Settings
 from app.core.errors import AppError
+from app.core.workload import WorkloadGuard
 from app.db.database import Database
 from app.db.diagnostics import ReadStats, current_stats, install_diagnostics, log_stats
 from app.db.seed import seed_database
@@ -49,7 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise RuntimeError(
                 "Database initialization failed. Verify DATABASE_URL and migration access; credentials have been omitted."
             ) from None
-        worker = JobWorker(database, settings, storage, app.state.ocr_lock)
+        worker = JobWorker(database, settings, storage, app.state.ocr_lock, app.state.image_lock)
         app.state.job_worker = worker
         task = asyncio.create_task(worker.run()) if settings.ocr_jobs_enabled else None
         try:
@@ -67,6 +68,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings = settings
     app.state.storage = storage
     app.state.ocr_lock = asyncio.Lock()
+    app.state.image_lock = asyncio.Lock()
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("app.integrations.model_gateway").setLevel(logging.INFO)
@@ -118,6 +120,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.include_router(module.router, prefix="/api")
     # Outermost application middleware also covers sanitized application failures.
     # Railway-generated responses remain outside FastAPI's control.
+    app.add_middleware(WorkloadGuard, lock=app.state.image_lock, settings=settings)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],

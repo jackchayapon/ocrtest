@@ -14,9 +14,10 @@ from app.services.metrics_service import (
     levenshtein,
     normalize_text,
     tokenize_words,
-    whitespace_tokenizer,
 )
 from tests.test_api import run
+
+pytestmark = pytest.mark.usefixtures("registered_catalog")
 
 
 @pytest.mark.parametrize(
@@ -101,7 +102,7 @@ def test_error_replacement_filters_latest_and_historical_recompute(client, case,
                 "/api/analytics/errors",
                 params={**params, "error_level": level, "text_kind": text_kind},
             ).json()["items"]
-            tokenize = list if level == "char" else whitespace_tokenizer
+            tokenize = list if level == "char" else tokenize_words
             assert sum(row["count"] for row in rows) == levenshtein(
                 tokenize("ABC"), tokenize(normalize_text(runs[0][f"{text_kind}_text"]))
             )
@@ -110,10 +111,13 @@ def test_error_replacement_filters_latest_and_historical_recompute(client, case,
     with client.app.state.database.session_factory() as session:
         session.execute(delete(OCRErrorEvent))
         session.commit()
-    assert client.get("/api/analytics/errors", params=params).json()["total"] == 0
+    # Lean analytics recomputes alignment from confirmed GT, without an event table dependency.
+    assert client.get("/api/analytics/errors", params=params).json()["items"] == groups
     for _ in range(2):
         assert client.post(f"/api/test-cases/{case['id']}/errors/recompute").status_code == 200
         assert client.get("/api/analytics/errors", params=params).json()["items"] == groups
+        with client.app.state.database.session_factory() as session:
+            assert session.scalar(select(func.count()).select_from(OCRErrorEvent)) == 0
     assert client.delete(f"/api/test-cases/{case['id']}").status_code == 204
     with client.app.state.database.session_factory() as session:
         assert session.scalar(select(func.count()).select_from(OCRErrorEvent)) == 0
@@ -198,25 +202,25 @@ def test_dataset_invalid_ids_missing_roi_and_missing_source(client, case, docume
     )
 
 
-def test_future_config_is_iterable_without_invented_adapter(client, case):
+def test_future_config_is_iterable_without_invented_adapter(client, case, settings):
     count = len(client.get("/api/pipelines").json())
     with client.app.state.database.session_factory() as session:
         session.add(PipelineConfig(pipeline_id="future", name="Future", enabled=False))
         session.commit()
-    assert len(client.get("/api/pipelines").json()) == count + 1
+    # Unknown historical definitions are retained in DB, not advertised as runnable.
+    assert len(client.get("/api/pipelines").json()) == count
     response = client.post(
         f"/api/test-cases/{case['id']}/run",
         json={"pipelines": ["mint", "hutch_crop", "hutch_full", "future"]},
     )
-    assert response.status_code == 200, response.text
-    assert [r["status"] for r in response.json()["runs"]] == [
-        "success",
-        "success",
-        "success",
-        "error",
-    ]
-    assert response.json()["runs"][-1]["error_code"] == "ADAPTER_NOT_CONFIGURED"
-    assert client.get("/api/matrix", params={"pipeline": "future"}).json()[0]["tests"] == 1
+    assert response.status_code == 404, response.text
+    assert client.get(f"/api/test-cases/{case['id']}").json()["runs"] == []
+    import asyncio
+
+    from app.services.pipeline_manager import PipelineManager
+    result = asyncio.run(PipelineManager(settings).run(
+        [PipelineConfig(pipeline_id="future", name="Future", enabled=False)], None, None, None))
+    assert result[0].status == "error" and result[0].error_code == "ADAPTER_NOT_CONFIGURED"
 
 
 def test_dataset_pdf_selected_page_and_roi_edit_invalidates_confirmation(client):

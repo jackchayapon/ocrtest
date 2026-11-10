@@ -1,4 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
+import {waitForJobResults} from "./job-results";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
 import { t } from "../lib/i18n/th";
@@ -67,7 +68,7 @@ test("legacy compatibility: Thai multi-page PDF: choose page two, ROI, all confi
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("บริษัท ซีดีจี จำกัด");
   await page.getByRole("button", { name: "ข้อความภาษาไทย", exact: true }).click();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  const runResponse = page.waitForResponse(response => response.url().endsWith("/run") && response.request().method() === "POST");
+  const runResponse = waitForJobResults(page);
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const result: RunResponse = await (await runResponse).json();
   expect(result.runs.map(run => run.pipeline_id).sort()).toEqual(configs.map(config => config.pipeline_id).sort());
@@ -114,13 +115,19 @@ test("legacy compatibility: Thai multi-page PDF: choose page two, ROI, all confi
 });
 
 test("Global workspace Thai PDF error and browser upload-size validation", async ({ page }) => {
-  await page.route("**/api/upload-config", route => route.fulfill({ json: { max_upload_mb: 1, pdf_render_dpi: 200 } }));
+  await page.route("**/api/upload-config", async route => {
+    const config=await(await route.fetch()).json();
+    await route.fulfill({json:{...config,max_upload_mb:1}});
+  });
   await page.goto('/');
   await expect(page.getByRole("button", { name: t("Upload document"), exact: true })).toBeEnabled();
   await page.locator('input[type="file"]').first().setInputFiles({ name: "broken.pdf", mimeType: "application/pdf", buffer: Buffer.from("%PDF-broken") });
   await expect(page.locator("main").getByRole("alert")).toContainText("ไม่สามารถเปิดไฟล์ PDF นี้ได้ กรุณาตรวจสอบว่าไฟล์ไม่เสียหาย");
+  let oversizedRequests=0;
+  page.on("request",r=>{if(r.url().endsWith("/api/documents")&&r.method()==="POST")oversizedRequests++;});
   await page.locator('input[type="file"]').first().setInputFiles({ name: "large.pdf", mimeType: "application/pdf", buffer: Buffer.alloc(1024 * 1024 + 1) });
-  await expect(page.locator("main").getByRole("alert")).toContainText("ไฟล์มีขนาดใหญ่เกินกำหนด");
+  await expect(page.locator("main").getByRole("alert")).toContainText("ไฟล์เกิน 1 MiB");
+  expect(oversizedRequests).toBe(0);
   await page.locator('input[type="file"]').first().setInputFiles({ name: "file.txt", mimeType: "text/plain", buffer: Buffer.from("not a document image") });
   await expect(page.locator("main").getByRole("alert")).toContainText("ไม่รองรับไฟล์ประเภทนี้ กรุณาเลือก PDF, PNG หรือ JPG");
 });

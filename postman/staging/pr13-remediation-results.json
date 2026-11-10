@@ -1,0 +1,168 @@
+{
+  "scope": "Local isolated synthetic data only; no production uploads/data/credentials accessed",
+  "reviewed_head": "7b8caf279d8eade1eb1f86b3b1334f36b028e424",
+  "verified_runner_exit_codes": {"pytest": 0, "playwright": 0},
+  "backend": {
+    "total": 545,
+    "failed": 0,
+    "skipped": 0
+  },
+  "resource_limits": {
+    "backend_memory_bytes": 512000000,
+    "cpu": 1,
+    "sample_ms": 50,
+    "shared_live_gateway": false
+  },
+  "resource_phases": [
+    {
+      "name": "large_geometry",
+      "status": "completed",
+      "expected": "completed",
+      "seconds": 12.5,
+      "outputs": 8,
+      "unique_ids": 8,
+      "successes": 8,
+      "error_codes": [],
+      "interrupted": false,
+      "preserved_checkpoints": 0,
+      "checkpoint_ids_preserved": true,
+      "attempts": 1,
+      "peak_rss": 264024064,
+      "rss_high_water": 293867520,
+      "peak_cgroup_sample": 480260096,
+      "last_cgroup_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+      "pass": true
+    },
+    {
+      "name": "numeric_response_concurrent",
+      "status": "completed",
+      "expected": "completed",
+      "seconds": 6.88,
+      "outputs": 16,
+      "unique_ids": 16,
+      "successes": 16,
+      "error_codes": [],
+      "interrupted": false,
+      "preserved_checkpoints": 0,
+      "checkpoint_ids_preserved": true,
+      "attempts": 1,
+      "peak_rss": 331018240,
+      "rss_high_water": 354676736,
+      "peak_cgroup_sample": 511283200,
+      "last_cgroup_events": "low 0\nhigh 0\nmax 371\noom 0\noom_kill 0\noom_group_kill 0",
+      "pass": true
+    },
+    {
+      "name": "excessive_geometry",
+      "status": "failed",
+      "expected": "failed",
+      "seconds": 0.6,
+      "outputs": 4,
+      "unique_ids": 4,
+      "successes": 0,
+      "error_codes": [
+        "INVALID_OCR_RESPONSE"
+      ],
+      "interrupted": false,
+      "preserved_checkpoints": 0,
+      "checkpoint_ids_preserved": true,
+      "attempts": 1,
+      "peak_rss": 356442112,
+      "rss_high_water": 363212800,
+      "peak_cgroup_sample": 511963136,
+      "last_cgroup_events": "low 0\nhigh 0\nmax 407\noom 0\noom_kill 0\noom_group_kill 0",
+      "pass": true
+    },
+    {
+      "name": "long_rec_rejected",
+      "status": "failed",
+      "expected": "failed",
+      "seconds": 0.51,
+      "outputs": 4,
+      "unique_ids": 4,
+      "successes": 0,
+      "error_codes": [
+        "INVALID_OCR_RESPONSE"
+      ],
+      "interrupted": false,
+      "preserved_checkpoints": 0,
+      "checkpoint_ids_preserved": true,
+      "attempts": 1,
+      "peak_rss": 298496000,
+      "rss_high_water": 363212800,
+      "peak_cgroup_sample": 445808640,
+      "last_cgroup_events": "low 0\nhigh 0\nmax 407\noom 0\noom_kill 0\noom_group_kill 0",
+      "pass": true
+    },
+    {
+      "name": "large_response_rejected",
+      "status": "failed",
+      "expected": "failed",
+      "seconds": 0.81,
+      "outputs": 4,
+      "unique_ids": 4,
+      "successes": 0,
+      "error_codes": [
+        "RESPONSE_TOO_LARGE"
+      ],
+      "interrupted": false,
+      "preserved_checkpoints": 0,
+      "checkpoint_ids_preserved": true,
+      "attempts": 1,
+      "peak_rss": 481845248,
+      "rss_high_water": 481845248,
+      "peak_cgroup_sample": 511922176,
+      "last_cgroup_events": "low 0\nhigh 0\nmax 1039\noom 0\noom_kill 0\noom_group_kill 0",
+      "pass": true
+    },
+    {
+      "name": "worker_interruption",
+      "status": "completed",
+      "expected": "completed",
+      "seconds": 103.52,
+      "outputs": 48,
+      "unique_ids": 48,
+      "successes": 48,
+      "error_codes": [],
+      "interrupted": true,
+      "preserved_checkpoints": 32,
+      "checkpoint_ids_preserved": true,
+      "attempts": 2,
+      "peak_rss": 281300992,
+      "rss_high_water": 305070080,
+      "peak_cgroup_sample": 403771392,
+      "last_cgroup_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+      "pass": true
+    }
+  ],
+  "post_restart_kernel": {
+    "memory_peak_bytes": 233033728,
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0",
+    "scope": "Final container after worker replacement only; phase samples include pre-replacement process too"
+  },
+  "database": {
+    "isolated_local": true,
+    "clean_upgrade_via_0011_to_head": true,
+    "revision": "0012_ocr_jobs",
+    "schema_drift": false,
+    "table_count": 15
+  },
+  "evidence_sha256": {
+    ".runtime/pr13-review/pytest.xml": "87b039d6688a690487a7142481bc8d6d9bb8435c6e60b88940fed5ca0824c405",
+    ".runtime/audit/playwright-full.log": "8041f3cb2436594dd8edfa933f012dcc5b28a2b9a8d8a7f60dccc6fb676fa3bb",
+    ".runtime/remediation/pytest.xml": "587581d35ab9f87acaef1330a671337e6b5bf2d3e3458986a0c51d949600a9f6",
+    ".runtime/remediation/playwright-full.log": "b2e6ec0e3cf9cf17ed5c32d7a8fd1155ce261170be87a00f874b8a046ef9ebd0",
+    ".runtime/remediation/resource-results.json": "1e416aa8809b234bcd756c393fee40b3f4663029df35bf717c464614df4aefa1",
+    ".runtime/remediation/worker-results.json": "b371f66075784f2988452d868d2744f6715fc3e500da116ab7f7ccd0752b7d12",
+    ".runtime/remediation/setup-resource.py": "2f852fec1b219d932024ae6a94fb81ce18c254b999b521ef04893150eaad7319",
+    ".runtime/remediation/resources.py": "a8a9621646b717b54a555f60d53fd346577add7d8ccdeccabdff831386372b52",
+    ".runtime/remediation/mock.py": "5308c85c2669c888d3d93a90a4f4468e325e779a9847c6f6d98309bce948fe68",
+    ".runtime/remediation/evidence/process.jsonl": "0124208cf147f1a53ffe1aa02b835313953756542ae1a8d2c021d1d32bce8fb4"
+  },
+  "playwright": {
+    "passed": 188,
+    "failed": 0,
+    "skipped": 0,
+    "full_suite": true
+  }
+}

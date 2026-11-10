@@ -6,19 +6,22 @@ TEXT = "บริษัท ซีดีจี จำกัด"
 
 
 def response(request):
+    if request.url.path.endswith(("text-detection-batches", "text-recognition-batches")):
+        from tests.test_benchmark_pipeline import parts
+        count = sum(name == "images" for name, _ in parts(request))
     if request.url.path.endswith("text-detection-batches"):
         return httpx.Response(200, json={"data": {
-            "contract_version": "leaf-inference-v1", "kind": "text_detection_batch", "count": 1,
-            "result": {"results": [{"dt_polys": [[[2, 3], [50, 3], [50, 30], [2, 30]]], "dt_scores": [0.95]}]},
+            "contract_version": "leaf-inference-v1", "kind": "text_detection_batch", "count": count,
+            "result": {"results": [{"dt_polys": [[[2, 3], [50, 3], [50, 30], [2, 30]]], "dt_scores": [0.95]} for _ in range(count)]},
         }, "meta": {"request_id": "fixture-det", "duration_ms": 100, "service": "test-only-upstream"}})
     if request.url.path.endswith("text-recognition-batches"):
         if request.url.params.get("model") == "thai_ft_v2":
             return httpx.Response(200, json={"data": {
                 "contract_version": "leaf-inference-v1", "kind": "text_recognition_batch",
-                "results": [{"rec_text": TEXT, "rec_score": 0.97}], "count": 1,
+                "results": [{"rec_text": TEXT, "rec_score": 0.97} for _ in range(count)], "count": count,
                 "model_selection": {"version": "v6", "variant": "thai_ft_v2", "model_name": "PP-OCRv6_medium_rec"},
             }, "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
-        return httpx.Response(200, json={"data": {"results": [{"text": TEXT, "confidence": 0.97}], "count": 1},
+        return httpx.Response(200, json={"data": {"results": [{"text": TEXT, "confidence": 0.97} for _ in range(count)], "count": count},
                                         "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
     if request.url.path.endswith("document-layouts"):
         from tests.test_gateway_and_fairness import multipart

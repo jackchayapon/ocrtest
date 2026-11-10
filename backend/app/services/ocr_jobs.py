@@ -12,7 +12,7 @@ from datetime import timedelta
 from types import SimpleNamespace
 from uuid import uuid4
 
-from sqlalchemy import and_, or_, select, text, update
+from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import noload
 
@@ -152,6 +152,7 @@ def enqueue(cases, case_id, pipeline_ids, key):
         if existing.pipeline_ids != pipeline_ids:
             raise AppError("Another OCR job is active for this test case", 409)
         return existing
+    cases.validate_workload(case, pipeline_ids)
     configured = {
         c.pipeline_id: c
         for c in session.scalars(
@@ -171,6 +172,13 @@ def enqueue(cases, case_id, pipeline_ids, key):
     # Validate availability only; image decoding/inference belongs to the worker.
     if not cases.storage.exists(case.document.storage_key):
         raise AppError("Stored image is unavailable", 404)
+    cases.validate_processing_source(case.document, case.page_number)
+    # Serialize global queue admission across PostgreSQL sessions/replicas. Existing
+    # idempotency matches above remain readable even while the queue is full.
+    if session.bind.dialect.name == "postgresql":
+        session.execute(text("SELECT pg_advisory_xact_lock(1967472013)"))
+    if session.scalar(select(func.count()).select_from(OCRJob).where(OCRJob.status.in_(ACTIVE))) >= 5:
+        raise AppError("คิว OCR เต็ม กรุณาลองใหม่ภายหลัง / OCR queue full; retry later", 429)
     if case.workflow == "global":
         case.layout_locked_at = now()
     job = OCRJob(
@@ -237,9 +245,10 @@ class Checkpoint:
 
 
 class JobWorker:
-    def __init__(self, database, settings, storage, lock):
+    def __init__(self, database, settings, storage, lock, resource_lock=None):
         self.database, self.settings, self.storage, self.lock = database, settings, storage, lock
         self.owner = str(uuid4())
+        self.resource_lock = resource_lock or asyncio.Lock()
         self.wake = asyncio.Event()
         self.wake.set()  # Drain persisted jobs on startup, including expired leases.
 
@@ -361,30 +370,34 @@ class JobWorker:
             await self.wake.wait()
             self.wake.clear()
             try:
-                async with self.lock:
-                    job_id, retry_after = await asyncio.to_thread(self.claim)
-                    if job_id:
-                        execution = asyncio.create_task(self.execute(job_id))
-                        heartbeat = asyncio.create_task(self.keep_lease(job_id))
-                        try:
-                            done, _ = await asyncio.wait(
-                                (execution, heartbeat), return_when=asyncio.FIRST_COMPLETED
-                            )
-                            for task in done:
+                job_id, retry_after = await asyncio.to_thread(self.claim)
+                if job_id:
+                    execution = asyncio.create_task(self.execute_guarded(job_id))
+                    heartbeat = asyncio.create_task(self.keep_lease(job_id))
+                    try:
+                        done, _ = await asyncio.wait(
+                            (execution, heartbeat), return_when=asyncio.FIRST_COMPLETED
+                        )
+                        for task in done:
+                            await task
+                    finally:
+                        for task in (execution, heartbeat):
+                            task.cancel()
+                        for task in (execution, heartbeat):
+                            with contextlib.suppress(asyncio.CancelledError, Exception):
                                 await task
-                        finally:
-                            for task in (execution, heartbeat):
-                                task.cancel()
-                            for task in (execution, heartbeat):
-                                with contextlib.suppress(asyncio.CancelledError, Exception):
-                                    await task
-                        self.wake.set()
-                    elif retry_after:
-                        await asyncio.sleep(retry_after)
-                        self.wake.set()
+                    self.wake.set()
+                elif retry_after:
+                    await asyncio.sleep(retry_after)
+                    self.wake.set()
             except asyncio.CancelledError:
                 raise
             except Exception as exc:
                 logger.warning("ocr_worker_retry category=%s", type(exc).__name__)
                 await asyncio.sleep(10)
                 self.wake.set()
+
+    async def execute_guarded(self, job_id):
+        # Match API allocation -> OCR lock order; claiming an empty queue uses no image slot.
+        async with self.resource_lock, self.lock:
+            await self.execute(job_id)

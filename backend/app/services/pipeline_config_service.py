@@ -11,6 +11,17 @@ class PipelineConfigService:
 
     def update(self, pipeline_id, data):
         config = self.repository.config(pipeline_id)
+        # Current catalog definitions have no built-in adapter_classes registry.
+        # Keep this compatibility route limited to presentation/availability;
+        # model and routing edits use the validated /definition endpoint.
+        if config.execution_mode:
+            values = data.model_dump(exclude_unset=True)
+            if set(values) - {"name", "enabled"}:
+                raise AppError("Edit model and routing options through the pipeline definition", 422)
+            for key, value in values.items():
+                setattr(config, key, value)
+            config.last_connection_status = None
+            return self.repository.save(config)
         adapter = PipelineManager.adapter_classes.get(pipeline_id)
         if adapter is None:
             raise AppError("Register an adapter with a verified API contract before configuring this pipeline", 422)

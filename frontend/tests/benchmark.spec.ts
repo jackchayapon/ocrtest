@@ -1,4 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
+import {waitForJobResults} from "./job-results";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
 import { t } from "../lib/i18n/th";
@@ -19,12 +20,13 @@ test("legacy compatibility: Benchmark appears dynamically and flows through ROI,
   await page.getByLabel("เลือก Benchmark", { exact: true }).check();
   await page.getByRole("button", { name: "ทั้งเอกสาร / ROI", exact: true }).click();
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("ภาษาไทย");
-  const pending = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
+  const pending = waitForJobResults(page);
   await page.getByRole("button", { name: t("Run selected"), exact: true }).click();
   const data = await (await pending).json();
   expect(data.runs).toHaveLength(1);
   expect(data.runs[0]).toMatchObject({ pipeline_id: "benchmark", status: "success", input_width: 770, input_height: 130 });
-  expect(data.runs[0].raw_response.recognition_batches).toHaveLength(1);
+  expect(data.runs[0].gateway_request_id).toBeTruthy();
+  expect(data.runs[0].raw_response.composition.recognition.version).toBe("5");
   await expect(page.getByTestId("result-text-benchmark")).toHaveText("บริษัท ซีดีจี จำกัด");
   await page.getByRole("button", { name: t("Confirm ground truth"), exact: true }).click();
   await expect(page.getByText(t("CONFIRMED"), { exact: true })).toBeVisible();
@@ -40,7 +42,10 @@ test("legacy compatibility: Benchmark appears dynamically and flows through ROI,
   await expect(page.locator("tbody tr").filter({ hasText: "Benchmark" }).first()).toBeVisible();
   await page.goto("/settings/pipelines");
   const card = page.locator("section").filter({ has: page.getByRole("heading", { name: "Benchmark", exact: true }) });
-  await expect(card).toContainText("Recognition V5");
-  await card.locator("summary").click();
-  await expect(card.getByLabel(t("Image field"), { exact: true })).toHaveValue("images");
+  await card.getByRole("button", {name:"แก้ไข",exact:true}).click();
+  const recognition=card.getByRole("group",{name:"3. Text Recognition",exact:true});
+  await expect(recognition.getByRole("combobox",{name:"Model version",exact:true})).toHaveValue("5");
+  await recognition.getByText("API ที่ใช้เรียกโมเดล",{exact:true}).click();
+  await expect(recognition.locator("code")).toHaveText("/api/v1/text-recognition-batches?version=5");
+  await card.getByRole("button",{name:"ยกเลิก",exact:true}).click();
 });

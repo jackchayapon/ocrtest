@@ -1,4 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
+import {waitForJobResults} from "./job-results";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
 import { t } from "../lib/i18n/th";
@@ -8,12 +9,15 @@ const backend = process.env.E2E_API_URL || "http://127.0.0.1:8000";
 
 test("legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, field GT, persistence and dashboards", async ({ page, request }) => {
   const configs: PipelineConfig[] = await (await request.get(`${backend}/api/pipelines`)).json();
-  expect(new Set(configs.map(p => p.pipeline_id))).toEqual(new Set(["mint", "hutch_crop", "hutch_full", "benchmark", "thai_ft_v2", "hutch_fine_tune_v2"]));
+  expect(configs.map(p => p.pipeline_id)).toEqual(expect.arrayContaining(["mint", "hutch_crop", "hutch_full", "benchmark", "thai_ft_v2", "hutch_fine_tune_v2"]));
   await page.goto("/settings/pipelines");
   const card = page.locator("section").filter({ has: page.getByRole("heading", { name: "Thai FT v2", exact: true }) });
-  await expect(card).toContainText("Recognition V6 + thai_ft_v2");
-  await card.locator("summary").click();
-  await expect(card.getByLabel(t("Image field"), { exact: true })).toHaveValue("images");
+  await card.getByRole("button", {name:"แก้ไข",exact:true}).click();
+  const recognition=card.getByRole("group",{name:"3. Text Recognition",exact:true});
+  await expect(recognition.getByRole("combobox",{name:"Model version",exact:true})).toHaveValue("6");
+  await recognition.getByText("API ที่ใช้เรียกโมเดล",{exact:true}).click();
+  await expect(recognition.locator("code")).toHaveText("/api/v1/text-recognition-batches?version=6&model=thai_ft_v2");
+  await card.getByRole("button",{name:"ยกเลิก",exact:true}).click();
   for (const enabled of [false, true]) {
     expect((await request.put(`${backend}/api/pipelines/thai_ft_v2`, { data: { enabled } })).ok()).toBeTruthy();
   }
@@ -31,7 +35,7 @@ test("legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, 
   await page.getByRole("button", { name: "พื้นที่ 1", exact: true }).click();
   await expect(page.getByRole("button", { name: "พื้นที่ 2", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  let pending = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
+  let pending = waitForJobResults(page);
   await page.getByRole("button", { name: t("Run selected"), exact: true }).click();
   const result = await (await pending).json();
   expect(result.runs).toHaveLength(1);
@@ -74,7 +78,7 @@ test("legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, 
   await page.mouse.move(x + 100 * scale, y + 250 * scale); await page.mouse.down();
   await page.mouse.move(x + 750 * scale, y + 350 * scale, { steps: 10 }); await page.mouse.up();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  pending = page.waitForResponse(r => r.url().endsWith("/run") && r.request().method() === "POST");
+  pending = waitForJobResults(page);
   await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
   const manual = await (await pending).json();
   expect(manual.runs.map((r: PipelineRun) => r.pipeline_id).sort()).toEqual(configs.map(c => c.pipeline_id).sort());

@@ -60,12 +60,18 @@ def test_recent_dataset_exclusion_preserves_gt_source_history(client, document):
     items = client.get("/api/dataset/samples").json()["items"]
     assert [i["id"] for i in items] == [id, old_id]
     before = client.get(root).json()
-    assert before["history_status"] == "success" and before["ground_truth_raw"] is None
+    assert before["history_status"] == "success"
+    # GT assistance supplies whole-document text; evaluated() explicitly confirms
+    # all populated scopes with mode=auto. Exclusion must preserve them all.
+    assert isinstance(before["ground_truth_raw"], str) and before["ground_truth_raw"].strip()
+    assert before["document_gt_confirmed_at"] is not None
     assert client.delete(f"/api/dataset/items/{id}?kind=field").status_code == 200
     assert [i["id"] for i in client.get("/api/dataset/samples").json()["items"]] == [old_id]
     assert client.post("/api/dataset/export", json={"global_field_ids": [id]}).status_code == 422
     assert client.post("/api/dataset/export", json={"global_field_ids": [old_id]}).status_code == 200
     after = client.get(root).json()
+    assert after["ground_truth_raw"] == before["ground_truth_raw"]
+    assert after["document_gt_confirmed_at"] == before["document_gt_confirmed_at"]
     assert after["runs"] == before["runs"] and after["global_fields"] == before["global_fields"]
     assert client.get(f"/api/documents/{document['id']}/image").status_code == 200
     assert client.get(old_root).status_code == 200

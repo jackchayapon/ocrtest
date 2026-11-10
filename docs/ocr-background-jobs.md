@@ -37,6 +37,10 @@ Queue durability does not make ephemeral uploaded files durable. A process resta
 
 The browser stores only job/request IDs, polls every2.5seconds, and backs off to15seconds after connectivity failures. Polls never submit another job. The same request key returns the same job even after completion; a different key for the same active case/pipeline selection returns the active job. A different selection conflicts. Backend constraints protect multiple tabs independently of browser storage.
 
+Completed and partial-success jobs open Ground Truth only after persisted usable results can be read. Partial results retain a visible failure warning. Failed/cancelled jobs never navigate as success merely because progress is100%. The browser retains its job reference; opening GT acknowledges the job so returning to Pipelines does not repeatedly redirect. A results link remains available if automatic navigation fails. See the [workflow regression audit](ocr-workflow-regression-audit.md).
+
+The independent PR13 review found that empty successful reads stopped too early and failed reads retried indefinitely. Terminal result verification now has a six-attempt / 30-second browser deadline, including aborting a pending fetch. Empty results and transient errors share that budget; permanent client errors stop immediately. An explicit recheck reads the saved job without submitting inference. A separate, clearly labelled rerun creates a new execution. See the [independent review](pr13-independent-review.md) for outstanding release gates.
+
 The application currently has no per-user authentication; job UUID visibility follows the existing case/result access model, not a new access-control boundary. Job endpoints are no-store. Existing accepted origins remain explicit; no wildcard or credentials exposure was introduced.
 
 See [recovery procedure](ocr-job-recovery.md), [timeout evidence](ocr-timeout-root-cause.md), and [validation](ocr-production-validation.md).

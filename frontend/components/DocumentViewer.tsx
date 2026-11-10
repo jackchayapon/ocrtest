@@ -28,6 +28,8 @@ export interface DocumentViewerProps {
   globalFieldColor?: string;
   compactReference?: boolean;
   globalFields?: {id: string; field_index: number; roi: ROI}[];
+  missingGTFieldIds?: string[];
+  errorFieldIds?: string[];
   selectedGlobalFieldId?: string | null;
   selectedGlobalFieldIds?: string[];
   showRoiDelete?: boolean;
@@ -83,6 +85,8 @@ export default function DocumentViewer({
   suggestions = [],
   onSelectSuggestion,
   globalFields,
+  missingGTFieldIds = [],
+  errorFieldIds = [],
   selectedGlobalFieldId,
   selectedGlobalFieldIds = [],
   showRoiDelete = true,
@@ -99,7 +103,9 @@ export default function DocumentViewer({
   const [storedView, setStoredView] = useState<{
     source: string;
     view: View;
-  } | null>(null);
+  } | null>(()=>{
+    try{const value=JSON.parse(sessionStorage.getItem(`ocrlab-view:${imageUrl}:${width}:${height}`)??"null");return value&&[value.view?.scale,value.view?.x,value.view?.y].every(Number.isFinite)&&value.view.scale>=MIN_ZOOM&&value.view.scale<=MAX_ZOOM?value:null;}catch{return null;}
+  });
   const [loadedImage, setLoadedImage] = useState<{
     url: string;
     image: HTMLImageElement;
@@ -109,6 +115,8 @@ export default function DocumentViewer({
   const [panMode, setPanMode] = useState(false);
   const [showBoxes, setShowBoxes] = useState(true);
   const [showAllFields, setShowAllFields] = useState(true);
+  const [showFieldLabels,setShowFieldLabels]=useState(true);
+  const [showSelectedField,setShowSelectedField]=useState(true);
   const [draftRoi, setDraftRoi] = useState<ROI | null>(null);
   const [pointerCoordinates, setPointerCoordinates] = useState<Point | null>(
     null,
@@ -116,7 +124,7 @@ export default function DocumentViewer({
   const image = loadedImage?.url === imageUrl ? loadedImage.image : undefined;
   const failed = failedUrl === imageUrl;
   const selectedBox = boxes.find((box) => box.id === selectedBoxId);
-  const viewSource = `${imageUrl}:${width}:${height}:${viewport.width}:${viewport.height}`;
+  const viewSource = `${imageUrl}:${width}:${height}`;
   const fittedView = useMemo(() => {
     const scale = clamp(
       Math.min(
@@ -133,18 +141,34 @@ export default function DocumentViewer({
     };
   }, [width, height, viewport]);
   // Derive the fitted view immediately when a new image or viewport arrives.
-  const view = storedView?.source === viewSource ? storedView.view : fittedView;
+  const constrainView = useCallback(
+    (next: View): View => ({
+      scale: next.scale,
+      x:
+        width * next.scale <= viewport.width - 40
+          ? (viewport.width - width * next.scale) / 2
+          : clamp(next.x, viewport.width - width * next.scale - 24, 24),
+      y:
+        height * next.scale <= viewport.height - 40
+          ? (viewport.height - height * next.scale) / 2
+          : clamp(next.y, viewport.height - height * next.scale - 24, 24),
+    }),
+    [width, height, viewport],
+  );
+
+  const view = storedView?.source === viewSource ? constrainView(storedView.view) : fittedView;
+  useEffect(()=>{if(storedView)try{sessionStorage.setItem(`ocrlab-view:${storedView.source}`,JSON.stringify(storedView));}catch{/* Optional browser state; in-page controls still work. */}},[storedView]);
   const setView = useCallback(
     (next: View | ((current: View) => View)) => {
       setStoredView((current) => ({
         source: viewSource,
         view:
           typeof next === "function"
-            ? next(current?.source === viewSource ? current.view : fittedView)
+            ? next(current?.source === viewSource ? constrainView(current.view) : fittedView)
             : next,
       }));
     },
-    [viewSource, fittedView],
+    [viewSource, fittedView, constrainView],
   );
 
   useEffect(() => {
@@ -185,23 +209,9 @@ export default function DocumentViewer({
   }, [imageUrl, retryKey]);
 
   const fitView = useCallback(() => {
+    try{sessionStorage.removeItem(`ocrlab-view:${viewSource}`);}catch{/* optional browser state */}
     setStoredView(null);
-  }, []);
-
-  const constrainView = useCallback(
-    (next: View): View => ({
-      scale: next.scale,
-      x:
-        width * next.scale <= viewport.width - 40
-          ? (viewport.width - width * next.scale) / 2
-          : clamp(next.x, viewport.width - width * next.scale - 24, 24),
-      y:
-        height * next.scale <= viewport.height - 40
-          ? (viewport.height - height * next.scale) / 2
-          : clamp(next.y, viewport.height - height * next.scale - 24, 24),
-    }),
-    [width, height, viewport],
-  );
+  }, [viewSource]);
 
   const zoomAt = useCallback(
     (factor: number, point?: Point) => {
@@ -331,6 +341,8 @@ export default function DocumentViewer({
       data-testid="document-viewer"
       data-highlighted-det-count={highlightedBoxIds.length}
       data-show-all-fields={showAllFields}
+      data-show-field-labels={showFieldLabels}
+      data-show-selected-field={showSelectedField}
       data-active-field={selectedGlobalFieldId??""}
       data-view-x={view.x}
       data-view-y={view.y}
@@ -384,6 +396,7 @@ export default function DocumentViewer({
           </button>}
           <span className="mx-1 h-5 w-px bg-slate-200" />
           {showGlobalFieldToggle && !!globalFields?.length && <button type="button" aria-label="แสดงกรอบ Global ทั้งหมด" aria-pressed={showAllFields} title="ซ่อนกรอบ Global อื่น โดยยังแสดง Field ที่เลือก" className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-slate-700 hover:bg-slate-100" onClick={()=>setShowAllFields(v=>!v)}><ScanLine size={16}/>{showAllFields?"ซ่อนกรอบ Global อื่น":"แสดงกรอบ Global ทั้งหมด"}</button>}
+          {!!globalFields?.length&&<><button type="button" className="text-xs px-2 py-1" aria-label="แสดงชื่อ Field" aria-pressed={showFieldLabels} onClick={()=>setShowFieldLabels(v=>!v)}>ชื่อ Field</button><button type="button" className="text-xs px-2 py-1" aria-label="แสดง Field ที่เลือก" aria-pressed={showSelectedField} onClick={()=>setShowSelectedField(v=>!v)}>Field ที่เลือก</button></>}
           {!!boxes.length && <button
             type="button"
             aria-label={reviewMode ? "แสดงกรอบ DET ทั้งหมด" : showBoxes ? t("Hide OCR boxes") : t("Show OCR boxes")}
@@ -454,7 +467,7 @@ export default function DocumentViewer({
             <Maximize size={15} />
           </button>
           {reviewMode && !!roi && <button type="button" aria-label="ซูมกรอบที่เลือก" title="ซูมกรอบที่เลือก" disabled={!roi||!image} className={toolClass()} onClick={focusRegion}><ScanLine size={16}/></button>}
-          {!reviewMode && <button
+          {<button
             type="button"
             aria-label={t("Reset document view")}
             title={t("Reset document view")}
@@ -594,15 +607,15 @@ export default function DocumentViewer({
                   width={width}
                   height={height}
                 />
-                {globalFields?.filter(f => reviewMode || f.id !== selectedGlobalFieldId).map(field => reviewMode ? (
+                {globalFields?.filter(f => (reviewMode || f.id !== selectedGlobalFieldId)&&(f.id!==selectedGlobalFieldId||showSelectedField)).map(field => reviewMode ? (
                   <Group key={field.id} name="global-layout-field" onClick={()=>onSelectGlobalField?.(field.id)} onTap={()=>onSelectGlobalField?.(field.id)} listening={!panMode}>
-                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={field.id===selectedGlobalFieldId?(globalFieldColor??"#7c3aed"):showAllFields?(globalFieldColor??"#2563eb"):undefined} strokeWidth={(field.id===selectedGlobalFieldId?3:2)/view.scale} fill={field.id===selectedGlobalFieldId?(globalFieldColor?"rgba(250,204,21,0.22)":"rgba(124,58,237,0.14)"):"rgba(0,0,0,0)"}/>
-                    {(showAllFields||field.id===selectedGlobalFieldId)&&<FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}${field.id===selectedGlobalFieldId?" •":""}`} color={globalFieldColor??(field.id===selectedGlobalFieldId?"#7c3aed":"#2563eb")}/>}
+                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={field.id===selectedGlobalFieldId?"#6d28d9":showAllFields?(missingGTFieldIds.includes(field.id)?"#dc2626":errorFieldIds.includes(field.id)?"#b45309":globalFieldColor??"#2563eb"):undefined} strokeWidth={field.id===selectedGlobalFieldId?2:1.25} strokeScaleEnabled={false} dash={errorFieldIds.includes(field.id)?[5/view.scale,3/view.scale]:undefined} fill={field.id===selectedGlobalFieldId?"rgba(109,40,217,0.12)":"rgba(0,0,0,0)"}/>
+                    {showFieldLabels&&(showAllFields||field.id===selectedGlobalFieldId)&&<FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}${field.id===selectedGlobalFieldId?" •":""}${missingGTFieldIds.includes(field.id)?" · ไม่มี GT":""}${errorFieldIds.includes(field.id)?" · OCR error":""}`} color={field.id===selectedGlobalFieldId?"#6d28d9":missingGTFieldIds.includes(field.id)?"#dc2626":errorFieldIds.includes(field.id)?"#b45309":globalFieldColor??"#2563eb"}/>}
                   </Group>
                 ) : (
                   <Group key={field.id} name="global-layout-field" onClick={() => onSelectGlobalField?.(field.id)} onTap={() => onSelectGlobalField?.(field.id)} listening={!regionMode && !panMode}>
-                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "#7c3aed" : "#2563eb") : undefined} strokeWidth={(selectedGlobalFieldIds.includes(field.id) ? 3 : 2)/view.scale} fill={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "rgba(124,58,237,0.18)" : "rgba(37,99,235,0.04)") : "rgba(0,0,0,0)"} />
-                    {showAllFields && <FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}`} color="#1d4ed8" />}
+                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "#7c3aed" : "#2563eb") : undefined} strokeWidth={selectedGlobalFieldIds.includes(field.id)?2:1.25} strokeScaleEnabled={false} fill={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "rgba(124,58,237,0.18)" : "rgba(37,99,235,0.04)") : "rgba(0,0,0,0)"} />
+                    {showAllFields && showFieldLabels && <FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}`} color="#1d4ed8" />}
                   </Group>
                 ))}
                 {!!suggestions.length && onSelectSuggestion && (
@@ -614,7 +627,7 @@ export default function DocumentViewer({
                     interactive={!regionMode && !panMode}
                   />
                 )}
-                {currentRoi && !reviewMode && (
+                {currentRoi && !reviewMode && showSelectedField && (
                   <TestRegionLayer
                     roi={currentRoi}
                     imageWidth={width}
@@ -624,6 +637,7 @@ export default function DocumentViewer({
                       allowRoi && !regionMode && !panMode
                     }
                     drawing={Boolean(draftRoi)}
+                    showLabel={showFieldLabels}
                     label={globalFields ? (draftRoi ? "New Field" : `Field ${String(globalFields.find(f=>f.id===selectedGlobalFieldId)?.field_index ?? "").padStart(2,"0")}`) : draftRoi || roiSource === "manual" ? "Manual ROI" : roiSource === "auto" ? "Auto ROI" : undefined}
                     onClick={() => {
                       if (selectedGlobalFieldId) onSelectGlobalField?.(selectedGlobalFieldId);
@@ -671,18 +685,16 @@ export default function DocumentViewer({
         )}
       </div>
 
-      <div className="flex min-h-10 flex-wrap items-center justify-between gap-2 border-t border-slate-200 bg-white px-3 py-2 text-[10px] text-slate-400">
+      <div className="grid min-h-10 shrink-0 gap-1 border-t border-slate-200 bg-white px-3 py-2 text-[10px] text-slate-400">
         {reviewMode&&<span className="w-full text-xs text-slate-500">{globalFields?.find(f=>f.id===selectedGlobalFieldId)?`Field ${String(globalFields.find(f=>f.id===selectedGlobalFieldId)!.field_index).padStart(2,"0")} · `:""}ลากด้วยเครื่องมือมือเพื่อเลื่อน · Ctrl + ล้อเมาส์เพื่อซูม · ปุ่มลูกศรเลื่อนภาพ · 0 พอดีหน้าจอ</span>}
-        <span className="font-mono">
+        <span className="min-w-0 overflow-x-auto whitespace-nowrap font-mono">
           {width.toLocaleString()} × {height.toLocaleString()} px
-          {pointerCoordinates && (
-            <span className="ml-3">
-              x {pointerCoordinates.x} · y {pointerCoordinates.y}
-            </span>
-          )}
+          <span className="ml-3 inline-block w-[20ch] tabular-nums">
+            x {pointerCoordinates?.x ?? "—"} · y {pointerCoordinates?.y ?? "—"}
+          </span>
         </span>
         {roi ? (
-          <span className="font-mono text-indigo-500" aria-live="polite">
+          <span className="min-w-0 overflow-x-auto whitespace-nowrap font-mono text-indigo-500" aria-live="polite">
             {t("ROI (")}
             {roi.x1}, {roi.y1}) — ({roi.x2}, {roi.y2}) · {roi.x2 - roi.x1} ×{" "}
             {roi.y2 - roi.y1} px

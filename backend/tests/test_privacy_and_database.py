@@ -14,6 +14,8 @@ from app.db.models import PipelineRun
 from app.main import create_app
 from tests.test_gateway_and_fairness import envelope
 
+pytestmark = pytest.mark.usefixtures("registered_catalog")
+
 
 def test_private_upstream_fields_never_reach_storage_or_frontend(client, case, gateway, caplog):
     behavior, _ = gateway
@@ -33,7 +35,8 @@ def test_private_upstream_fields_never_reach_storage_or_frontend(client, case, g
     assert response.json()["runs"][0]["status"] == "success"
     with client.app.state.database.session_factory() as session:
         stored = session.scalar(select(PipelineRun)).raw_response
-        assert stored["data"]["input_img"] == "[redacted]"
+        # Lean persistence drops the entire upstream archive, including tensors.
+        assert set(stored) == {"composition"} and "data" not in stored
         assert "test-gateway-secret" not in json.dumps(stored)
     assert "บริษัท" not in caplog.text
     assert "test-gateway-secret" not in caplog.text
@@ -88,6 +91,8 @@ def test_live_postgresql_repository_roundtrip(tmp_path, png, gateway):
         model_gateway_api_key="test-gateway-secret",
     )
     with TestClient(create_app(settings)) as client:
+        from tests.catalog_fixture import register_catalog
+        register_catalog(client)
         assert client.get("/api/health").json()["database"]["provider"] == "postgresql"
         document = client.post(
             "/api/documents", files={"file": ("pg-fixture.png", png, "image/png")}
