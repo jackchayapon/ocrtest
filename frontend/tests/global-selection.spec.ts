@@ -40,6 +40,16 @@ async function setup(page: Page, groundTruth = false) {
       field.ground_truth_raw = req.postDataJSON().ground_truth_raw;
       state.gtSaves++;
     }
+    if (url.endsWith("/global-ground-truth") && req.method() === "PUT") {
+      const data=req.postDataJSON();
+      for(const change of data.fields){
+        const field=record.global_fields.find(f=>f.id===change.id)!;
+        field.ground_truth_raw=change.ground_truth_raw;
+        state.gtSaves++;
+      }
+      record.ground_truth_raw=data.ground_truth_raw;
+      record.evaluation_mode=data.evaluation_mode;
+    }
     if (!url.includes("/global-fields/") && url.endsWith("/ground-truth")) record.ground_truth_raw = req.postDataJSON().ground_truth_raw;
     if (url.endsWith("/evaluate")) {
       expect(req.postDataJSON().require_complete_gt).toBe(true);
@@ -60,6 +70,23 @@ async function clickFrame(page: Page, x: number, y: number) {
   const box = (await canvas.boundingBox())!;
   const scale = Number(await page.getByTestId("document-viewer").getAttribute("data-view-scale"));
   await page.mouse.click(box.x + (box.width - 300 * scale) / 2 + x * scale, box.y + (box.height - 200 * scale) / 2 + y * scale);
+}
+
+for(const detail of ["Not Found","Unknown Global Field"]){
+ test(`bulk GT only falls back for a missing route: ${detail}`,async({page})=>{
+  const {state}=await setup(page,true);
+  await page.route("**/global-ground-truth",route=>route.fulfill({status:404,json:{detail}}));
+  await page.getByLabel("Ground Truth Field 01",{exact:true}).fill("Corrected GT");
+  await page.getByRole("button",{name:"บันทึก GT ฉบับร่าง",exact:true}).click();
+  if(detail==="Not Found"){
+   await expect.poll(()=>state.gtSaves).toBe(1);
+   await expect(page.getByText("บันทึก GT ฉบับร่างแล้ว — ยังไม่ได้คำนวณผลประเมิน",{exact:true})).toBeVisible();
+  }else{
+   await expect(page.locator(".error-banner[role=alert]")).toBeVisible();
+   expect(state.gtSaves).toBe(0);
+  }
+  expect(state.evaluations).toBe(0);
+ });
 }
 
 test("OCR draft prefill opens editable GT, syncs multiline fields and waits for confirmation",async({page})=>{

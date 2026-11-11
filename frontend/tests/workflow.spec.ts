@@ -1,5 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
-import {waitForJobResults} from "./job-results";
+import {runAllConfigured,waitForJobResults} from "./job-results";
 import { t } from "../lib/i18n/th";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
@@ -88,12 +88,10 @@ for (const imageFile of [
     for (const name of [t("Mint Custom"), "Hutch Crop", "Hutch Full", "Benchmark", "Thai FT v2", "Hutch fine tune v2"]) {
       await expect(
         page.getByLabel(`เลือก ${name}`, { exact: true }),
-      ).toBeChecked();
+      ).toBeVisible();
     }
-    const responsePromise = waitForJobResults(page);
-    await page
-      .getByRole("button", { name: t("Run all pipelines"), exact: true })
-      .click();
+    await expect(page.locator('.pipeline-options input:checked')).toHaveCount(3);
+    const responsePromise = runAllConfigured(page);
     const result = await (await responsePromise).json();
     expect(result.runs).toHaveLength(configs.length);
     expect(result.runs.map((run: PipelineRun) => run.status)).toEqual(configs.map(() => "success"));
@@ -382,7 +380,7 @@ test("legacy compatibility: ROI move and resize, selectable Auto ROI, and failur
     "ไม่สามารถตรวจหาพื้นที่อัตโนมัติได้ในขณะนี้",
   );
   await expect(
-    page.getByRole("button", { name: t("Run all pipelines"), exact: true }),
+    page.getByRole("button", { name: t("Run selected"), exact: true }),
   ).toBeEnabled();
   expect(await readROI()).toEqual(resized);
   await page.getByLabel(t("Auto ROI mode")).selectOption("text-line");
@@ -422,7 +420,7 @@ test("legacy compatibility: ROI move and resize, selectable Auto ROI, and failur
     .getByRole("button", { name: t("Run selected"), exact: true })
     .click();
   const result = await (await pending).json();
-  const enabledConfigs=(await(await request.get(`${backend}/api/pipelines`)).json()).filter((c:{enabled:boolean})=>c.enabled);
+  const enabledConfigs=(await(await request.get(`${backend}/api/pipelines`)).json()).filter((c:{enabled:boolean})=>c.enabled).slice(0,3);
   expect(result.runs.map((r:PipelineRun)=>r.pipeline_id).sort()).toEqual(enabledConfigs.map((c:{pipeline_id:string})=>c.pipeline_id).sort());
   for (const run of result.runs.filter((r: PipelineRun) => r.pipeline_id !== "hutch_full")) {
     expect(run.roi).toEqual({ x1: finalROI[0], y1: finalROI[1], x2: finalROI[2], y2: finalROI[3] });

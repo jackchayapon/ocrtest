@@ -1,5 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
-import {waitForJobResults} from "./job-results";
+import {runAllConfigured,waitForJobResults} from "./job-results";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
 import { t } from "../lib/i18n/th";
@@ -78,8 +78,7 @@ test("legacy compatibility: Thai FT v2 fifth pipeline supports Auto/Manual ROI, 
   await page.mouse.move(x + 100 * scale, y + 250 * scale); await page.mouse.down();
   await page.mouse.move(x + 750 * scale, y + 350 * scale, { steps: 10 }); await page.mouse.up();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  pending = waitForJobResults(page);
-  await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
+  pending = runAllConfigured(page);
   const manual = await (await pending).json();
   expect(manual.runs.map((r: PipelineRun) => r.pipeline_id).sort()).toEqual(configs.map(c => c.pipeline_id).sort());
   expect(manual.runs.every((r: PipelineRun) => r.status === "success")).toBeTruthy();

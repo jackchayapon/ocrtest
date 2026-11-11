@@ -4,7 +4,7 @@ from hashlib import sha256
 
 from sqlalchemy import delete, select
 
-from app.core.config import MAX_JOB_FIELDS, MAX_JOB_PIPELINES, MAX_JOB_UNITS
+from app.core.config import MAX_JOB_FIELDS, MAX_JOB_PIPELINES
 from app.core.errors import AppError
 from app.db.models import Document, Metric, TestCase, new_id, now
 from app.repositories.benchmark_repository import BenchmarkRepository
@@ -192,8 +192,26 @@ class TestCaseService:
                 run.metric_records.append(Metric(text_kind=text_kind, **values))
 
     async def run(self, case_id, pipeline_ids, *, checkpoint=None):
+        if checkpoint is not None:
+            # Enqueue validated the immutable snapshot. Do not eagerly load the
+            # case's entire result history into the long-lived worker Session.
+            workflow = self.repository.session.scalar(select(TestCase.workflow).where(TestCase.id == case_id))
+            if workflow == "global":
+                from app.services.incremental_global import IncrementalGlobalJob
+                self.repository.session.commit()
+                await IncrementalGlobalJob(self, checkpoint).run()
+                self.repository.session.refresh(checkpoint.job)
+                return []
         record = self.repository.test_case(case_id)
-        self.validate_workload(record, pipeline_ids)
+        # New submissions were checked at enqueue. Existing immutable Jobs may
+        # legitimately contain the previous six-Pipeline legacy snapshot.
+        if checkpoint is None:
+            self.validate_workload(record, pipeline_ids)
+            if record.workflow == "global" and len(record.global_fields) * len(pipeline_ids) > 24:
+                # Compatibility HTTP endpoint retains its previously supported
+                # synchronous budget. Larger workloads use the 240-unit durable
+                # executor, never the old in-memory parent/Field collector.
+                raise AppError("งาน Global ขนาดใหญ่ต้องใช้ OCR Job / Submit this workload to the durable /jobs endpoint", 409)
         if record.workflow == "global":
             from app.services.global_layout_service import GlobalLayoutService
             return await GlobalLayoutService(self).run(case_id, pipeline_ids, checkpoint=checkpoint)
@@ -297,12 +315,10 @@ class TestCaseService:
 
     @staticmethod
     def validate_workload(case, pipeline_ids):
-        fields = len(case.global_fields) if case.workflow == "global" else 1
-        if len(pipeline_ids) > MAX_JOB_PIPELINES or (
-                case.workflow == "global" and len(case.global_fields) > MAX_JOB_FIELDS):
-            raise AppError(f"งานเกินขีดจำกัด / Job exceeds {MAX_JOB_FIELDS} Fields or {MAX_JOB_PIPELINES} Pipelines", 413)
-        if fields * len(pipeline_ids) > MAX_JOB_UNITS:
-            raise AppError(f"งานเกินขีดจำกัด กรุณาลด Fields หรือ Pipelines / Fields × Pipelines must not exceed {MAX_JOB_UNITS}", 413)
+        if len(pipeline_ids) > MAX_JOB_PIPELINES:
+            raise AppError(f"เลือกได้สูงสุด {MAX_JOB_PIPELINES} Pipelines", 413)
+        if case.workflow == "global" and len(case.global_fields) > MAX_JOB_FIELDS:
+            raise AppError(f"เลือกได้สูงสุด {MAX_JOB_FIELDS} Fields", 413)
 
     def page_metadata(self, document_id, page_number=None):
         from app.services.serializers import document_json

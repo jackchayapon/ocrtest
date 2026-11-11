@@ -67,7 +67,9 @@ test('Run OCR shows immediate busy feedback, blocks duplicates and restores afte
  for(const checkbox of await page.getByTestId('pipeline-options').getByRole('checkbox').all())await expect(checkbox).toBeDisabled();
  await running.evaluate((button:HTMLButtonElement)=>{button.click();button.click();});expect(calls).toBe(1);
  release();await expect(page.getByRole('button',{name:'Run OCR',exact:true})).toBeEnabled();await expect(page.getByTestId('pipeline-options')).toHaveClass(/opacity-100/);
- for(const checkbox of await page.getByTestId('pipeline-options').getByRole('checkbox').all())await expect(checkbox).toBeEnabled();
+ for(const checkbox of await page.getByTestId('pipeline-options').getByRole('checkbox').all()){
+  if(await checkbox.isChecked())await expect(checkbox).toBeEnabled();else await expect(checkbox).toBeDisabled();
+ }
  await page.unroute('**/api/test-cases/*/jobs');await run(page);await expect(page.getByTestId('ocr-spinner')).toHaveCount(0);
 });
 
@@ -104,7 +106,8 @@ test('global acceptance: 3 Auto + Manual, shared crops/GT, explicit calculate, H
  await expect(comparisonRow.getByTestId('global-metrics-mint').getByTestId('global-evaluation')).toBeVisible();
  await comparisonRow.getByTestId('global-result-mint').getByTestId('highlight-error').first().click();
  await expect(page.locator('[popover]:popover-open')).toContainText('อ่านผิด');await page.keyboard.press('Escape');
- for(const id of ids)await expect(comparisonRow.getByTestId(`global-metrics-${id}`)).toContainText('CER');
+ expect(result.runs.map((r:PipelineRun)=>r.pipeline_id)).toEqual(ids.slice(0,3));
+ for(const id of result.runs.map((r:PipelineRun)=>r.pipeline_id))await expect(comparisonRow.getByTestId(`global-metrics-${id}`)).toContainText('CER');
  await page.reload();await expect(page.getByTestId('global-field-nav')).toHaveCount(0);
  await expect(page.getByLabel('Ground Truth Field 02')).toHaveValue('บริษัท ซีดีจี จำกัด\nABXD');
  await page.goto(`/workflow/${c.id}/ground-truth`);

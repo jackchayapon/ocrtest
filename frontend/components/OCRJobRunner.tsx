@@ -93,6 +93,7 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   finally{pending.current=false;setSubmitting(false);}
  }
  const elapsed=jobElapsedSeconds(job,clock);
+ const pipelineIndex=job?.current_pipeline_id?job.pipeline_ids.indexOf(job.current_pipeline_id):-1;
  const busy=checking||submitting||verifying||!!job&&active(job);
  return <section className="space-y-3" aria-label="สถานะงาน OCR">
   {error&&<p role="alert" className="error-banner">{error}</p>}
@@ -102,11 +103,11 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
    <p>{job.status==="queued"?"ส่งงานแล้ว — รอ worker รับงาน":job.status==="running"?"กำลังประมวลผล OCR":job.status==="completed"?"ประมวลผล OCR สำเร็จ":job.status==="partial_success"?"OCR เสร็จสิ้น แต่มีบาง Pipeline ที่ไม่สำเร็จ":job.status==="cancelled"?"งาน OCR ถูกยกเลิก":"งาน OCR ไม่สำเร็จ — ตรวจข้อผิดพลาดก่อนลองใหม่"}</p>
    <progress aria-label="ความคืบหน้า OCR" max={100} value={job.progress_percent} className="w-full"/>
    <p>{job.progress_percent}% · ประมวลผลแล้ว: {job.completed_units} / {job.total_fields*job.total_pipelines} รายการ</p>
-   <p>สำเร็จ: {Math.max(0,job.completed_units-job.failed_units)} · ล้มเหลว: {job.failed_units} · หนึ่งรายการ = หนึ่ง Field × Pipeline</p>
+   <p>สำเร็จ: {Math.max(0,job.completed_units-job.failed_units)} · ล้มเหลว: {job.failed_units}</p>
    <p>Pipeline ครบแล้ว: {job.completed_pipelines} / {job.total_pipelines} · รายการผิดพลาด: {job.failed_units}</p>
-   {job.current_pipeline_id&&<p>Pipeline ที่กำลังทำงาน: {names[job.current_pipeline_id]||job.current_pipeline_id}</p>}
+   {job.status==="running"&&job.current_pipeline_id&&<p>{pipelineIndex>=0?`กำลังประมวลผล Pipeline ${pipelineIndex+1}/${job.total_pipelines}`:"กำลังเตรียม Ground Truth"} — Field {job.current_field_index??0}/{job.total_fields}{pipelineIndex>=0&&` · ${names[job.current_pipeline_id]||job.current_pipeline_id}`}</p>}
    <p>เวลาที่ผ่านไป: {elapsed===null?"—":`${String(Math.floor(elapsed/60)).padStart(2,"0")}:${String(elapsed%60).padStart(2,"0")}`}</p>
-   {job.updated_at&&<p className="text-xs">สถานะจากเซิร์ฟเวอร์ล่าสุด: {new Date(job.updated_at).toLocaleTimeString("th-TH")} · เปอร์เซ็นต์เพิ่มเมื่อบันทึก checkpoint ไม่ใช่เวลา Gateway</p>}
+   {job.updated_at&&<p className="text-xs">สถานะล่าสุด: {new Date(job.updated_at).toLocaleTimeString("th-TH")}</p>}
    {active(job)&&<p className="text-sm">ปิดหรือรีเฟรชหน้านี้ได้ งานเดิมจะถูกติดตามจากเซิร์ฟเวอร์</p>}
    {job.safe_error_message&&<p>{job.safe_error_message}</p>}
    {!active(job)&&<Link className="text-sky-800 underline" href={resultsUrl}>ดูผลลัพธ์และรายละเอียดข้อผิดพลาด</Link>}

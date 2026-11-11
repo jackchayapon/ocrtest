@@ -13,7 +13,7 @@ test("legacy compatibility: selected PDF pages run separately; logs and confirme
       data: { enabled: true },
     });
   const configs = await (await request.get(`${backend}/api/pipelines`)).json();
-  const enabled = configs.filter((c: {enabled: boolean}) => c.enabled);
+  const enabled = configs.filter((c: {enabled: boolean}) => c.enabled).slice(0,3);
   await openLegacyWorkspace(page);
   const uploaded = page.waitForResponse(
     (r) =>

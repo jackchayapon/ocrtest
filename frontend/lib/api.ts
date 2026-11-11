@@ -1,6 +1,6 @@
 import { ReadCoordinator } from "@/lib/read-coordinator";
 import { t, userError } from "@/lib/i18n/th";
-import type { Category, CategoryAnalytics, Document, MatrixRow, PipelineConfig, QueryFilters, RunResponse, TestCase, TestCaseInput } from "@/types";
+import type { Category, CategoryAnalytics, Document, EvaluationMode, GlobalField, MatrixRow, PipelineConfig, QueryFilters, RunResponse, TestCase, TestCaseInput } from "@/types";
 
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
@@ -12,7 +12,7 @@ export const deletePipeline = (id: string) => request<void>(`/pipelines/${encode
 
 const reads = new ReadCoordinator();
 export class APIError extends Error {
-  constructor(message:string,public readonly status:number){super(message);this.name="APIError";}
+  constructor(message:string,public readonly status:number,public readonly routeMissing=false){super(message);this.name="APIError";}
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -44,7 +44,7 @@ async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
     const message = typeof detail === "string" ? detail : Array.isArray(detail)
       ? detail.map((item: { msg?: string }) => item.msg ?? t("Invalid input")).join(". ")
       : `Request failed (${response.status}). Please try again.`;
-    throw new APIError(userError(message, response.status),response.status);
+    throw new APIError(userError(message, response.status),response.status,response.status===404&&detail==="Not Found");
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
@@ -57,6 +57,7 @@ function query(filters?: QueryFilters): string {
 }
 
 export const getUploadConfig = () => request<{ max_upload_mb: number; pdf_render_dpi: number; max_image_pixels: number; max_image_dimension: number; max_pdf_pages: number; ocr_queue_capacity: number; max_job_fields: number; max_job_pipelines: number; max_job_units?: number; max_detection_regions?: number; max_ocr_text_characters?: number }>("/upload-config");
+export const saveGlobalGTBatch = (id:string,fields:GlobalField[],ground_truth_raw:string,evaluation_mode:EvaluationMode) => request<TestCase>(`/test-cases/${id}/global-ground-truth`,{method:"PUT",body:JSON.stringify({fields:fields.map(f=>({id:f.id,ground_truth_raw:f.ground_truth_raw??""})),ground_truth_raw,evaluation_mode})});
 export const getDocumentPage = (id: string, page_number?: number) => request<Document>(`/documents/${id}${page_number === undefined ? "" : `?page_number=${page_number}`}`);
 export const getGatewayStatus = () => request<import("@/types").GatewayStatus>("/integrations/model-gateway/status");
 export const getAutoROIs = (id: string, auto_roi_mode = "text-line", page_number: number | null = null) => request<import("@/types").AutoROIResponse>(`/documents/${id}/auto-rois`, { method: "POST", body: JSON.stringify({ auto_roi_mode, expand_text_rois: false, page_number }) });

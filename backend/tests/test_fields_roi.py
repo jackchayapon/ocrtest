@@ -117,10 +117,8 @@ def test_explicit_roi_origin_pipeline_inputs(client, document, gateway, source):
     case = client.post(
         "/api/test-cases", json=dict(document_id=document["id"], roi=roi, roi_source=source)
     ).json()
-    runs = client.post(
-        f"/api/test-cases/{case['id']}/run",
-        json={"pipelines": ["mint", "hutch_crop", "hutch_full", "benchmark"]},
-    ).json()["runs"]
+    from tests.run_config_groups import run_config_groups
+    runs = run_config_groups(client, case['id'], ["mint", "hutch_crop", "hutch_full", "benchmark"])
     assert all(r["status"] == "success" for r in runs)
     assert runs[0]["crop_sha256"] == runs[1]["crop_sha256"] == runs[3]["crop_sha256"]
     full = runs[2]

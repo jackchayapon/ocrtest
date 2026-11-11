@@ -29,6 +29,7 @@ test("isolated real backend: browser upload, Auto/Manual layout, multi OCR, GT, 
     expect(preflight.status()).toBe(200);
     expect(preflight.headers()["access-control-allow-origin"]).toBe(new URL(process.env.E2E_BASE_URL || "http://127.0.0.1:3100").origin);
     await page.goto("/");
+    await expect(page.locator("input[type=file]")).toBeEnabled();
     const uploaded = page.waitForResponse(r => r.url().endsWith("/api/documents") && r.request().method() === "POST");
     await page.locator("input[type=file]").setInputFiles(path.resolve("public/sample-document.png"));
     const document = await (await uploaded).json();
@@ -105,6 +106,7 @@ test("isolated real backend: PDF pages, single pipeline, batch, confirmed GT dat
   const pipeline = await created.json();
   try {
     await page.goto("/");
+    await expect(page.locator("input[type=file]")).toBeEnabled();
     const uploaded = page.waitForResponse(r => r.url().endsWith("/api/documents") && r.request().method() === "POST");
     await page.locator("input[type=file]").setInputFiles(path.resolve("tests/fixtures/two-pages.pdf"));
     const document = await (await uploaded).json();
@@ -153,6 +155,7 @@ for (const input of [
     const pipeline = await created.json();
     try {
       await page.goto("/");
+      await expect(page.locator("input[type=file]")).toBeEnabled();
       const uploaded = page.waitForResponse(r => r.url().endsWith("/api/documents") && r.request().method() === "POST");
       await page.locator("input[type=file]").setInputFiles(path.resolve(input.filename));
       const document = await (await uploaded).json();

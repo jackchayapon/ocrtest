@@ -7,15 +7,19 @@ import logging
 import math
 import random
 import re
+import socket
+import ssl
 import time
 from contextlib import AsyncExitStack
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from functools import lru_cache
 from io import BytesIO
 from tempfile import SpooledTemporaryFile
 from urllib.parse import urlsplit
 from uuid import uuid4
 
+import certifi
 import httpx
 import ijson
 
@@ -26,6 +30,14 @@ from app.integrations.gateway_response import READ_CHUNK_BYTES, EnvelopeParser, 
 from app.integrations.gateway_routes import UnavailableService, origin, resolve_endpoint
 
 logger = logging.getLogger(__name__)
+
+
+@lru_cache(maxsize=1)
+def verified_tls_context():
+    # The same immutable CA trust store is used by every leaf request. Loading
+    # OpenSSL's certificate store per Field/region retained native allocations
+    # across long Jobs. Connections/clients still have their own lifetimes.
+    return ssl.create_default_context(cafile=certifi.where())
 
 
 def streamed_uploads(request, owner):
@@ -161,6 +173,13 @@ class ModelGatewayClient:
             timeout=timeout or self.settings.model_gateway_timeout_seconds,
             follow_redirects=False,
             trust_env=False,
+            # Linux autotuning otherwise charged ~11.8 MB of receive backlog
+            # while rejecting an oversized response. Bound that kernel memory
+            # without changing decoded-byte limits, TLS, routing or retries.
+            transport=httpx.AsyncHTTPTransport(
+                verify=verified_tls_context(), trust_env=False, retries=0,
+                socket_options=[(socket.SOL_SOCKET, socket.SO_RCVBUF, 256 * 1024)],
+            ),
         )
 
     def headers(self, request_id: str):

@@ -211,7 +211,7 @@ def test_future_config_is_iterable_without_invented_adapter(client, case, settin
     assert len(client.get("/api/pipelines").json()) == count
     response = client.post(
         f"/api/test-cases/{case['id']}/run",
-        json={"pipelines": ["mint", "hutch_crop", "hutch_full", "future"]},
+        json={"pipelines": ["mint", "hutch_crop", "future"]},
     )
     assert response.status_code == 404, response.text
     assert client.get(f"/api/test-cases/{case['id']}").json()["runs"] == []

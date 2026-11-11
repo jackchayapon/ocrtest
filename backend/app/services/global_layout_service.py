@@ -124,8 +124,15 @@ class GlobalLayoutService:
     def save_gt(self, case_id, field_id, data):
         case = self.case(case_id)
         field = self.field(case, field_id)
-        field.ground_truth_raw = data.ground_truth_raw
-        field.ground_truth_normalized = normalize_text(data.ground_truth_raw)
+        self.change_field_gt(case, field, data.ground_truth_raw)
+        for run in case.runs:
+            self.aggregate(run, case.evaluation_mode)
+        return self.repo.save(case)
+
+    @staticmethod
+    def change_field_gt(case, field, text):
+        field.ground_truth_raw = text
+        field.ground_truth_normalized = normalize_text(text)
         field.confirmed_at = None
         field.updated_at = case.updated_at = now()
         case.status = "tested" if case.runs else "draft"
@@ -134,7 +141,26 @@ class GlobalLayoutService:
                 if prediction.global_field_id == field.id:
                     prediction.evaluation = prediction.confirmed_at = None
                     prediction.ground_truth_raw = prediction.ground_truth_normalized = None
+
+    def save_gt_batch(self, case_id, data):
+        case = self.case(case_id)
+        # Resolve every identity before making any mutation: invalid mixed
+        # payloads cannot partially save GT. Same invalidation semantics as the
+        # individual endpoints, with one transaction/response for eighty edits.
+        changes = [(self.field(case, str(item.id)), item.ground_truth_raw) for item in data.fields]
+        for field, text in changes:
+            if field.ground_truth_raw != text:
+                self.change_field_gt(case, field, text)
+        if case.ground_truth_raw != data.ground_truth_raw:
+            case.ground_truth_raw = data.ground_truth_raw
+            case.ground_truth_normalized = normalize_text(data.ground_truth_raw)
+            case.document_gt_confirmed_at = None
+            for run in case.runs:
+                run.document_evaluation = None
+        case.evaluation_mode = data.evaluation_mode
+        for run in case.runs:
             self.aggregate(run, case.evaluation_mode)
+        case.updated_at = now()
         return self.repo.save(case)
 
     @staticmethod

@@ -1,10 +1,10 @@
-from contextlib import closing
 from tempfile import SpooledTemporaryFile
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from sqlalchemy import select
 
 from app.core.errors import AppError
+from app.core.native_memory import release_native_memory
 from app.db.models import GlobalField, TestCase, now
 from app.repositories.dataset_repository import DatasetRepository
 
@@ -69,32 +69,59 @@ class DatasetService:
         for case in records:
             if not self.cases.storage.exists(case.document.storage_key):
                 raise self.missing_source(case.id)
-        output = SpooledTemporaryFile(max_size=16 * 1024 * 1024, mode="w+b")
+        # Large multi-Field archives spill early to the existing temporary disk.
+        # cgroup accounting still includes that file cache; no data is dropped.
+        output = SpooledTemporaryFile(max_size=512 * 1024, mode="w+b")
 
         # Generated names only, fixed ZIP metadata, sorted case IDs. Nothing persists in StorageService.
         def write(archive, name, data):
             info = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
             info.compress_type = ZIP_DEFLATED
             info.external_attr = 0o600 << 16
-            archive.writestr(info, data)
+            # ZipFile.writestr compresses a full high-entropy PNG in one call,
+            # allocating another multi-MB bytes object before the spool copies it.
+            # Feed the same lossless bytes in bounded chunks instead.
+            with archive.open(info, "w") as member:
+                view = memoryview(data)
+                for offset in range(0, len(view), 64 * 1024):
+                    member.write(view[offset:offset + 64 * 1024])
 
+        image = source = image_key = None
         try:
             labels, byte_count = [], 0
             with ZipFile(output, "w") as archive:
                 for index, case in enumerate(records, 1):
-                    try:
-                        source, _, _ = self.cases.page_image(case.document, case.page_number)
-                    except AppError as exc:
-                        if exc.status_code == 404:
-                            raise self.missing_source(case.id) from None
-                        raise
-                    with closing(self.cases.images.open(source)) as image:
-                        crop = self.cases.images.canonical_crop(image, case.roi)
+                    key = (case.document.id, case.page_number)
+                    if key != image_key:
+                        # Keep one decoded page for adjacent Field exports.
+                        # Close it BEFORE allocating a different source/page.
+                        if image is not None:
+                            image.close()
+                        image = source = None
+                        try:
+                            source, _, _ = self.cases.page_image(case.document, case.page_number)
+                        except AppError as exc:
+                            if exc.status_code == 404:
+                                raise self.missing_source(case.id) from None
+                            raise
+                        # A bounded file read can leave freed native chunks in
+                        # the allocator. Return those pages before decoding the
+                        # next large owner, rather than after ZIP cache growth.
+                        if len(source) >= 512 * 1024:
+                            release_native_memory()
+                        image = self.cases.images.open(source)
+                        image_key = key
+                    crop = self.cases.images.canonical_crop(image, case.roi, encoded_source=source)
                     byte_count += len(crop.png)
                     if byte_count > 512 * 1024 * 1024:
                         raise AppError("Export exceeds 512 MB; select fewer samples", 413)
+                    # Measured allocation boundary: only large encoded crops,
+                    # not each small Field. Pixels and ZIP contents are unchanged.
+                    if len(crop.png) >= 512 * 1024:
+                        release_native_memory()
                     name = f"images/{index:06d}.png"
                     write(archive, f"dataset/{name}", crop.png)
+                    del crop
                     labels.append(f"{name}\t{escape_label(case.ground_truth_raw)}\n")
                 write(archive, "dataset/label.txt", "".join(labels).encode("utf-8"))
             output.seek(0)
@@ -102,6 +129,9 @@ class DatasetService:
         except Exception:
             output.close()
             raise
+        finally:
+            if image is not None:
+                image.close()
 
     @staticmethod
     def missing_source(case_id):

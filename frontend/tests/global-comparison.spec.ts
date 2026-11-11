@@ -34,6 +34,14 @@ for(const width of [390,1440])test(`comparison scroll, pinned GT, modes and expl
    return route.fulfill({json:{document_id:"doc",filename:"synthetic.png",page_number:null,test_case_id:record.id,evaluation_mode:whole?"whole_document":"per_field",rules_version:"test",pipelines:[{run_id:run.id,pipeline_id:run.pipeline_id,pipeline_name:run.pipeline_name,status:run.status,statistics,evaluated_scopes:1,total_scopes:1,scopes:[{field_id:fid,global_field_id:fid,field_index:chosen?.field_index??null,roi:chosen?.roi??record.global_fields![0].roi,state:"ready",statistics,display_ground_truth:gt,display_ocr_text:ocr,details_truncated:false,details}]}]}});
   }
   if(url.endsWith("/evaluation-mode"))record.evaluation_mode=req.postDataJSON().mode;
+  if(url.endsWith("/global-ground-truth")&&req.method()==="PUT"){
+   const data=req.postDataJSON();
+   for(const change of data.fields){
+    const field=record.global_fields!.find(f=>f.id===change.id)!;field.ground_truth_raw=change.ground_truth_raw;
+    for(const run of record.runs)run.fields!.find(f=>f.global_field_id===field.id)!.evaluation=null;
+   }
+   record.ground_truth_raw=data.ground_truth_raw;record.evaluation_mode=data.evaluation_mode;
+  }
   if(!url.includes("/global-fields/")&&url.endsWith("/ground-truth"))record.ground_truth_raw=req.postDataJSON().ground_truth_raw;
   if(url.includes("/global-fields/")&&url.endsWith("/ground-truth")){
    const field=record.global_fields!.find(f=>url.includes(f.id))!;

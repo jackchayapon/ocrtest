@@ -220,22 +220,23 @@ def test_unknown_job_and_job_cors(client):
 def test_interrupted_after_checkpoint_reuses_completed_units(
     client, document, gateway, monkeypatch, interruption
 ):
-    # Ten fields force two bounded checkpoints at the unchanged field budget eight.
+    # Interrupt after the eighth durably committed unit, independent of batching.
     case, fields = layout(client, document, count=10)
     pid = pipeline(client)
     worker, create = paused_worker(client)
     jid = create(case, [pid])
     assert worker.claim()[0] == jid
-    original = Checkpoint.save
+    from app.services.incremental_global import IncrementalGlobalJob
+    original = IncrementalGlobalJob.persist
 
-    def interrupt(self, parents, prefill=None):
-        original(self, parents, prefill)
-        if self.job.completed_units == 8:
+    def interrupt(self, run_id, field, result, **kwargs):
+        original(self, run_id, field, result, **kwargs)
+        if run_id and field.field_index == 8:
             if interruption == "database":
                 raise OperationalError("synthetic ambiguous commit", {}, Exception("synthetic"))
             raise asyncio.CancelledError()
 
-    monkeypatch.setattr(Checkpoint, "save", interrupt)
+    monkeypatch.setattr(IncrementalGlobalJob, "persist", interrupt)
     with pytest.raises(LostLease if interruption == "database" else asyncio.CancelledError):
         asyncio.run(worker.execute(jid))
     with worker.database.session_factory() as session:
@@ -246,7 +247,7 @@ def test_interrupted_after_checkpoint_reuses_completed_units(
         job.lease_expires_at = now() - timedelta(seconds=1)
         session.commit()
     count = len(gateway[1])
-    monkeypatch.setattr(Checkpoint, "save", original)
+    monkeypatch.setattr(IncrementalGlobalJob, "persist", original)
     replacement = JobWorker(worker.database, worker.settings, worker.storage, asyncio.Lock())
     assert replacement.claim()[0] == jid
     asyncio.run(replacement.execute(jid))
@@ -280,14 +281,15 @@ def test_unexpected_failure_preserves_checkpoint_and_finalizes_parent(
     pid = pipeline(client)
     worker, create = paused_worker(client)
     jid = create(case, [pid])
-    original = Checkpoint.save
+    from app.services.incremental_global import IncrementalGlobalJob
+    original = IncrementalGlobalJob.persist
 
-    def fail_after_save(self, parents, prefill=None):
-        original(self, parents, prefill)
-        if self.job.completed_units == 8:
+    def fail_after_save(self, run_id, field, result, **kwargs):
+        original(self, run_id, field, result, **kwargs)
+        if run_id and field.field_index == 8:
             raise RuntimeError("synthetic private error text must not escape")
 
-    monkeypatch.setattr(Checkpoint, "save", fail_after_save)
+    monkeypatch.setattr(IncrementalGlobalJob, "persist", fail_after_save)
     assert worker.claim()[0] == jid
     asyncio.run(worker.execute(jid))
     final = client.get(f"/api/ocr-jobs/{jid}").json()

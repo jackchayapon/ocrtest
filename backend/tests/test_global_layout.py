@@ -86,16 +86,16 @@ def layout(client, document, count=2, confirmed=True, prefill=True):
 
 
 def run(client, case):
-    response = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": PIPELINES})
-    assert response.status_code == 200, response.text
-    assert all(r["status"] == "success" for r in response.json()["runs"]), response.text
-    return response.json()["runs"]
+    from tests.run_config_groups import run_config_groups
+    runs = run_config_groups(client, case['id'], PIPELINES)
+    assert all(r["status"] == "success" for r in runs), runs
+    return runs
 
 
 def test_layout_identity_confirmation_history_and_crop_fairness(client, document, gateway):
     case, fields = layout(client, document, prefill=False, confirmed=False)
     url = f"/api/test-cases/{case['id']}"
-    assert client.post(url + "/run", json={"pipelines": PIPELINES}).status_code == 409
+    assert client.post(url + "/run", json={"pipelines": PIPELINES[:3]}).status_code == 409
     assert client.get("/api/history", params={"document": document["id"]}).json() == []
     fields.append(
         {
@@ -296,9 +296,8 @@ def test_detector_order_is_not_global_identity_and_failure_isolation(client, doc
 
     gateway[0]["handler"] = handler
     case, fields = layout(client, document, prefill=False)
-    response = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": PIPELINES})
-    assert response.status_code == 200
-    runs = response.json()["runs"]
+    from tests.run_config_groups import run_config_groups
+    runs = run_config_groups(client, case['id'], PIPELINES)
     for result in runs:
         assert [f["global_field_id"] for f in result["fields"]] == [f["id"] for f in fields]
         assert all(

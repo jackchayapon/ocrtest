@@ -1,8 +1,8 @@
 # Bounded workload — local release candidate
 
-สถานะ 10 พฤศจิกายน 2569: **G6 final candidate ผ่าน local verification แล้ว** ดู [release gates](production-release-gates.json), [รายงาน](production-release-and-live-e2e.md) และ [หลักฐานสุดท้าย](g6-release-evidence.json) การผ่าน local gates ไม่ใช่ผล deployed E2E ซึ่งตรวจแยกหลัง auto-deploy
+บันทึก G6 release ก่อนหน้าอยู่ใน [หลักฐานเดิม](g6-release-evidence.json) ส่วน upgrade 80 Fields ดู [สถาปัตยกรรม](multifield-incremental-ocr.md) และ [release gates ล่าสุด](production-release-gates.json) ผล local verification แยกจากผล deployed E2E เสมอ
 
-## ขีดจำกัดใหม่ที่ผู้ใช้อนุมัติให้ลดและทดสอบ
+## ขีดจำกัดของ candidate ปัจจุบัน
 
 | รายการ | เพดาน candidate |
 |---|---:|
@@ -13,8 +13,8 @@
 | DPI เริ่มต้น PDF ใหม่ | 140; A4 ประมาณ 1157 × 1638 พิกเซล |
 | งาน OCR ที่ประมวลผล | 1 งานต่อ container |
 | งาน queued + running ทั้ง workspace | 5 งาน; เต็มตอบ 429 |
-| Fields / Pipelines ที่เลือกต่อการรัน | 12 / 6 |
-| ผลคูณ Fields × Pipelines ต่อ job | 24; เช่น 4 Fields × 6 Pipelines หรือ 12 Fields × 2 Pipelines |
+| Fields / Pipelines ที่เลือกต่อ Job ใหม่ | 80 / 3 |
+| ผลคูณ Fields × Pipelines ต่อ Job | สูงสุด 240; ทำตามลำดับใน Job เดียว ไม่ต้องแบ่งเอง |
 | DET regions ต่อ Field | 128; มากกว่านี้ปฏิเสธทั้งผลของ Field/Pipeline นั้น ไม่ตัดบรรทัด |
 | ข้อความ OCR ต่อ Field | 32,768 ตัวอักษร; มากกว่านี้เป็น failure ไม่ตัดข้อความให้ดูเหมือนสำเร็จ |
 | Field / adapter task ที่ทำพร้อมกัน | 1 / 1 |
@@ -26,7 +26,7 @@
 
 `/api/upload-config` เป็นข้อมูลสาธารณะเฉพาะ limits ไม่ส่ง secrets หน้า Upload และ workflow แสดงขีดจำกัดจริง ค่าขนาดไฟล์ชื่อ `*_MB` ใน code ใช้หน่วย MiB (1,048,576 bytes)
 
-ค่าจาก environment ที่สูงกว่า release ceilings ถูกจำกัดใน `Settings`; ตั้งค่าต่ำกว่าได้ `PDF_RENDER_DPI` ยังปรับได้ระหว่าง 72–400 แต่ทุกหน้าต้องผ่าน pixel ceiling เสมอ Existing Railway ตั้ง200DPI จึงเตรียมเปลี่ยนเฉพาะ existing non-secret variable `PDF_RENDER_DPI=140` แบบskipDeploysก่อน merge ที่อนุมัติ ไม่เปลี่ยน DPI/ROI ของ PDF records เดิม
+ค่าจาก environment ที่สูงกว่า release ceilings ถูกจำกัดใน `Settings`; ตั้งค่าต่ำกว่าได้ `PDF_RENDER_DPI` ยังปรับได้ระหว่าง 72–400 แต่ทุกหน้าต้องผ่าน pixel ceiling เสมอ Existing Railway ตั้ง `PDF_RENDER_DPI=140` แล้วใน release ก่อนหน้า รอบนี้ไม่เปลี่ยน environment/แพ็กเกจ หรือ DPI/ROI ของ PDF records เดิม
 
 ## พฤติกรรมและข้อมูลเดิม
 
@@ -34,7 +34,7 @@
 - อ่านเฉพาะ header ของภาพใน storage ก่อนอ่าน source ทั้งไฟล์; อ่านไฟล์เต็มแบบมี byte bound ป้องกัน canonical PNG เก่าขนาดใหญ่ การ crop ใช้ pixel grid ของ source เดิม
 - PDF ใหม่เก็บ DPI และขนาด raster ลง metadata การเลือกหน้าและ ROI ใช้พิกัด raster ของหน้านั้น PDF เดิมยังใช้ DPI ที่บันทึกไว้ ไม่ rerender แล้วเขียนทับ ROI เก่า
 - ผลเก่า/GT/metadata คงอยู่ การประมวลผลซ้ำที่เกินเพดานใหม่ถูกปฏิเสธ; ไม่สร้างภาพทดแทน ไม่ลบ source หรือผลเดิม
-- Fields เดิมที่มีมากกว่า 12 ยังเปิดอ่าน/แก้ GT ได้ แต่ไม่รับรันใหม่เกินเพดาน งานเก่าที่มี checkpoints จะเก็บผลที่ commit ไว้ หาก source ไม่ผ่าน policy ใหม่ worker จะจบอย่างปลอดภัย
+- Fields เดิมที่มีมากกว่า 80 ยังเปิดอ่าน/แก้ GT ได้ แต่ไม่รับรันใหม่เกินเพดาน งานเก่าที่รับไว้ด้วย 6 Pipelines กู้คืนตาม immutable snapshot ได้ ผลที่ commit แล้วคงอยู่ หาก source ไม่ผ่าน policy จะจบอย่างปลอดภัย
 - Dataset ใช้ crop จาก source + confirmed GT เท่านั้น ไม่เปลี่ยน labels เป็น OCR หรือ metrics การ export source ที่เกิน policy ตอบ error แทนไฟล์ปลอม
 - การแบ่ง batch และลด concurrency คงลำดับ ผล OCR/model selection/geometry และ idempotency semantics; upstream error หรือ response ใหญ่เกินเพดานเป็น failure ที่เห็นได้ ไม่ตัดข้อความให้ดูเหมือนสำเร็จ
 - API เก่า `/run` และ PDF batch ยังอยู่เพื่อ compatibility และอยู่ภายใต้ admission เดียวกัน polling/ผลที่บันทึก/GT ไม่รอ image slot

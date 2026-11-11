@@ -14,9 +14,10 @@ from uuid import uuid4
 
 from sqlalchemy import and_, func, or_, select, text, update
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import noload
+from sqlalchemy.orm import defer, noload
 
 from app.core.errors import AppError
+from app.core.native_memory import release_native_memory
 from app.db.models import OCRJob, OCRModel, PipelineConfig, PipelineRun, TestCase, now
 
 ACTIVE = ("queued", "running")
@@ -202,7 +203,12 @@ class Checkpoint:
     def __init__(self, session, job, owner):
         self.session, self.job, self.owner = session, job, owner
         self.configs = [restore_config(c) for c in job.config_snapshot]
-        self.prefill = {k: SimpleNamespace(**v) for k, v in job.prefill_results.items()}
+
+    @property
+    def prefill(self):
+        # Legacy compatibility only. Incremental jobs project one JSON entry at
+        # a time instead of decoding the complete prefill checkpoint on polling.
+        return {k: SimpleNamespace(**v) for k, v in self.job.prefill_results.items()}
 
     def fence(self):
         # A replacement owner must commit its claim before this can succeed again.
@@ -317,11 +323,17 @@ class JobWorker:
         from app.services.test_case_service import TestCaseService
 
         with self.database.session_factory() as session:
-            job = session.get(OCRJob, job_id)
+            job = session.get(OCRJob, job_id, options=[defer(OCRJob.prefill_results)])
             checkpoint = Checkpoint(session, job, self.owner)
             cases = TestCaseService(session, self.settings, self.storage)
             try:
-                await cases.run(job.test_case_id, job.pipeline_ids, checkpoint=checkpoint)
+                try:
+                    await cases.run(job.test_case_id, job.pipeline_ids, checkpoint=checkpoint)
+                finally:
+                    # The execution frame has closed its images/crops. Return
+                    # freed native owners before terminal status lets readers
+                    # load a large persisted result. Once per execution, not Field.
+                    release_native_memory()
                 checkpoint.fence()
                 total = job.total_fields * job.total_pipelines
                 if job.completed_units != total:

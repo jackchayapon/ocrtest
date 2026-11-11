@@ -23,7 +23,7 @@ test("durable OCR creates one short job, retries status reads and opens persiste
  page.on("request",r=>{if(r.url().endsWith("/jobs")&&r.method()==="POST")submissions++;});
  await page.route("**/api/ocr-jobs/*",async route=>{reads++;if(reads===1)await route.abort("failed");else await route.continue();});
  await page.goto(`/workflow/${caseId}/pipelines`);
- await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeVisible();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  await page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true}).check();
  const accepted=page.waitForResponse(r=>r.url().endsWith("/jobs")&&r.request().method()==="POST");
@@ -42,7 +42,7 @@ test("durable OCR refresh resumes the accepted job without submitting another ru
  const {caseId,config}=await setup(request);let submissions=0;
  page.on("request",r=>{if(r.url().endsWith("/jobs")&&r.method()==="POST")submissions++;});
  await page.goto(`/workflow/${caseId}/pipelines`);
- await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeVisible();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  await page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true}).check();
  const accepted=page.waitForResponse(r=>r.url().endsWith("/jobs")&&r.request().method()==="POST");
@@ -75,7 +75,7 @@ test("job UI fixture: partial success validates saved results then opens GT with
  await page.route(`**/api/ocr-jobs/${fixture.job_id}/results`,route=>route.fulfill({json:persisted}));
  await page.addInitScript(({key,id})=>sessionStorage.setItem(key,id),{key:`ocrlab-job:${caseId}:opened`,id:prepared.job_id});
  await page.goto(`/workflow/${caseId}/pipelines`);
- await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeVisible();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  for(const name of [config.name,second.name])await page.getByRole("checkbox",{name:`เลือก ${name}`,exact:true}).check();
  await page.getByRole("button",{name:"Run OCR",exact:true}).click();
@@ -90,7 +90,7 @@ for(const status of ["failed","cancelled"] as const)test(`terminal ${status} nev
  await page.route(`**/api/test-cases/${caseId}/jobs`,route=>route.fulfill({json:route.request().method()==="POST"?job:null,status:route.request().method()==="POST"?202:200}));
  await page.route(`**/api/ocr-jobs/${job.job_id}/results`,route=>{results++;return route.fulfill({json:{runs:[]}});});
  await page.goto(`/workflow/${caseId}/pipelines`);
- await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeVisible();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  await page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true}).check();await page.getByRole("button",{name:"Run OCR",exact:true}).click();
  await expect(page.getByTestId("ocr-job-progress")).toContainText(status==="failed"?"งาน OCR ไม่สำเร็จ":"งาน OCR ถูกยกเลิก");
@@ -120,7 +120,7 @@ test("accepted job with lost creation response reuses the same key on manual ret
   return route.continue();
  });
  await page.goto(`/workflow/${caseId}/pipelines`);
- await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeVisible();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  await page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true}).check();
  const start=page.getByRole("button",{name:"Run OCR",exact:true});
@@ -139,7 +139,7 @@ test("job UI fixture: explicit 404 is shown as missing rather than a transient c
  });
  await page.route(`**/api/ocr-jobs/${id}`,route=>{polls++;return route.fulfill({status:404,json:{detail:"OCR job not found"}});});
  await page.goto(`/workflow/${caseId}/pipelines`);
- await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeEnabled();
+ await expect(page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true})).toBeVisible();
  for(const checkbox of await page.getByTestId("pipeline-options").getByRole("checkbox").all())await checkbox.uncheck();
  await page.getByRole("checkbox",{name:`เลือก ${config.name}`,exact:true}).check();
  await page.getByRole("button",{name:"Run OCR",exact:true}).click();
