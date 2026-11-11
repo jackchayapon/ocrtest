@@ -11,6 +11,9 @@ import PipelineResultPreview from "./PipelineResultPreview";
 import type {EvaluationMode, GlobalField, PipelineRun, TestCase} from "@/types";
 import {pipelineLabel} from "@/lib/i18n/th";
 import {runTimingText} from "@/lib/run-timing";
+import LargeDialog from "./LargeDialog";
+import SourceCropPreview from "./SourceCropPreview";
+import type {ROI} from "@/types";
 
 const pct=(n:number|null|undefined)=>n==null?"—":`${(n*100).toFixed(2)}%`;
 type Props={fields:GlobalField[];saved:TestCase;runs:PipelineRun[];mode:EvaluationMode;documentGT:string;onMode:(mode:EvaluationMode)=>void;onEdit:()=>void;busy:boolean};
@@ -18,6 +21,7 @@ type Props={fields:GlobalField[];saved:TestCase;runs:PipelineRun[];mode:Evaluati
 export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT,onMode,onEdit,busy}:Props){
  const [exporting,setExporting]=useState(false),[exportError,setExportError]=useState("");
  const [expanded,setExpanded]=useState<{run:PipelineRun;fieldId:string|null}|null>(null);
+ const [overlay,setOverlay]=useState<{run:PipelineRun;fieldId:string|null;kind:"stats"|"crop";roi?:ROI;index?:number|null;back?:boolean}|null>(null);
  const [hiddenPipelines,setHiddenPipelines]=useState<string[]>([]);
  const [analysisPipelines,setAnalysisPipelines]=useState<Record<string,AnalysisMode>>({});
  const visibleRuns=runs.filter(run=>!hiddenPipelines.includes(run.pipeline_id));
@@ -48,7 +52,7 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
   <div role="region" aria-label="ตารางเปรียบเทียบ Pipeline" tabIndex={0} data-testid="comparison-scroll" className="max-h-[75vh] overflow-auto focus-visible:outline-2 focus-visible:outline-indigo-500">
    <table className="w-full table-fixed border-separate border-spacing-0 text-left text-sm" style={{minWidth:`calc(clamp(140px, 30vw, 280px) + ${visibleRuns.length*280}px)`}}>
     <colgroup><col style={{width:"clamp(140px, 30vw, 280px)"}}/>{visibleRuns.map(r=><col key={r.id} style={{width:280}}/>)}</colgroup>
-    <thead><tr><th scope="col" className="sticky left-0 top-0 z-30 border-b border-r border-sky-200 bg-sky-100 p-3">ข้อความจริง (Ground Truth)</th>{visibleRuns.map(run=><th key={run.id} scope="col" className="sticky top-0 z-20 border-b border-r border-slate-300 bg-slate-100 p-3 break-words"><div className="flex flex-wrap items-center justify-between gap-2"><span>{pipelineLabel(run.pipeline_id,run.pipeline_name)}</span><div className="flex shrink-0 items-center gap-1"><AnalysisMenu name={pipelineLabel(run.pipeline_id,run.pipeline_name)} value={analysisPipelines[run.pipeline_id]??evaluationDefault} onChange={value=>setAnalysisPipelines(old=>({...old,[run.pipeline_id]:value}))}/><button type="button" className="rounded p-2 hover:bg-indigo-100" aria-label={`Expand ${pipelineLabel(run.pipeline_id,run.pipeline_name)}`} onClick={()=>setExpanded({run,fieldId:null})}><Expand size={16}/></button></div></div></th>)}</tr></thead>
+    <thead><tr><th scope="col" className="sticky left-0 top-0 z-30 border-b border-r border-sky-200 bg-sky-100 p-3">ข้อความจริง (Ground Truth)</th>{visibleRuns.map(run=><th key={run.id} scope="col" className="sticky top-0 z-20 border-b border-r border-slate-300 bg-slate-100 p-3 break-words"><div className="flex flex-wrap items-center justify-between gap-2"><span>{pipelineLabel(run.pipeline_id,run.pipeline_name)}</span><div className="flex shrink-0 items-center gap-1"><AnalysisMenu name={pipelineLabel(run.pipeline_id,run.pipeline_name)} value={analysisPipelines[run.pipeline_id]??evaluationDefault} onChange={value=>{setAnalysisPipelines(old=>({...old,[run.pipeline_id]:value}));if(value.details)setOverlay({run,fieldId:null,kind:"stats"});}}/><button type="button" className="rounded p-2 hover:bg-indigo-100" aria-label={`Expand ${pipelineLabel(run.pipeline_id,run.pipeline_name)}`} onClick={()=>setExpanded({run,fieldId:null})}><Expand size={16}/></button></div></div></th>)}</tr></thead>
     {rows.map(row=><tbody key={row.id} data-testid={`comparison-row-${row.id}`}><tr data-testid="comparison-text-row">
      <th scope="row" className="sticky left-0 z-10 border-b border-r border-sky-200 bg-sky-50 p-3 align-top font-normal shadow-[2px_0_4px_-2px_#94a3b8]">
       <section data-testid="gt-pane" tabIndex={0} className={`space-y-2 pr-2 ${whole?"min-h-64":"min-h-32"}`}>
@@ -79,14 +83,14 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
       const field=run.fields?.find(f=>f.global_field_id===row.id);
       const failed=whole?run.status==="error":field?.status==="error";
       const evaluation=row.dirty||failed?null:whole?run.document_evaluation:field?.evaluation;
-      const analysis=analysisPipelines[run.pipeline_id]??evaluationDefault;
       return <td key={run.id} data-testid={`global-metrics-${run.pipeline_id}`} className="border-b border-r border-slate-200 p-3 align-top">
        <section aria-label="Metrics" data-testid={evaluation?"global-evaluation":"not-evaluated"} className="my-4 rounded-lg bg-slate-50 p-3">
         <dl className="grid grid-cols-2 gap-2">{[["Confidence",pct(whole?run.confidence:field?.confidence)],["CER",pct(evaluation?.cer)],["WER",pct(evaluation?.wer)],["Exact Match",evaluation?(evaluation.exact_match?"✓ Yes":"✕ No"):"—"]].map(([label,value])=><div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
         {!evaluation&&<p className="mt-2 text-xs text-slate-500">ยังไม่ประเมิน — กลับไปกรอก GT แล้วยืนยันเพื่อคำนวณ</p>}
        </section>
-       <CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation} expanded={analysis.details} onExpandedChange={details=>setAnalysisPipelines(old=>({...old,[run.pipeline_id]:{...(old[run.pipeline_id]??evaluationDefault),details}}))}
+       <CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation} onOpenDetails={()=>setOverlay({run,fieldId:whole?null:row.id,kind:"stats"})}
         unavailable={row.dirty?"แก้ไข GT แล้ว — ต้องยืนยันคำนวณใหม่":failed?"Pipeline ประมวลผลไม่สำเร็จ":!evaluation?"ยังไม่มี GT ที่ยืนยันหรือผลประเมินล้าสมัย":undefined}/>
+       <button type="button" className="mt-3 text-sm text-sky-800 underline" onClick={()=>setOverlay({run,fieldId:whole?null:row.id,kind:"crop"})}>ดูภาพต้นฉบับ (Field Crop)</button>
       </td>;
      })}
     </tr></tbody>)}
@@ -95,5 +99,8 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
   </div>
   {!runs.length&&<p className="p-5 text-slate-500">ยังไม่มีผลลัพธ์ Pipeline</p>}
  {expanded&&<PipelineResultPreview run={expanded.run} fieldId={expanded.fieldId} saved={saved} fields={fields} documentGT={documentGT} onClose={()=>setExpanded(null)}/>}
+ {overlay&&<LargeDialog title={`${pipelineLabel(overlay.run.pipeline_id,overlay.run.pipeline_name)} · ${overlay.index!=null?`Field ${String(overlay.index).padStart(2,"0")}`:overlay.fieldId?`Field ${String(fields.find(f=>f.id===overlay.fieldId)?.field_index??"").padStart(2,"0")}`:"ทุก Field"} · ${overlay.kind==="stats"?"สถิติอักขระ":"ภาพต้นฉบับ"}`} onClose={()=>{setAnalysisPipelines(old=>({...old,[overlay.run.pipeline_id]:{...(old[overlay.run.pipeline_id]??evaluationDefault),details:false}}));setOverlay(null);}} back={overlay.back?()=>setOverlay({...overlay,kind:"stats",back:false}):undefined}>
+  {overlay.kind==="stats"?<CharacterErrorSummary embedded caseId={saved.id} pipelineId={overlay.run.pipeline_id} fieldId={overlay.fieldId??undefined} mode={mode} evaluation={overlay.fieldId?overlay.run.fields?.find(f=>f.global_field_id===overlay.fieldId)?.evaluation:overlay.run.document_evaluation} onCrop={(roi,index)=>setOverlay({...overlay,kind:"crop",roi,index,back:true})}/>:<SourceCropPreview documentId={saved.document.id} page={saved.document.page_number} roi={overlay.roi??fields.find(f=>f.id===overlay.fieldId)?.roi??{x1:0,y1:0,x2:saved.document.width,y2:saved.document.height}}/>}
+ </LargeDialog>}
  </section>;
 }

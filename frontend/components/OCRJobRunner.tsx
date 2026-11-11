@@ -32,7 +32,9 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
   }).catch(()=>{if(!controller.signal.aborted){setError("ตรวจสอบงานเดิมไม่ได้ กรุณาลองตรวจสอบอีกครั้งก่อนเริ่มงานใหม่");setChecking(false);}});
   return()=>controller.abort();
  },[caseId,storageKey]);
- useEffect(()=>{callbacks.current.onBusy(checking||submitting||verifying||!!job&&active(job));return()=>callbacks.current.onBusy(false);},[checking,submitting,verifying,job]);
+ const busy=checking||submitting||verifying||!!job&&active(job);
+ useEffect(()=>{callbacks.current.onBusy(busy);},[busy]);
+ useEffect(()=>()=>callbacks.current.onBusy(false),[]);
  useEffect(()=>{
   if(!job)return;
   if(!active(job)){
@@ -94,15 +96,16 @@ export default function OCRJobRunner({caseId,pipelines,names,onCompleted,onBusy,
  }
  const elapsed=jobElapsedSeconds(job,clock);
  const pipelineIndex=job?.current_pipeline_id?job.pipeline_ids.indexOf(job.current_pipeline_id):-1;
- const busy=checking||submitting||verifying||!!job&&active(job);
+ const ocrDone=!!job&&job.completed_units>=job.total_fields*job.total_pipelines;
+ const prefill=job?.status==="running"&&!!job.current_pipeline_id&&pipelineIndex<0;
  return <section className="space-y-3" aria-label="สถานะงาน OCR">
   {error&&<p role="alert" className="error-banner">{error}</p>}
   <button aria-busy={busy} className="button primary" disabled={busy||!pipelines.length} onClick={()=>void start()}>{busy?<><LoaderCircle aria-hidden="true" data-testid="ocr-spinner" className="h-4 w-4 animate-spin"/>{verifying?"กำลังตรวจผลที่บันทึก...":"กำลังรัน OCR..."}</>:job&&!active(job)?"รัน OCR ใหม่ (ประมวลผลซ้ำ)":"Run OCR"}</button>
   {job&&["completed","partial_success"].includes(job.status)&&<button type="button" className="button secondary" disabled={busy} onClick={()=>{navigated.current=null;setVerification(v=>v+1);}}>ตรวจผลอีกครั้ง (ไม่รัน OCR)</button>}
   {job&&<div role="status" className="rounded-lg border border-sky-200 bg-sky-50 p-4 space-y-2" data-testid="ocr-job-progress">
-   <p>{job.status==="queued"?"ส่งงานแล้ว — รอ worker รับงาน":job.status==="running"?"กำลังประมวลผล OCR":job.status==="completed"?"ประมวลผล OCR สำเร็จ":job.status==="partial_success"?"OCR เสร็จสิ้น แต่มีบาง Pipeline ที่ไม่สำเร็จ":job.status==="cancelled"?"งาน OCR ถูกยกเลิก":"งาน OCR ไม่สำเร็จ — ตรวจข้อผิดพลาดก่อนลองใหม่"}</p>
-   <progress aria-label="ความคืบหน้า OCR" max={100} value={job.progress_percent} className="w-full"/>
-   <p>{job.progress_percent}% · ประมวลผลแล้ว: {job.completed_units} / {job.total_fields*job.total_pipelines} รายการ</p>
+   <p>{verifying?"กำลังเปิดผลลัพธ์ — ตรวจข้อมูลที่บันทึก":job.status==="queued"?"ส่งงานแล้ว — รอ worker รับงาน":prefill?"กำลังเตรียม Ground Truth — งานทั้งหมดยังไม่เสร็จ":job.status==="running"?ocrDone?"อ่าน OCR ครบแล้ว — กำลังเตรียมขั้นตอนถัดไป":"กำลังประมวลผล OCR":job.status==="completed"?"เสร็จสิ้น — OCR และขั้นตอนเตรียมข้อมูลจบแล้ว":job.status==="partial_success"?"งานเสร็จสิ้นบางส่วน — ตรวจรายละเอียดผลที่บันทึก":job.status==="cancelled"?"งาน OCR ถูกยกเลิก":"งาน OCR ไม่สำเร็จ — ตรวจข้อผิดพลาดก่อนลองใหม่"}</p>
+   <progress aria-label="ความคืบหน้า OCR (เฉพาะการอ่าน)" max={100} value={job.progress_percent} className="w-full"/>
+   <p>{ocrDone?`อ่าน OCR ครบแล้ว ${job.completed_units}/${job.total_fields*job.total_pipelines} รายการ`:`${job.progress_percent}% · ประมวลผลแล้ว: ${job.completed_units} / ${job.total_fields*job.total_pipelines} รายการ`}</p>
    <p>สำเร็จ: {Math.max(0,job.completed_units-job.failed_units)} · ล้มเหลว: {job.failed_units}</p>
    <p>Pipeline ครบแล้ว: {job.completed_pipelines} / {job.total_pipelines} · รายการผิดพลาด: {job.failed_units}</p>
    {job.status==="running"&&job.current_pipeline_id&&<p>{pipelineIndex>=0?`กำลังประมวลผล Pipeline ${pipelineIndex+1}/${job.total_pipelines}`:"กำลังเตรียม Ground Truth"} — Field {job.current_field_index??0}/{job.total_fields}{pipelineIndex>=0&&` · ${names[job.current_pipeline_id]||job.current_pipeline_id}`}</p>}

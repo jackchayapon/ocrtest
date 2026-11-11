@@ -37,6 +37,7 @@ for(const mode of ['local-get','local-set','session-get','session-set','all','un
    }
    if(path.endsWith('/results')){reads++;return route.fulfill({json:{runs}});}
    if(path.includes('/ocr-jobs/'))return route.fulfill({json:{...job,status:terminal}});
+   if(path.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
    if(path.endsWith('/pipelines'))return route.fulfill({json:[{pipeline_id:'p',name:'Synthetic',enabled:true}]});
    if(path.endsWith('.svg'))return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>'});
    return route.fulfill({json:{...record,runs:accepted?runs:[]}});
@@ -71,7 +72,8 @@ for(const recovery of ['retry','reload'] as const)test(`denied storage recovers 
    return route.fulfill({json:keys.length?{...job,status:'completed'}:null});
   }
   if(path.endsWith('/results'))return route.fulfill({json:{runs}});
-  if(path.endsWith('/pipelines'))return route.fulfill({json:[{pipeline_id:'p',name:'Synthetic',enabled:true}]});
+  if(path.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
+   if(path.endsWith('/pipelines'))return route.fulfill({json:[{pipeline_id:'p',name:'Synthetic',enabled:true}]});
   if(path.endsWith('.svg'))return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"/>'});
   return route.fulfill({json:{...record,runs:returned||keys.length?runs:[]}});
  });

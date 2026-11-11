@@ -21,6 +21,7 @@ import AutoROIOverlay from "./AutoROIOverlay";
 import FieldLabel from "./FieldLabel";
 import BoundingBoxLayer from "./BoundingBoxLayer";
 import TestRegionLayer from "./TestRegionLayer";
+import {usePreviewSource} from "@/lib/use-preview-source";
 
 export interface DocumentViewerProps {
   fillParent?: boolean;
@@ -111,7 +112,7 @@ export default function DocumentViewer({
     image: HTMLImageElement;
   } | null>(null);
   const [failedUrl, setFailedUrl] = useState<string | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+  const previewSource=usePreviewSource(imageUrl);
   const [panMode, setPanMode] = useState(false);
   const [showBoxes, setShowBoxes] = useState(true);
   const [showAllFields, setShowAllFields] = useState(true);
@@ -122,7 +123,7 @@ export default function DocumentViewer({
     null,
   );
   const image = loadedImage?.url === imageUrl ? loadedImage.image : undefined;
-  const failed = failedUrl === imageUrl;
+  const failed = failedUrl === imageUrl||!!previewSource.error;
   const selectedBox = boxes.find((box) => box.id === selectedBoxId);
   const viewSource = `${imageUrl}:${width}:${height}`;
   const fittedView = useMemo(() => {
@@ -175,16 +176,18 @@ export default function DocumentViewer({
     const element = containerRef.current;
     if (!element) return;
     const observer = new ResizeObserver(([entry]) => {
-      setViewport({
+      const next = {
         width: Math.max(1, Math.floor(entry.contentRect.width)),
         height: Math.max(320, Math.floor(entry.contentRect.height)),
-      });
+      };
+      setViewport(old=>old.width===next.width&&old.height===next.height?old:next);
     });
     observer.observe(element);
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
+    if(!previewSource.src)return;
     let cancelled = false;
     const nextImage = new window.Image();
     nextImage.onload = () => {
@@ -200,13 +203,13 @@ export default function DocumentViewer({
     nextImage.onerror = () => {
       if (!cancelled) setFailedUrl(imageUrl);
     };
-    nextImage.src = imageUrl;
+    nextImage.src = previewSource.src;
     return () => {
       cancelled = true;
       nextImage.onload = null;
       nextImage.onerror = null;
     };
-  }, [imageUrl, retryKey]);
+  }, [imageUrl, previewSource.src]);
 
   const fitView = useCallback(() => {
     try{sessionStorage.removeItem(`ocrlab-view:${viewSource}`);}catch{/* optional browser state */}
@@ -339,6 +342,7 @@ export default function DocumentViewer({
     <div
       className={`flex ${fillParent ? "lg:h-full" : ""} ${compactReference ? "min-h-[380px]" : "min-h-[520px]"} flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white`}
       data-testid="document-viewer"
+      aria-busy={!image&&!failed}
       data-highlighted-det-count={highlightedBoxIds.length}
       data-show-all-fields={showAllFields}
       data-show-field-labels={showFieldLabels}
@@ -534,13 +538,13 @@ export default function DocumentViewer({
             className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-100 text-sm text-slate-500"
             role="alert"
           >
-            <span>{t("The document preview could not be loaded.")}</span>
+            <span>{previewSource.error??t("The document preview could not be loaded.")}</span>
             <button
               type="button"
               className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700"
               onClick={() => {
                 setFailedUrl(null);
-                setRetryKey((value) => value + 1);
+                previewSource.retry();
               }}
             >
               {t("Try again")}

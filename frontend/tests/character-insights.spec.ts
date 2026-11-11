@@ -14,7 +14,8 @@ test("field-specific result dialog preserves GT/pipeline identity and restores k
  await page.route("**/api/**",route=>{
   const path=new URL(route.request().url()).pathname;
   if(path.endsWith("preview.svg"))return route.fulfill({contentType:"image/svg+xml",body:svg});
-  if(path.endsWith("/pipelines"))return route.fulfill({json:[]});
+  if(path.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
+   if(path.endsWith("/pipelines"))return route.fulfill({json:[]});
   return route.fulfill({json:record});
  });
  await page.goto("/workflow/insights/ground-truth");
@@ -41,14 +42,14 @@ test("Deep detail opens all field errors and character buttons filter and reset"
    report.pipelines[0].scopes=url.searchParams.has("character")?[scope]:[scope,second];
    return route.fulfill({json:report});
   }
-  if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
+  if(url.pathname.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
+   if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
   return route.fulfill({json:record});
  });
  await page.goto("/workflow/insights/ground-truth");
  await page.getByRole("button",{name:"Error Analysis Pipeline One",exact:true}).click();
  await page.getByRole("checkbox",{name:"Deep detail",exact:true}).check();
- await page.keyboard.press("Escape");
- const summary=page.getByTestId("global-metrics-p1").getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"});
+ const summary=page.getByRole("dialog").getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"});
  await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toBeVisible();
  await summary.getByRole("button",{name:/ไม้โท: 1/}).click();
  await expect(summary.getByText("อ่านจุดผิด",{exact:true})).toHaveCount(0);
@@ -176,7 +177,8 @@ test("evaluation highlights, lazy characters, hidden export and GT invalidation"
    current.global_fields[0].ground_truth_raw=req.postDataJSON().ground_truth_raw;
    for(const r of current.runs)r.fields[0].evaluation=null as unknown as typeof evaluation;
   }
-  if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
+  if(url.pathname.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
+   if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
   return route.fulfill({json:current});
  });
  await page.goto("/workflow/insights/ground-truth");
@@ -188,7 +190,8 @@ test("evaluation highlights, lazy characters, hidden export and GT invalidation"
  await page.getByRole("checkbox",{name:"HIGHLIGHT",exact:true}).uncheck();await page.keyboard.press("Escape");
  await expect(row.getByTestId("global-result-p1").getByTestId("global-prediction")).toHaveText("ก");
  await row.getByRole("button",{name:"ดูสถิติอักขระ"}).first().click();
- await expect(row.getByRole("button",{name:/ไม้โท: 1/})).toBeVisible();
+ await expect(page.getByRole("dialog").getByRole("button",{name:/ไม้โท: 1/})).toBeVisible();
+ await page.keyboard.press("Escape");
  expect(requests.filter(u=>u.includes("error-summary"))).toHaveLength(1);
  await page.getByRole("button",{name:"กรอง Pipeline",exact:true}).click();
  await page.getByRole("checkbox",{name:"แสดง Hidden Pipeline",exact:true}).uncheck();
@@ -207,7 +210,8 @@ for(const width of [390,1440])test("Thai XLSX selection, mode and stale guards "
  await page.route("**/api/**",async route=>{
   const req=route.request(),url=new URL(req.url());
   if(url.pathname.endsWith("preview.svg"))return route.fulfill({contentType:"image/svg+xml",body:svg});
-  if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
+  if(url.pathname.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
+   if(url.pathname.endsWith("/pipelines"))return route.fulfill({json:[]});
   if(url.pathname.endsWith("/error-summary"))return route.fulfill({json:insight});
   if(url.pathname.endsWith("/evaluation-excel")){
    exports.push(req.postDataJSON());
@@ -219,8 +223,8 @@ for(const width of [390,1440])test("Thai XLSX selection, mode and stale guards "
  const row=page.getByTestId("comparison-row-field");
  await expect(row.getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"}).first()).toBeVisible();
  await row.getByRole("button",{name:"ดูสถิติอักขระ"}).first().click();
- await expect(row.getByText('อ่านขาดหาย "◌้" (ไม้โท) 1 ครั้ง',{exact:true})).toBeVisible();
- await row.getByRole("button",{name:"ย่อสถิติอักขระ"}).first().click();
+ await expect(page.getByRole("dialog").getByText('อ่านขาดหาย "◌้" (ไม้โท) 1 ครั้ง',{exact:true})).toBeVisible();
+ await page.keyboard.press("Escape");await expect(page.getByRole("dialog")).toHaveCount(0);
  await expect(row.getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"}).first()).not.toContainText("CER");
  await expect(row.getByRole("region",{name:"สรุปข้อผิดพลาดในการอ่านตัวอักษร"}).first()).not.toContainText("WER");
  if(width===1440){

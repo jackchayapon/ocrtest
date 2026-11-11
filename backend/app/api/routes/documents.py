@@ -11,6 +11,7 @@ from app.schemas.contracts import AutoROIRequest, BatchRequest
 from app.services.auto_roi_service import AutoROIService
 from app.services.batch_service import BatchService
 from app.services.log_service import LogService
+from app.services.preview_service import PreviewService
 from app.services.serializers import document_json
 
 router = APIRouter(prefix="/documents")
@@ -84,28 +85,20 @@ async def upload_document(request: Request, service: CaseServiceDep, file: Uploa
 
 
 @router.get("/{document_id}")
-def get_document(
-    document_id: UUID, service: CaseServiceDep, page_number: int | None = Query(default=None, ge=1)
+async def get_document(
+    document_id: UUID, service: CaseServiceDep, request: Request, page_number: int | None = Query(default=None, ge=1)
 ):
-    return service.page_metadata(str(document_id), page_number)
+    return await PreviewService(service).metadata(str(document_id), page_number, request)
 
 
 @router.get("/{document_id}/pages/{page_number}/image")
-def page_image(document_id: UUID, page_number: int, service: CaseServiceDep):
-    return Response(
-        service.image_bytes(str(document_id), page_number=page_number),
-        media_type="image/png",
-        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
-    )
+async def page_image(document_id: UUID, page_number: int, service: CaseServiceDep, request: Request):
+    return await PreviewService(service).response(str(document_id), page_number, request)
 
 
 @router.get("/{document_id}/image")
-def document_image(document_id: UUID, service: CaseServiceDep):
-    return Response(
-        service.image_bytes(str(document_id)),
-        media_type="image/png",
-        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
-    )
+async def document_image(document_id: UUID, service: CaseServiceDep, request: Request):
+    return await PreviewService(service).response(str(document_id), None, request)
 
 
 @router.get("/{document_id}/crop")

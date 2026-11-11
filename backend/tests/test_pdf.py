@@ -64,9 +64,11 @@ def test_pdf_upload_page_render_and_original_storage(client, pages):
         assert (
             client.get(f"/api/documents/{doc['id']}/pages/{number}/image").content == image.content
         )
-    assert len(list(client.app.state.storage.root.iterdir())) == 1, (
-        "Only the original PDF is stored"
-    )
+    root = client.app.state.storage.root
+    assert {p.name for p in root.iterdir()} == {doc["storage_key"], ".preview-cache"}
+    cached = list((root / ".preview-cache").glob("*.png"))
+    assert len(cached) == pages and sum(p.stat().st_size for p in cached) <= 8*1024*1024
+    assert client.app.state.storage.read(doc["storage_key"]) == original
 
 
 def test_pdf_page_roi_persistence_and_three_real_adapter_contracts(client, gateway):
