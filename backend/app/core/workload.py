@@ -34,7 +34,10 @@ class WorkloadGuard:
 
         # Polling, saved results and GT remain available while an image is in use.
         submission = path.endswith("/jobs") and method == "POST"
-        heavy = (submission or path.startswith("/api/documents") or path == "/api/dataset/export"
+        # Stored PNG/cached PDF reads stream without decoding. Cache misses in
+        # the document routes still take this same image lock before rendering.
+        document_work = path.startswith("/api/documents") and (method != "GET" or path.endswith("/crop"))
+        heavy = (submission or document_work or path == "/api/dataset/export"
                  or (path == "/api/test-cases" and method == "POST")
                  or path.endswith(("/run", "/evaluation-report", "/evaluation-excel")))
         if not heavy:
@@ -62,5 +65,5 @@ class WorkloadGuard:
     async def busy(scope, receive, send):
         await JSONResponse(
             {"detail": "ระบบกำลังประมวลผลภาพ กรุณาลองใหม่ / Image processing busy; retry later"},
-            429, headers={"Retry-After": "5"},
+            429, headers={"Retry-After": "5", "X-OCRLab-Retry-Safe": "pre-admission"},
         )(scope, receive, send)

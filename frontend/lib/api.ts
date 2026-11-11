@@ -12,7 +12,7 @@ export const deletePipeline = (id: string) => request<void>(`/pipelines/${encode
 
 const reads = new ReadCoordinator();
 export class APIError extends Error {
-  constructor(message:string,public readonly status:number,public readonly routeMissing=false){super(message);this.name="APIError";}
+  constructor(message:string,public readonly status:number,public readonly routeMissing=false,public readonly retryAfter?:string|null,public readonly retrySafe=false){super(message);this.name="APIError";}
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -44,7 +44,7 @@ async function fetchJSON<T>(path: string, init?: RequestInit): Promise<T> {
     const message = typeof detail === "string" ? detail : Array.isArray(detail)
       ? detail.map((item: { msg?: string }) => item.msg ?? t("Invalid input")).join(". ")
       : `Request failed (${response.status}). Please try again.`;
-    throw new APIError(userError(message, response.status),response.status,response.status===404&&detail==="Not Found");
+    throw new APIError(userError(message, response.status),response.status,response.status===404&&detail==="Not Found",response.headers.get("Retry-After"),response.headers.get("X-OCRLab-Retry-Safe")==="pre-admission");
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
@@ -68,7 +68,7 @@ export const saveOCRModel = (value: Omit<import("@/types").OCRModel, "id">, id?:
 export const saveDynamicPipeline = (value: import("@/types").DynamicPipelineInput, id?: string) => request<PipelineConfig>(id ? `/pipelines/${id}/definition` : "/pipelines", { method: id ? "PUT" : "POST", body: JSON.stringify(value) });
 export const updatePipeline = (id: string, value: Partial<PipelineConfig>) => request<PipelineConfig>(`/pipelines/${id}`, { method: "PUT", body: JSON.stringify(value) });
 export const testConnection = (id: string) => request<{ status: string; message: string }>(`/pipelines/${id}/test-connection`, { method: "POST" });
-export const uploadDocument = (file: File, documentTypeId?: string) => { const form = new FormData(); form.set("file", file); if(documentTypeId)form.set("document_type_id",documentTypeId); return request<Document>("/documents", { method: "POST", body: form }); };
+export const uploadDocument = (file: File, documentTypeId?: string,signal?:AbortSignal) => { const form = new FormData(); form.set("file", file); if(documentTypeId)form.set("document_type_id",documentTypeId); return request<Document>("/documents", { method: "POST", body: form,signal }); };
 export const createTestCase = (input: TestCaseInput) => request<TestCase>("/test-cases", { method: "POST", body: JSON.stringify(input) });
 export const getTestCase = (id: string) => request<TestCase>(`/test-cases/${id}`);
 export const deleteTestCase = (id: string) => request<void>(`/test-cases/${id}`, { method: "DELETE" });

@@ -27,7 +27,8 @@ async function setup(page: Page, groundTruth = false) {
       return route.fulfill({json:job});
     }
     if (url.endsWith("preview.svg")) return route.fulfill({ contentType: "image/svg+xml", body: '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200"><rect width="300" height="200" fill="white"/><text x="30" y="50">First field</text><text x="170" y="140">Second field</text></svg>' });
-    if (url.endsWith("/pipelines")) return route.fulfill({ json: [{ pipeline_id: "mint", name: "Mint", enabled: true }] });
+    if(url.endsWith("/upload-config"))return route.fulfill({json:{max_job_fields:80,max_job_pipelines:3,max_job_units:240}});
+   if (url.endsWith("/pipelines")) return route.fulfill({ json: [{ pipeline_id: "mint", name: "Mint", enabled: true }] });
     if (url.endsWith("/global-fields") && req.method() === "PUT") {
       if (state.failSave) return route.fulfill({ status: 503, json: { detail: "Save failed" } });
       const data = req.postDataJSON();
@@ -318,6 +319,8 @@ test("GT synchronizes both modes, supports multiline ROI boundaries and requires
  await expect(page.getByTestId("gt-field-preview").first()).toContainText("ชื่อใหม่\nนามสกุลใหม่\nบ้านเลขที่");
  await page.getByRole("button",{name:"ดูกรอบ Field 02",exact:true}).click();
  await expect(page.getByTestId("document-viewer")).toContainText("(160, 110)");
+ await expect(page.getByLabel("Ground Truth Field 02",{exact:true})).toBeFocused();
+ await page.getByRole("button",{name:"Whole Field",exact:true}).click();
  await whole.fill("บรรทัดเดียว");
  await expect(confirm).toBeDisabled();
  await expect(page.getByTestId("gt-completeness")).toContainText("Field 02");

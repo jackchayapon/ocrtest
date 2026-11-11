@@ -75,6 +75,18 @@ class LocalStorageService(StorageService):
             raise AppError("ไฟล์เกินขีดจำกัดการประมวลผล / Stored source exceeds processing limit", 413)
         return data
 
+    def open_bounded(self, key, limit):
+        """Open a validated local source for bounded streaming, without decoding."""
+        import os
+        try:
+            source = self._path(key).open("rb")
+        except FileNotFoundError:
+            raise AppError("Stored image is unavailable", 404) from None
+        if os.fstat(source.fileno()).st_size > limit:
+            source.close()
+            raise AppError("Stored source exceeds processing limit", 413)
+        return source
+
     def exists(self, key):
         return self._path(key).is_file()
 

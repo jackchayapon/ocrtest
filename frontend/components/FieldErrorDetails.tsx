@@ -14,7 +14,7 @@ function ErrorExcerpt({text,highlight,missing,kind}:{text:string;highlight?:{sta
  >{length?(kind==="insertion"?`[เกิน: ${visible(chars.slice(start,start+length).join(""))}]`:visible(chars.slice(start,start+length).join(""))):`[ขาด: ${visible(missing??"")}]`}</mark>{chars.slice(start+length).join("")}</>;
 }
 
-export default function FieldErrorDetails({data,run}:{data:ErrorInsights;run:ErrorInsights["pipelines"][number]}) {
+export default function FieldErrorDetails({data,run,onCrop}:{data:ErrorInsights;run:ErrorInsights["pipelines"][number];onCrop?:(roi:InsightScope["roi"],index:number|null)=>void}) {
  const [expanded,setExpanded]=useState<Record<string,boolean>>({});
  const groups=new Map<string,{index:number|null;roi:InsightScope["roi"];gt?:string;ocr?:string;details:InsightScope["details"]}>();
  for(const scope of run.scopes.filter(s=>s.state==="ready")) {
@@ -34,7 +34,7 @@ export default function FieldErrorDetails({data,run}:{data:ErrorInsights;run:Err
    {e.line_number!=null&&<p className="text-slate-500">บรรทัด {e.line_number}</p>}
    <p className="whitespace-pre-wrap rounded bg-slate-50 p-2"><span className="block font-medium">ข้อความที่ OCR อ่านได้: </span><ErrorExcerpt text={e.ocr_excerpt} highlight={e.ocr_highlight} missing={e.ground_truth_unit} kind={e.error_type}/></p>
   </div>)}</div>
-  <button className="button secondary mt-2" aria-expanded={!!expanded[key]} onClick={()=>setExpanded(v=>({...v,[key]:!v[key]}))}>
+  <button className="button secondary mt-2" aria-expanded={!!expanded[key]} onClick={()=>onCrop?onCrop(group.roi,group.index):setExpanded(v=>({...v,[key]:!v[key]}))}>
    {expanded[key]?"▾ ซ่อนภาพต้นฉบับ":group.index==null?"▸ ดูภาพต้นฉบับ (ทั้งเอกสาร)":"▸ ดูภาพต้นฉบับ (Field Crop)"}
   </button>
   {expanded[key]&&<SourceCropPreview documentId={data.document_id} page={data.page_number} roi={group.roi}/>}

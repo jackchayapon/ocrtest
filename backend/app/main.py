@@ -69,6 +69,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.storage = storage
     app.state.ocr_lock = asyncio.Lock()
     app.state.image_lock = asyncio.Lock()
+    app.state.preview_read_lock = asyncio.Lock()
     logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("app.integrations.model_gateway").setLevel(logging.INFO)
@@ -128,6 +129,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_credentials=False,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["Content-Type"],
+        expose_headers=["Retry-After", "X-OCRLab-Retry-Safe"],
     )
     return app
 

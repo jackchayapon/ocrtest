@@ -6,9 +6,9 @@ import {getErrorInsights} from "@/lib/api";
 import {alignmentCounts} from "./CanonicalAlignment";
 import FieldErrorDetails from "./FieldErrorDetails";
 const states:Record<string,string>={no_confirmed_gt:"ยังไม่มี Ground Truth ที่ยืนยัน",outdated:"ผลประเมินล้าสมัย — กรุณาคำนวณใหม่",pipeline_failed:"Pipeline ประมวลผลไม่สำเร็จ",alignment_unavailable:"ไม่สามารถสร้าง alignment ที่ตรงกับผลประเมินเดิมได้"};
-export default function CharacterErrorSummary({caseId,pipelineId,fieldId,mode,evaluation,unavailable,initiallyOpen=false,expanded,onExpandedChange}:{caseId:string;pipelineId:string;fieldId?:string;mode?:EvaluationMode;evaluation?:FieldComparison|null;unavailable?:string;initiallyOpen?:boolean;expanded?:boolean;onExpandedChange?:(open:boolean)=>void}){
+export default function CharacterErrorSummary({caseId,pipelineId,fieldId,mode,evaluation,unavailable,initiallyOpen=false,expanded,onExpandedChange,onOpenDetails,embedded=false,onCrop}:{caseId:string;pipelineId:string;fieldId?:string;mode?:EvaluationMode;evaluation?:FieldComparison|null;unavailable?:string;initiallyOpen?:boolean;expanded?:boolean;onExpandedChange?:(open:boolean)=>void;onOpenDetails?:()=>void;embedded?:boolean;onCrop?:(roi:import("@/types").ROI,index:number|null)=>void}){
  const [localOpen,setLocalOpen]=useState(initiallyOpen),[data,setData]=useState<ErrorInsights|null>(null),[error,setError]=useState(""),[character,setCharacter]=useState<string|undefined>(),[all,setAll]=useState(false);
- const open=expanded??localOpen;
+ const open=embedded||(expanded??localOpen);
  const setOpen=(value:boolean)=>{setLocalOpen(value);onExpandedChange?.(value);};
  useEffect(()=>{if(!open||unavailable)return;const controller=new AbortController();let active=true;
  getErrorInsights(caseId,{pipeline_id:pipelineId,field_id:fieldId,mode,character},controller.signal).then(v=>{if(active){setData(v);setError("");}}).catch(e=>{if(active)setError(e instanceof Error?e.message:"โหลดรายละเอียดไม่ได้");});
@@ -20,7 +20,7 @@ export default function CharacterErrorSummary({caseId,pipelineId,fieldId,mode,ev
  {unavailable?<p className="mt-2 text-amber-800">{unavailable}</p>:<>
  {totals&&<dl className="my-2 grid grid-cols-2 gap-2">{(["character_edits","substitution","deletion","insertion"] as const).map(k=><div key={k}><dt>{({character_edits:"อักขระที่ผิดพลาดทั้งหมด",substitution:"อ่านผิด",deletion:"อ่านขาดหาย",insertion:"อ่านเกิน"})[k]}</dt><dd className="font-semibold">{totals[k]}</dd></div>)}</dl>}
  {totals?.character_edits===0&&(run?run.evaluated_scopes>0:!!counts)&&<p>ไม่พบข้อผิดพลาดในการอ่านตัวอักษร</p>}
- <button className="mt-2 text-indigo-700 underline" aria-expanded={open} onClick={()=>setOpen(!open)}>{open?"ย่อสถิติอักขระ":"ดูสถิติอักขระ"}</button>
+ {!embedded&&<button className="mt-2 text-indigo-700 underline" aria-expanded={open} onClick={()=>onOpenDetails?onOpenDetails():setOpen(!open)}>{open?"ย่อสถิติอักขระ":"ดูสถิติอักขระ"}</button>}
  {open&&<div className="mt-3 space-y-3">
  {error&&<p role="alert">{error}</p>}{!data&&!error&&<p role="status">กำลังโหลดรายละเอียด…</p>}
  {run&&<>
@@ -32,7 +32,8 @@ export default function CharacterErrorSummary({caseId,pipelineId,fieldId,mode,ev
  <span className="font-semibold">{c.display} · {c.name}: {c.total}</span><span className="block text-slate-500">อ่านผิด {c.substitution} / อ่านขาดหาย {c.deletion} / อ่านเกิน {c.insertion} · {c.code_point}</span></button>)}</div>
  {run.statistics.characters.length>6&&<button className="text-indigo-700 underline" onClick={()=>setAll(v=>!v)}>{all?"แสดงน้อยลง":"แสดงอักขระทั้งหมด"}</button>}
  {!!run.statistics.confusion_pairs.length&&<p>คู่ตัวอักษรที่อ่านสับสน: {run.statistics.confusion_pairs.slice(0,5).map(p=>`${p.expected} → ${p.predicted} (${p.count})`).join(", ")}</p>}
- {data&&<FieldErrorDetails key={`${caseId}:${pipelineId}:${mode}:${character??"all"}`} data={data} run={run}/>}
+ {embedded&&run.scopes.map((scope,i)=><section key={i} className="space-y-2 rounded-lg border p-3"><h4>Field {scope.field_index??"ทั้งเอกสาร"}</h4><p className="whitespace-pre-wrap"><strong>Ground Truth: </strong>{scope.display_ground_truth??"—"}</p><p className="whitespace-pre-wrap"><strong>OCR: </strong>{scope.display_ocr_text??"—"}</p></section>)}
+ {data&&<FieldErrorDetails key={`${caseId}:${pipelineId}:${mode}:${character??"all"}`} data={data} run={run} onCrop={onCrop}/>}
  </>}
  </div>}
  </>}
