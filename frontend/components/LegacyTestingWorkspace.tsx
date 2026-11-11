@@ -78,7 +78,7 @@ export default function TestingWorkspace({
   const [suggestions, setSuggestions] = useState<AutoROISuggestion[]>([]);
   const [autoMode, setAutoMode] = useState("text-line");
   const [maxUploadMB, setMaxUploadMB] = useState(10);
-  const [maxPipelines, setMaxPipelines] = useState(6);
+  const [maxPipelines, setMaxPipelines] = useState(3);
 
   useEffect(() => {
     let active = true;
@@ -91,11 +91,11 @@ export default function TestingWorkspace({
         ]);
         if (!active) return;
         setMaxUploadMB(uploadConfig.max_upload_mb);
-        setMaxPipelines(uploadConfig.max_job_pipelines);
+        setMaxPipelines(Math.min(3,uploadConfig.max_job_pipelines??3));
         setPipelines(configs);
         if (initialTestCaseId) setResultTab(configs[0]?.pipeline_id ?? "all");
         setSelectedPipelines(
-          configs.filter((p) => p.enabled).slice(0, uploadConfig.max_job_pipelines).map((p) => p.pipeline_id),
+          configs.filter((p) => p.enabled).slice(0, Math.min(3,uploadConfig.max_job_pipelines??3)).map((p) => p.pipeline_id),
         );
         setCategories(tags);
         const params = new URLSearchParams(window.location.search);

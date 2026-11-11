@@ -15,6 +15,8 @@ for(const width of [390,768,1440])test(`document types, one-pipeline History, da
  await page.getByRole('button',{name:'ถัดไป: จัดการ Layout',exact:true}).click();await expect(page).toHaveURL(/\/layout$/);const id=page.url().split('/').at(-2)!;
  const fieldId=randomUUID();expect((await request.put(`${api}/api/test-cases/${id}/global-fields`,{data:{fields:[{id:fieldId,field_index:1,source:'manual',roi:{x1:80,y1:225,x2:850,y2:355}}],confirmed:false}})).ok()).toBeTruthy();
  await page.reload();await expect(page.locator('main')).toContainText(name);await page.getByRole('button',{name:'ยืนยัน ROI',exact:true}).click();await expect(page).toHaveURL(/\/pipelines$/);await expect(page.locator('main')).toContainText(name);
+ await expect(page.getByTestId('pipeline-options').locator('input:checked')).toHaveCount(3);
+ await expect(page.getByRole('button',{name:'Run OCR',exact:true})).toBeEnabled();
  for(const box of await page.getByTestId('pipeline-options').getByRole('checkbox').all())await box.uncheck();await page.getByRole('checkbox',{name:'เลือก Hutch fine tune v2',exact:true}).check();
  await page.getByRole('button',{name:'Run OCR',exact:true}).click();await expect(page).toHaveURL(/\/ground-truth\?edit=1$/);await expect(page.locator('main')).toContainText(name);
  await page.getByLabel('Ground Truth Field 01',{exact:true}).fill('ยืนยัน ใบเสร็จ');await page.getByRole('button',{name:'ยืนยันเพื่อคำนวณ',exact:true}).click();await expect(page.getByTestId('global-metrics-hutch_fine_tune_v2').getByTestId('global-evaluation')).toBeVisible();

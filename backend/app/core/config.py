@@ -11,9 +11,9 @@ WORKLOAD_LIMITS = dict(max_upload_mb=10, max_image_pixels=2_000_000,
                        max_image_dimension=8000, max_pdf_pages=20,
                        model_gateway_max_response_mb=8, ocr_max_concurrent_tasks=1,
                        ocr_max_concurrent_fields=1, ocr_gateway_batch_size=1)
-MAX_JOB_FIELDS = 12
-MAX_JOB_PIPELINES = 6
-MAX_JOB_UNITS = 24
+MAX_JOB_FIELDS = 80
+MAX_JOB_PIPELINES = 3
+MAX_JOB_UNITS = 240
 MAX_DETECTION_REGIONS = 128
 MAX_OCR_TEXT_CHARACTERS = 32768
 

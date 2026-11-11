@@ -9,6 +9,7 @@ from app.api.dependencies import CaseServiceDep, SessionDep
 from app.core.errors import AppError
 from app.db.models import OCRJob
 from app.schemas.contracts import RunRequest
+from app.services.json_response import bounded_json_response
 from app.services.ocr_jobs import enqueue, job_json
 from app.services.serializers import run_json
 
@@ -58,4 +59,4 @@ def results(job_id: UUID, session: SessionDep):
     if job is None:
         raise AppError("OCR job not found", 404)
     runs = [session.get(PipelineRun, job.run_ids[p]) for p in job.pipeline_ids if p in job.run_ids]
-    return {"test_case_id": job.test_case_id, "runs": [run_json(r, detail=True) for r in runs if r]}
+    return bounded_json_response({"test_case_id": job.test_case_id, "runs": [run_json(r, detail=True) for r in runs if r]})

@@ -141,7 +141,8 @@ def test_roi_fields_persistence_and_dynamic_views(client, document, source):
         document_id=document["id"], roi=roi, roi_source=source,
         ground_truth_raw="ภาษาไทย", category_codes=["thai_text"])).json()
     ids = [p["pipeline_id"] for p in client.get("/api/pipelines").json()]
-    runs = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": ids}).json()["runs"]
+    from tests.run_config_groups import run_config_groups
+    runs = run_config_groups(client, case['id'], ids)
     by_id = {r["pipeline_id"]: r for r in runs}
     assert all(r["status"] == "success" for r in runs)
     run = by_id["thai_ft_v2"]

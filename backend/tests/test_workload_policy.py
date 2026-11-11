@@ -159,7 +159,8 @@ def test_policy_visible(client):
     assert value["max_upload_mb"] == 10 and value["max_pdf_pages"] == 20
     assert value["ocr_active_jobs"] == value["ocr_max_concurrent_tasks"] == 1
     assert value["ocr_queue_capacity"] == 5
-    assert value["max_job_fields"] == 12 and value["max_job_pipelines"] == 6
+    assert value["max_job_fields"] == 80 and value["max_job_pipelines"] == 3
+    assert value["max_job_units"] == 240
 
 
 def test_new_job_limits_preserve_historical_state():
@@ -169,12 +170,12 @@ def test_new_job_limits_preserve_historical_state():
 
     from app.schemas.contracts import RunRequest
     with pytest.raises(ValidationError):
-        RunRequest(pipelines=[f"p{i}" for i in range(7)])
-    historical = SimpleNamespace(workflow="global", global_fields=[object()] * 13)
+        RunRequest(pipelines=[f"p{i}" for i in range(4)])
+    historical = SimpleNamespace(workflow="global", global_fields=[object()] * 81)
     with pytest.raises(AppError) as error:
         CaseService.validate_workload(historical, ["p1"])
     assert error.value.status_code == 413
-    assert len(historical.global_fields) == 13
+    assert len(historical.global_fields) == 81
 
 
 def test_guard_releases_slot_after_cancellation(settings):
@@ -206,16 +207,17 @@ def test_default_pdf_a4_raster_is_explicit_and_bounded():
     assert page.width * page.height <= settings.max_image_pixels
 
 
-def test_product_budget_preserves_twelve_fields_and_all_six_pipeline_options():
+def test_product_budget_accepts_eighty_fields_three_pipelines_and_rejects_excess():
     from types import SimpleNamespace
-    case = SimpleNamespace(workflow="global", global_fields=[object()] * 12)
-    CaseService.validate_workload(case, ["one", "two"])
+    case = SimpleNamespace(workflow="global", global_fields=[object()] * 80)
+    CaseService.validate_workload(case, ["one", "two", "three"])
     with pytest.raises(AppError) as error:
-        CaseService.validate_workload(case, ["one", "two", "three"])
-    assert error.value.status_code == 413 and "24" in error.value.message
-    assert len(case.global_fields) == 12
-    case.global_fields = case.global_fields[:4]
-    CaseService.validate_workload(case, [str(i) for i in range(6)])
+        CaseService.validate_workload(case, ["one", "two", "three", "four"])
+    assert error.value.status_code == 413 and "3 Pipelines" in error.value.message
+    case.global_fields.append(object())
+    with pytest.raises(AppError) as error:
+        CaseService.validate_workload(case, ["one"])
+    assert error.value.status_code == 413 and "80 Fields" in error.value.message
 
 
 @pytest.mark.parametrize("regions", [128, 129, 256])

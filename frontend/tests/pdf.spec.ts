@@ -1,5 +1,5 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
-import {waitForJobResults} from "./job-results";
+import {runAllConfigured} from "./job-results";
 import { expect, test } from "@playwright/test";
 import path from "node:path";
 import { t } from "../lib/i18n/th";
@@ -68,8 +68,7 @@ test("legacy compatibility: Thai multi-page PDF: choose page two, ROI, all confi
   await page.getByLabel(t("What should the document say?"), { exact: true }).fill("บริษัท ซีดีจี จำกัด");
   await page.getByRole("button", { name: "ข้อความภาษาไทย", exact: true }).click();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  const runResponse = waitForJobResults(page);
-  await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
+  const runResponse = runAllConfigured(page);
   const result: RunResponse = await (await runResponse).json();
   expect(result.runs.map(run => run.pipeline_id).sort()).toEqual(configs.map(config => config.pipeline_id).sort());
   expect(result.runs.every(run => run.status === "success")).toBeTruthy();

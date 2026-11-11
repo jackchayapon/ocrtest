@@ -1,3 +1,5 @@
+> Current 80-Field upgrade: [final verification](multifield-release-verification.md), [resource evidence](multifield-memory-evidence.json), [gate ledger](production-release-gates.json). The earlier release/history below remains historical; its counts and deployment IDs are not evidence for this new candidate.
+
 # OCRLab — Internship prototype release verification
 
 ## Final release candidate — G6 fixed

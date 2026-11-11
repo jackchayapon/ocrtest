@@ -216,10 +216,8 @@ def test_benchmark_failure_isolated_from_existing_pipelines(client, case, gatewa
         return original_handler(r)
 
     gateway[0]["handler"] = handler
-    runs = client.post(
-        f"/api/test-cases/{case['id']}/run",
-        json={"pipelines": ["mint", "hutch_crop", "hutch_full", "benchmark"]},
-    ).json()["runs"]
+    from tests.run_config_groups import run_config_groups
+    runs = run_config_groups(client, case['id'], ["mint", "hutch_crop", "hutch_full", "benchmark"])
     assert [r["status"] for r in runs] == ["success", "success", "success", "error"]
     assert runs[0]["crop_sha256"] == runs[1]["crop_sha256"] == runs[3]["crop_sha256"]
     assert runs[2]["crop_stage"] == "app_crop" and runs[2]["input_width"] == 230

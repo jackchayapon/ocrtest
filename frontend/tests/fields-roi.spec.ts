@@ -1,6 +1,6 @@
 import { openLegacyWorkspace } from "./legacy-workspace";
 import { expect, test } from "@playwright/test";
-import {waitForJobResults} from "./job-results";
+import {runAllConfigured} from "./job-results";
 import path from "node:path";
 import fs from "node:fs";
 import { t } from "../lib/i18n/th";
@@ -30,8 +30,7 @@ test("legacy compatibility: default field GT uses Check preview, accessible red 
   await page.locator('input[type="file"]').first().setInputFiles(path.resolve("public/sample-document.png"));
   await expect(page.getByRole("button", { name: "ราย Field", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("#ground-truth")).toHaveCount(0);
-  const pending = waitForJobResults(page);
-  await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
+  const pending = runAllConfigured(page);
   const result = await (await pending).json();
   await page.getByRole("tab", { name: t("Mint Custom"), exact: true }).click();
   await expect(page.getByTestId("ocr-field")).toHaveCount(2);
@@ -75,8 +74,7 @@ test("legacy compatibility: Auto suggestions survive selection, editing and manu
   await second.click(); await expect(first).toBeVisible();
   await expect(second).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  let pending = waitForJobResults(page);
-  await page.getByRole("button", { name: t("Run all pipelines"), exact: true }).click();
+  let pending = runAllConfigured(page);
   const auto = await (await pending).json();
   expect(auto.runs[2].input_width).toBe(auto.runs[0].input_width); expect(auto.runs[2].roi).toEqual(auto.runs[0].roi);
   expect((await (await request.get(`${api}/api/test-cases/${auto.test_case_id}`)).json()).roi_source).toBe("auto");
@@ -88,8 +86,7 @@ test("legacy compatibility: Auto suggestions survive selection, editing and manu
   await page.mouse.move(x+750*scale,y+350*scale,{steps:10}); await page.mouse.up();
   await expect(first).toBeVisible(); await expect(second).toBeVisible();
   await page.getByRole("button", { name: "ยืนยัน ROI", exact: true }).click();
-  pending=waitForJobResults(page);
-  await page.getByRole("button",{name:t("Run all pipelines"),exact:true}).click();
+  pending=runAllConfigured(page);
   const manual=await (await pending).json();
   expect(manual.test_case_id).not.toBe(auto.test_case_id);
   expect(new Set(manual.runs.map((r: {input_sha256:string})=>r.input_sha256)).size).toBe(1);

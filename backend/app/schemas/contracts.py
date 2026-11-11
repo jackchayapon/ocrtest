@@ -77,13 +77,29 @@ class GlobalGroundTruth(InputModel):
     ground_truth_raw: str = Field(max_length=100000)
 
 
+class GlobalGroundTruthItem(GlobalGroundTruth):
+    id: UUID
+
+
+class GlobalGroundTruthBatch(InputModel):
+    fields: list[GlobalGroundTruthItem] = Field(max_length=MAX_JOB_FIELDS)
+    ground_truth_raw: str = Field(max_length=100000)
+    evaluation_mode: Literal["whole_document", "per_field"]
+
+    @model_validator(mode="after")
+    def unique_ids(self):
+        if len({f.id for f in self.fields}) != len(self.fields):
+            raise ValueError("Global Field IDs must be unique")
+        return self
+
+
 class EvaluationMode(InputModel):
     mode: Literal["whole_document", "per_field"]
 
 
 class GlobalEvaluation(EvaluationMode):
     mode: Literal["whole_document", "per_field", "auto"] = "auto"
-    global_field_ids: list[UUID] = Field(default_factory=list, max_length=50)
+    global_field_ids: list[UUID] = Field(default_factory=list, max_length=MAX_JOB_FIELDS)
     require_complete_gt: bool = False
 
     @model_validator(mode="after")

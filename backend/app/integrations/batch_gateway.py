@@ -25,7 +25,12 @@ class BatchGateway:
             self.pending[key] = []
             asyncio.get_running_loop().call_soon(lambda: asyncio.create_task(self.flush(key)))
         self.pending[key].append((gateway, request, future))
-        return await future
+        try:
+            return await future
+        finally:
+            # An exception traceback includes this frame. Do not let the
+            # future retain its own traceback and upload owners until cyclic GC.
+            future = None
 
     async def flush(self, key):
         entries = self.pending.pop(key)
@@ -94,6 +99,11 @@ class BatchGateway:
             for _, _, future in entries:
                 if not future.done():
                     future.set_exception(error)
+        finally:
+            # The flush traceback can otherwise close a second cycle through
+            # entries/future -> exception -> this frame -> entries/future.
+            entries.clear()
+            future = None
 
 
 class BatchingClient:

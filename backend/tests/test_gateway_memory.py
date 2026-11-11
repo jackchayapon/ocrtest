@@ -12,6 +12,77 @@ from app.integrations.gateway_response import EnvelopeParser
 from app.integrations.model_gateway import GatewayError, ModelGatewayClient, safe_response
 
 
+def test_bounded_socket_transport_preserves_verified_tls_and_no_implicit_retries(settings):
+    import socket
+    import ssl
+
+    async def inspect():
+        async with ModelGatewayClient(settings)._client() as client:
+            pool = client._transport._pool
+            assert pool._ssl_context.verify_mode == ssl.CERT_REQUIRED
+            assert pool._ssl_context.check_hostname
+            assert pool._retries == 0
+            assert pool._socket_options == [(socket.SOL_SOCKET, socket.SO_RCVBUF, 256 * 1024)]
+            assert not client.follow_redirects and not client._trust_env
+    asyncio.run(inspect())
+
+
+def test_leaf_clients_reuse_verified_ca_store_without_reusing_connections(settings):
+    import ssl
+
+    async def inspect():
+        gateway = ModelGatewayClient(settings)
+        async with gateway._client() as first, gateway._client() as second:
+            one, two = first._transport._pool, second._transport._pool
+            assert one is not two
+            assert one._ssl_context is two._ssl_context
+            assert one._ssl_context.verify_mode == ssl.CERT_REQUIRED
+            assert one._ssl_context.check_hostname
+            assert one._ssl_context.cert_store_stats()['x509_ca'] > 0
+            assert not first.follow_redirects and not second.follow_redirects
+    asyncio.run(inspect())
+
+
+def test_real_loopback_socket_is_bounded_and_large_response_bytes_are_unchanged(settings):
+    import hashlib
+    import socket
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    body = b'{"data":{"text":"' + b'ABC123' * 500000 + b'"},"meta":{}}'
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, *args):
+            pass
+    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+
+    async def receive():
+        digest = hashlib.sha256()
+        async with ModelGatewayClient(settings)._client() as client:
+            async with client.stream('GET', f'http://127.0.0.1:{server.server_port}/synthetic') as response:
+                transport_socket = response.extensions['network_stream'].get_extra_info('socket')
+                # Linux doubles SO_RCVBUF; platform accounting may differ.
+                assert 0 < transport_socket.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF) <= 1024 * 1024
+                async for chunk in response.aiter_bytes(chunk_size=65536):
+                    assert len(chunk) <= 65536
+                    digest.update(chunk)
+        assert digest.digest() == hashlib.sha256(body).digest()
+    try:
+        asyncio.run(receive())
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
 def parse(body, size=7):
     parser = EnvelopeParser(lambda value: safe_response(value, ("private-secret",)))
     try:

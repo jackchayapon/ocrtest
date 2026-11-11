@@ -13,6 +13,7 @@ from app.schemas.contracts import (
     FieldCheck,
     GlobalEvaluation,
     GlobalGroundTruth,
+    GlobalGroundTruthBatch,
     GlobalLayoutUpdate,
     GroundTruthUpdate,
     ROIUpdate,
@@ -25,6 +26,7 @@ from app.services.evaluation_insights_service import EvaluationInsightsService
 from app.services.excel_evaluation_service import ExcelEvaluationService
 from app.services.field_service import FieldService
 from app.services.global_layout_service import GlobalLayoutService
+from app.services.json_response import bounded_json_response
 from app.services.ocr_jobs import ensure_not_running, has_active_jobs
 from app.services.serializers import field_json, run_json, test_case_json
 
@@ -42,27 +44,32 @@ async def bulk_delete(data: BulkCases, service: CaseServiceDep, request: Request
 
 @router.get("/{case_id}/global-fields")
 def global_layout(case_id: UUID, repository: RepoDep):
-    return test_case_json(repository.test_case(str(case_id)), detail=True)
+    return bounded_json_response(test_case_json(repository.test_case(str(case_id)), detail=True))
 
 
 @router.put("/{case_id}/global-fields")
 def save_layout(case_id: UUID, data: GlobalLayoutUpdate, service: CaseServiceDep):
-    return test_case_json(GlobalLayoutService(service).layout(str(case_id), data))
+    return bounded_json_response(test_case_json(GlobalLayoutService(service).layout(str(case_id), data)))
 
 
 @router.put("/{case_id}/global-fields/{field_id}/ground-truth")
 def global_gt(case_id: UUID, field_id: UUID, data: GlobalGroundTruth, service: CaseServiceDep):
-    return test_case_json(GlobalLayoutService(service).save_gt(str(case_id), str(field_id), data))
+    return bounded_json_response(test_case_json(GlobalLayoutService(service).save_gt(str(case_id), str(field_id), data)))
 
 
 @router.put("/{case_id}/evaluation-mode")
 def global_mode(case_id: UUID, data: EvaluationMode, service: CaseServiceDep):
-    return test_case_json(GlobalLayoutService(service).mode(str(case_id), data.mode))
+    return bounded_json_response(test_case_json(GlobalLayoutService(service).mode(str(case_id), data.mode)))
+
+
+@router.put("/{case_id}/global-ground-truth")
+def global_gt_batch(case_id: UUID, data: GlobalGroundTruthBatch, service: CaseServiceDep):
+    return bounded_json_response(test_case_json(GlobalLayoutService(service).save_gt_batch(str(case_id), data)))
 
 
 @router.post("/{case_id}/evaluate")
 def evaluate_global(case_id: UUID, data: GlobalEvaluation, service: CaseServiceDep):
-    return test_case_json(GlobalLayoutService(service).evaluate(str(case_id), data), detail=True)
+    return bounded_json_response(test_case_json(GlobalLayoutService(service).evaluate(str(case_id), data), detail=True))
 
 
 @router.post("", status_code=201)
@@ -82,22 +89,22 @@ def list_test_cases(
 
 @router.get("/{case_id}")
 def get_test_case(case_id: UUID, repository: RepoDep):
-    return test_case_json(repository.test_case(str(case_id)), detail=True)
+    return bounded_json_response(test_case_json(repository.test_case(str(case_id)), detail=True))
 
 
 @router.put("/{case_id}")
 def update_test_case(case_id: UUID, data: TestCaseUpdate, service: CaseServiceDep):
-    return test_case_json(service.update(str(case_id), data))
+    return bounded_json_response(test_case_json(service.update(str(case_id), data)))
 
 
 @router.put("/{case_id}/ground-truth")
 def save_ground_truth(case_id: UUID, data: GroundTruthUpdate, service: CaseServiceDep):
-    return test_case_json(service.ground_truth(str(case_id), data))
+    return bounded_json_response(test_case_json(service.ground_truth(str(case_id), data)))
 
 
 @router.put("/{case_id}/roi")
 def update_roi(case_id: UUID, data: ROIUpdate, service: CaseServiceDep):
-    return test_case_json(service.update(str(case_id), TestCaseUpdate(roi=data.roi, roi_source=data.roi_source)))
+    return bounded_json_response(test_case_json(service.update(str(case_id), TestCaseUpdate(roi=data.roi, roi_source=data.roi_source))))
 
 
 @router.get("/{case_id}/runs/{run_id}/fields")
@@ -117,9 +124,9 @@ def field_ground_truth(case_id: UUID, run_id: UUID, field_id: UUID, data: Ground
 
 @router.put("/{case_id}/categories")
 def update_categories(case_id: UUID, data: CategoriesUpdate, service: CaseServiceDep):
-    return test_case_json(
+    return bounded_json_response(test_case_json(
         service.update(str(case_id), TestCaseUpdate(category_codes=data.category_codes))
-    )
+    ))
 
 
 @router.post("/{case_id}/run")
@@ -143,10 +150,10 @@ async def delete_test_case(case_id: UUID, service: CaseServiceDep, request: Requ
 
 @router.get("/{case_id}/results")
 def get_results(case_id: UUID, repository: RepoDep):
-    return {
+    return bounded_json_response({
         "test_case_id": str(case_id),
         "runs": [run_json(run, detail=True) for run in repository.test_case(str(case_id)).runs if not run.archived],
-    }
+    })
 
 
 @router.get("/{case_id}/error-summary")
