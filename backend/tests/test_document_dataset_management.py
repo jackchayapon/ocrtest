@@ -105,7 +105,8 @@ def test_0009_additive_upgrade_preserves_old_document_and_no_drift():
         assert connection.execute(text("SELECT filename,document_type_id FROM documents WHERE id=:id"),{"id":id}).one()==("preserved.png",None)
         assert connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()=="0009_document_types_dataset"
         command.upgrade(cfg,"head")
-        assert connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()=="0012_ocr_jobs"
+        assert connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()=="0013_external_providers"
+        assert connection.execute(text("SELECT count(*) FROM external_providers")).scalar_one()==0
         assert connection.execute(text("SELECT filename FROM documents WHERE id=:id"),{"id":id}).scalar_one()=="preserved.png"
         previous=connection.dialect.default_schema_name
         connection.dialect.default_schema_name=schema

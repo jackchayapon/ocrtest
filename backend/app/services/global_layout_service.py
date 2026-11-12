@@ -35,6 +35,8 @@ def reading_lines(run):
     Missing geometry falls back to upstream text lines for the entire field.
     This is deterministic line order, not semantic/table reading order.
     """
+    if getattr(run, "crop_stage", None) == "external_api":
+        return (run.final_text or "").splitlines() or [""]
     boxes = [b for b in run.boxes if isinstance(b.get("text"), str)]
     if boxes and all(isinstance(b.get("bbox"), list) and len(b["bbox"]) == 4 for b in boxes):
         return [

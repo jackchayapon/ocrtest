@@ -63,8 +63,9 @@ class OCRModelInput(InputModel):
 
 class DynamicPipelineInput(InputModel):
     name: str = Field(min_length=1, max_length=100)
-    source: Literal["custom", "official"]
-    execution_mode: Literal["integrated", "det_rec", "rec"] = "integrated"
+    source: Literal["custom", "official", "external_api"]
+    execution_mode: Literal["integrated", "det_rec", "rec", "external_api"] = "integrated"
+    provider_id: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_-]{0,49}$")
     det_model_id: UUID | None = None
     rec_model_id: UUID | None = None
     version: Literal["5", "6"] = "6"
@@ -84,6 +85,13 @@ class DynamicPipelineInput(InputModel):
 
     @model_validator(mode="after")
     def stages(self):
+        if self.execution_mode == "external_api" or self.source == "external_api":
+            if (self.execution_mode != "external_api" or self.source != "external_api" or
+                    not self.provider_id or self.det_model_id or self.rec_model_id):
+                raise ValueError("External pipelines require an approved provider and no DET/REC models")
+            return self
+        if self.provider_id is not None:
+            raise ValueError("Only external pipelines can select a provider")
         if self.source == "custom" and any(w not in {"baseline", "thai_ft_v1", "thai_ft_v2"} for w in (self.det_weight, self.rec_weight)):
             raise ValueError("Unsupported custom weight")
         if self.source == "official" and self.execution_mode == "integrated" and not self.paddle_model_defaults:

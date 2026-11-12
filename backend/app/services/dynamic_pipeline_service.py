@@ -16,8 +16,9 @@ def model_json(model):
 
 
 class DynamicPipelineService:
-    def __init__(self, session):
+    def __init__(self, session, settings=None):
         self.session = session
+        self.settings = settings
 
     def models(self):
         return list(self.session.scalars(select(OCRModel).order_by(OCRModel.source, OCRModel.kind, OCRModel.name)))
@@ -43,7 +44,7 @@ class DynamicPipelineService:
         self.session.commit()
         return model
 
-    def save_pipeline(self, data, pipeline_id=None):
+    def save_pipeline(self, data, pipeline_id=None, provider=None):
         pipeline = BenchmarkRepository(self.session).config(pipeline_id) if pipeline_id else PipelineConfig(
             pipeline_id="dynamic_" + uuid4().hex, request_format="multipart", file_field_name="images",
         )
@@ -58,11 +59,19 @@ class DynamicPipelineService:
         pipeline.enabled = data.enabled
         pipeline.det_model, pipeline.rec_model = det, rec
         pipeline.integrated_options = dict(version=data.version, det_weight=data.det_weight, rec_weight=data.rec_weight) if data.execution_mode == "integrated" else None
+        if data.execution_mode == "external_api":
+            from app.integrations.external_ocr import get_provider
+            provider = provider or get_provider(self.settings, data.provider_id)
+            pipeline.integrated_options = provider.identity(data.provider_id)
+            pipeline.endpoint = ""
+            pipeline.base_url = ""
+            pipeline.request_format = provider.request_format
+            pipeline.file_field_name = provider.image_field
         if data.source == "official" and data.execution_mode == "integrated":
             pipeline.integrated_options = dict(paddle_model_defaults=data.paddle_model_defaults,
                 det_version=data.det_version, rec_version=data.rec_version,
                 det_weight=data.det_weight, rec_weight=data.rec_weight)
-        pipeline.engine = "dynamic"
+        pipeline.engine = "external_api" if data.execution_mode == "external_api" else "dynamic"
         pipeline.last_connection_status = None
         self.session.add(pipeline)
         self.session.commit()

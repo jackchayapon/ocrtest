@@ -1,0 +1,68 @@
+{
+  "date_local": "2026-11-13T04:49:15.504787+07:00",
+  "scope": "Part2 public shared configuration; Part1 unchanged and not run/deployed",
+  "base_feature_commit": "3fa9fa436c4cb276e6d3e0df2f4bfe8c944daad1",
+  "backend": {
+    "tests": 760,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "playwright": {
+    "full_passed": 232,
+    "mixed_browser_passed": 1,
+    "failed": 0,
+    "skipped": 0
+  },
+  "static_checks": [
+    {
+      "name": "typecheck",
+      "exit_code": 0,
+      "duration_s": 1.672
+    },
+    {
+      "name": "eslint",
+      "exit_code": 0,
+      "duration_s": 6.781
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0,
+      "duration_s": 0.063
+    },
+    {
+      "name": "diff",
+      "exit_code": 0,
+      "duration_s": 0.047
+    }
+  ],
+  "schema": "Local PostgreSQL additive migration and drift checks passed in full Backend; production metadata before release0012, new table absent",
+  "security_new_backend_tests": 29,
+  "secret_scan": {
+    "scanned_files": 480,
+    "secret_matching_files": [],
+    "forbidden_files": [],
+    "added_skips_or_only": [],
+    "diff_check_exit": 0,
+    "part1_unchanged": true,
+    "source_test_fingerprint": "2e88efba87fbb41f99038768953830694f2d4844364e45dc72f3c0fd1e7f0037"
+  },
+  "rollback": "Prior Backend plus retained0013 migration startup verified locally; no direct old-image rollback or production downgrade",
+  "test_fixture_correction": "First full browser run231pass/1fail: obsolete inline Field detail locator. Confirmed actual dialog retained ABXD/ABCD; adjusted scope, preserved assertions and reran full suite.",
+  "resource_scope": "Workload/executor limits unchanged; functional40/60/80 Fields tests pass. No new resource-capacity benchmark or live external inference claim.",
+  "artifact_sha256": {
+    ".runtime/shared-external/backend-full.xml": "9e7b66f0ef92f15e756fd003a354b2596e0ba48598f1ad3bbc434cb09ee25775",
+    ".runtime/shared-external/backend-full.log": "b1081ef224e9a5f27425992c05b2945a84b5405b5bd6470842c48c28688087d7",
+    ".runtime/shared-external/backend-exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    ".runtime/shared-external/playwright-full.log": "724773ff98a76d9e14be973f3259a130d0f7b5f995d3e82013899b8381123096",
+    ".runtime/shared-external/playwright-full-exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    ".runtime/shared-external/playwright-focused.log": "447cb37963ca40a99e61850a778c1bba466973126915036080dc3f4a3baf6c28",
+    ".runtime/shared-external/playwright-focused-exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    ".runtime/shared-external/web-build.log": "380e23879a12d366b674f406aea270a0970fbabaccce959f361a74ded704ba77",
+    ".runtime/shared-external/build-exit.json": "124fd50cb6d223cdd18fedc166d00af7254199b6e6dedf9be82f71db87af6d01",
+    ".runtime/shared-external/static-checks.json": "ff893bb628160ff7a1e7f2a9c1a61a28f18269752370a748d25b5bf8eb8c0835",
+    ".runtime/shared-external/audit.json": "ed5de636511169a281891539fd1263189ea219c26e48cb3c8f8d37d501164cfc",
+    ".runtime/shared-external/production-metadata.json": "ccec93c10c955da07b38ad16df32abdbfba6bd9dc0cce5626baafa8fbf41dd81",
+    ".runtime/shared-external/rollback-check/result.log": "820c05b80e95c1addd485381a2ae9a77794f68d853d984ca9cfb9d1f990a9593"
+  }
+}

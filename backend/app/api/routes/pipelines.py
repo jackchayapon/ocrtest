@@ -14,6 +14,12 @@ from app.services.serializers import config_json
 router = APIRouter(prefix="/pipelines")
 
 
+@router.get("/external-providers")
+def external_providers(request: Request):
+    from app.integrations.external_ocr import providers
+    return [value.public(key) for key, value in providers(request.app.state.settings).items()]
+
+
 @router.delete("/{pipeline_id}", status_code=204)
 def delete_pipeline(pipeline_id: str, repository: RepoDep, session: SessionDep):
     # Runs retain their own pipeline ID/name, predictions and metrics.
@@ -40,12 +46,12 @@ def update_model(model_id: UUID, data: OCRModelInput, session: SessionDep):
 
 @router.post("", status_code=201)
 def create_pipeline(data: DynamicPipelineInput, request: Request, session: SessionDep):
-    return config_json(DynamicPipelineService(session).save_pipeline(data), request.app.state.settings)
+    return config_json(DynamicPipelineService(session, request.app.state.settings).save_pipeline(data), request.app.state.settings)
 
 
 @router.put("/{pipeline_id}/definition")
 def update_definition(pipeline_id: str, data: DynamicPipelineInput, request: Request, session: SessionDep):
-    return config_json(DynamicPipelineService(session).save_pipeline(data, pipeline_id), request.app.state.settings)
+    return config_json(DynamicPipelineService(session, request.app.state.settings).save_pipeline(data, pipeline_id), request.app.state.settings)
 
 
 @router.get("")

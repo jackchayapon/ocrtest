@@ -52,7 +52,7 @@ export default function PipelineSettingsPage() {
           </p>
           <p className="mt-1 text-xs leading-6 text-indigo-800/80">
             {t(
-              "ตั้งค่า API Key ผ่าน environment ของ backend เท่านั้น ห้ามใส่รหัสลับใน URL หรือช่องตั้งค่านี้",
+              "External API ตั้งค่า Key ผ่านช่อง API Key ที่เข้ารหัสบน Server ได้ ส่วน Internal Models ใช้ environment ของ Backend ห้ามใส่ Key ใน URL ข้อมูลและการตั้งค่าทั้งหมดใช้ร่วมกันแบบสาธารณะ",
             )}
           </p>
         </div>

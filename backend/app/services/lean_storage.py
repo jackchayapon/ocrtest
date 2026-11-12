@@ -1,5 +1,10 @@
 ﻿"""Allowlisted model identity; never an upstream transport archive."""
 def compact_provenance(response):
+    external = (response or {}).get('external_provider')
+    if isinstance(external, dict):
+        return {'external_provider': {key: external[key] for key in (
+            'provider_id', 'provider_name', 'adapter', 'fingerprint', 'geometry_available', 'model_revision'
+        ) if key in external}}
     composition = (response or {}).get('composition')
     if not isinstance(composition, dict):
         return None

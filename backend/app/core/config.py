@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, PrivateAttr, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     ocr_max_concurrent_fields: int = Field(default=1, ge=1, le=8)
     ocr_gateway_batch_size: int = Field(default=1, ge=1, le=30)
     ocr_jobs_enabled: bool = True
+    external_ocr_providers: SecretStr = SecretStr("{}")
+    external_ocr_development: bool = False
+    external_ocr_encryption_keys: SecretStr = SecretStr("")
+    _external_provider_sessions: object = PrivateAttr(default=None)
+    _external_shared_quota: object = PrivateAttr(default=None)
     mint_ocr_endpoint: str = "/api/v1/ocr-results"
     mint_ocr_engine: str = "custom"
     hutch_crop_endpoint: str = "/api/v1/ocr-results"

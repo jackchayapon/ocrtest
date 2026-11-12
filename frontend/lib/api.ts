@@ -11,6 +11,7 @@ export function assetUrl(path: string): string {
 export const deletePipeline = (id: string) => request<void>(`/pipelines/${encodeURIComponent(id)}`, {method:"DELETE"});
 
 const reads = new ReadCoordinator();
+export const invalidatePipelineCatalog = () => reads.mutated("/pipelines");
 export class APIError extends Error {
   constructor(message:string,public readonly status:number,public readonly routeMissing=false,public readonly retryAfter?:string|null,public readonly retrySafe=false){super(message);this.name="APIError";}
 }
@@ -185,4 +186,7 @@ export async function exportEvaluationExcel(caseId: string, selection: {
  if(!response.ok){const error=await response.json().catch(()=>null);throw new Error(typeof error?.detail==="string"?error.detail:"ส่งออก Excel ไม่สำเร็จ");}
  const url=URL.createObjectURL(await response.blob()),link=document.createElement("a");
  link.href=url;link.download="OCRLab_Evaluation.xlsx";link.click();setTimeout(()=>URL.revokeObjectURL(url),0);
+}
+export async function getExternalOCRProviders(): Promise<import("@/types").ExternalOCRProvider[]> {
+  return request("/pipelines/external-providers");
 }

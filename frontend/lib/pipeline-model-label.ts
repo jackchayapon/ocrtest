@@ -7,6 +7,7 @@ export const versionLabel = (version: string, kind: OCRModel["kind"], source: OC
 
 // Read-only display metadata. Routing remains owned by the backend configuration.
 export function pipelineModelDisplay(pipeline: PipelineConfig, kind: "det" | "rec") {
+  if (pipeline.execution_mode === "external_api") return {name: pipeline.external_provider?.provider_name || "External OCR API", version: null, weight: null, summary: pipeline.external_provider?.provider_name || "External OCR API"};
   const model = kind === "det" ? pipeline.det_model : pipeline.rec_model;
   if (model) return {name: model.name, version: model.version, weight: model.weight, summary: `${model.name} / ${model.weight}`};
   const opts = pipeline.integrated_options;
