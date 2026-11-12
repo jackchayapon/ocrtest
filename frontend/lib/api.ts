@@ -11,6 +11,7 @@ export function assetUrl(path: string): string {
 export const deletePipeline = (id: string) => request<void>(`/pipelines/${encodeURIComponent(id)}`, {method:"DELETE"});
 
 const reads = new ReadCoordinator();
+export const invalidatePipelineCatalog = () => reads.mutated("/pipelines");
 export class APIError extends Error {
   constructor(message:string,public readonly status:number,public readonly routeMissing=false,public readonly retryAfter?:string|null,public readonly retrySafe=false){super(message);this.name="APIError";}
 }

@@ -15,6 +15,7 @@ from app.api.routes import (
     dataset,
     document_types,
     documents,
+    external_providers,
     health,
     ocr_jobs,
     pipelines,
@@ -22,6 +23,7 @@ from app.api.routes import (
 )
 from app.core.config import Settings
 from app.core.errors import AppError
+from app.core.external_quota import ExternalConfigGuard
 from app.core.workload import WorkloadGuard
 from app.db.database import Database
 from app.db.diagnostics import ReadStats, current_stats, install_diagnostics, log_stats
@@ -35,6 +37,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
     database = Database(settings)
     storage = LocalStorageService(settings.storage_path)
+    settings._external_provider_sessions = database.session_factory
     config_cache = ConfigCache()
     install_invalidation(database.session_factory, config_cache)
     if settings.db_diagnostics:
@@ -96,7 +99,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.exception_handler(AppError)
     async def app_error(request: Request, exc: AppError):
         return JSONResponse({"detail": exc.message}, status_code=exc.status_code,
-                            headers={"Retry-After": "5"} if exc.status_code == 429 else None)
+                            headers={"Retry-After": str(getattr(exc, "retry_after", 5))} if exc.status_code == 429 else None)
 
     @app.exception_handler(RequestValidationError)
     @app.exception_handler(ValidationError)
@@ -118,11 +121,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def unknown_error(request: Request, exc):
         return JSONResponse({"detail": "The operation could not be completed."}, status_code=500)
 
-    for module in (health, documents, test_cases, ocr_jobs, pipelines, benchmark, activity, dataset, document_types):
+    for module in (health, documents, test_cases, ocr_jobs, pipelines, benchmark, activity, dataset, document_types, external_providers):
         app.include_router(module.router, prefix="/api")
     # Outermost application middleware also covers sanitized application failures.
     # Railway-generated responses remain outside FastAPI's control.
     app.add_middleware(WorkloadGuard, lock=app.state.image_lock, settings=settings)
+    app.add_middleware(ExternalConfigGuard, settings=settings)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[o.strip() for o in settings.cors_origins.split(",") if o.strip()],

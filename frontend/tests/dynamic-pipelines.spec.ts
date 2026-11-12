@@ -16,6 +16,7 @@ for (const width of [1440, 768]) {
     page.on("pageerror", e => errors.push(e.message));
     await page.route("**/api/**", async route => {
       const req = route.request(), path = new URL(req.url()).pathname;
+      if (path === "/api/external-providers") return route.fulfill({json: []});
       if (req.method() === "OPTIONS") return route.fulfill({ status: 204 });
       if (req.method() === "DELETE") {
         if(failDelete)return route.fulfill({status:503,json:{detail:"Delete failed"}});

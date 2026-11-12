@@ -6,6 +6,8 @@ import { deletePipeline, getOCRModels, saveOCRModel, saveDynamicPipeline, testCo
 import {versionLabel, pipelineModelDisplay} from "@/lib/pipeline-model-label";
 import type { DynamicPipelineInput, OCRModel, PipelineConfig } from "@/types";
 import ExternalPipelineEditor from "@/components/ExternalPipelineEditor";
+import ManagedProviderRegistry from "@/components/ManagedProviderRegistry";
+import ExternalProviderCardInfo from "@/components/ExternalProviderCardInfo";
 
 const messageOf = (e: unknown) => e instanceof Error ? e.message : "ไม่สามารถบันทึกได้ กรุณาลองอีกครั้ง";
 
@@ -83,7 +85,7 @@ function PipelineEditor({ pipeline, models, onSaved, onCancel }: {
   }
   const sourceSelector = <label className="field p-5 pb-0 sm:px-6">Pipeline execution source
     <select className="select" value={executionSource} disabled={busy} onChange={e => setExecutionSource(e.target.value)}>
-      <option value="internal">โมเดลในระบบ (Custom / Official)</option><option value="external">External OCR API</option>
+      <option value="internal">โมเดลในระบบ (Internal Models)</option><option value="external">โมเดลภายนอก (External OCR API)</option>
     </select>
   </label>;
   if (executionSource === "external") return <div>{sourceSelector}<ExternalPipelineEditor pipeline={pipeline} onSaved={onSaved} onCancel={onCancel}/></div>;
@@ -167,6 +169,7 @@ function DynamicCard({ pipeline, models, onSaved }: { pipeline: PipelineConfig; 
         <div><dt className="text-xs text-slate-500">โมเดล Text Detection</dt><dd className="mt-1 font-medium break-words">{modelText("det")}</dd></div>
         <div><dt className="text-xs text-slate-500">โมเดล Text Recognition</dt><dd className="mt-1 font-medium break-words">{modelText("rec")}</dd></div>
       </dl>}
+      {external && <ExternalProviderCardInfo id={pipeline.external_provider?.provider_id} fingerprint={pipeline.external_provider?.fingerprint}/>}
       {message && <p role="status" className="text-sm text-slate-600">{message}</p>}
     </div>
     {editing && <PipelineEditor pipeline={pipeline} models={models} onSaved={() => { setEditing(false); setStatus(null); onSaved(); }} onCancel={() => setEditing(false)} />}
@@ -241,6 +244,7 @@ export default function DynamicPipelineSettings({ pipelines, onChanged }: { pipe
     return () => { active = false; };
   }, [revision]);
   return <div className="space-y-5">
+    <ManagedProviderRegistry onChanged={onChanged}/>
     <section className="panel overflow-hidden">
       <div className="p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4"><div><h2 className="font-semibold">Pipeline ของคุณ</h2><p className="text-sm text-slate-500 mt-1">ตั้งชื่อ เลือก Custom / Official แล้วปรับโมเดลและ weight ได้ตลอด</p></div>
         <button className="button primary" disabled={loading || !!error} onClick={() => setCreating(v => !v)}>{creating ? <X size={16} /> : <Plus size={16} />}{creating ? "ปิด" : "เพิ่ม Pipeline"}</button></div>

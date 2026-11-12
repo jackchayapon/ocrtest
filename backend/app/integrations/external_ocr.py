@@ -1,4 +1,4 @@
-"""Operator-registered destinations with DNS-pinned, credential-isolated HTTP."""
+"""Shared and server-managed destinations with DNS-pinned, isolated HTTP."""
 import asyncio
 import base64
 import hashlib
@@ -14,8 +14,9 @@ from urllib.parse import urlsplit
 
 import httpcore
 import httpx
+import ijson
 from httpcore._backends.auto import AutoBackend
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 from app.core.config import MAX_DETECTION_REGIONS
 from app.core.errors import AppError
@@ -40,19 +41,29 @@ class Provider(BaseModel):
     credential_env: str | None = Field(default=None, pattern=r"^EXTERNAL_OCR_SECRET_[A-Z0-9_]{1,60}$")
     timeout_seconds: float = Field(default=120, gt=0, le=240)
     max_response_bytes: int = Field(default=2 * 1024**2, ge=1024, le=8 * 1024**2)
+    _credential_loader: object = PrivateAttr(default=None)
+    _credential_configured: bool | None = PrivateAttr(default=None)
+    _enabled: bool = PrivateAttr(default=True)
+    _managed: bool = PrivateAttr(default=False)
 
     @model_validator(mode="after")
     def credential_contract(self):
-        if (self.auth_mode == "none") != (self.credential_env is None):
-            raise ValueError("Authentication requires exactly one server credential reference")
+        if self.auth_mode == "none" and self.credential_env is not None:
+            raise ValueError("Unauthenticated providers cannot reference a credential")
         return self
 
     def public(self, provider_id):
         values = self.model_dump(exclude={"credential_env"})
         return {"id": provider_id, **values, "http_method": "POST",
-                "api_key_configured": bool(self.secret()) if self.auth_mode != "none" else False}
+                "managed": self._managed, "enabled": self._enabled,
+                "api_key_configured": self._credential_configured if self._credential_configured is not None else bool(self.secret()) if self.auth_mode != "none" else False}
 
     def secret(self):
+        if self._credential_loader is not None:
+            try:
+                return self._credential_loader()
+            except AppError:
+                raise GatewayError("External credential is unavailable", "EXTERNAL_CREDENTIAL_UNAVAILABLE") from None
         return os.environ.get(self.credential_env, "") if self.credential_env else ""
 
     def identity(self, provider_id):
@@ -75,10 +86,16 @@ def validate_url(url, development=False):
     if not parts.path.startswith("/") or ".." in parts.path.split("/"):
         raise ValueError("An exact endpoint path is required")
     parts.port  # Validate malformed/out-of-range ports.
+    try:
+        address = ipaddress.ip_address(parts.hostname)
+    except ValueError:
+        address = None
+    if (address is not None and not allowed_ip(str(address), development)) or (parts.hostname == "localhost" and not development):
+        raise ValueError("Private destination is blocked")
     return parts
 
 
-def providers(settings):
+def providers(settings, include_disabled=False):
     try:
         raw = json.loads(settings.external_ocr_providers.get_secret_value())
         if not isinstance(raw, dict) or len(raw) > 20:
@@ -94,15 +111,26 @@ def providers(settings):
                 if (origin.scheme, origin.hostname, origin.port) != (ready.scheme, ready.hostname, ready.port):
                     raise ValueError("Readiness must share the inference origin")
             result[key] = provider
-        return result
     except (ValueError, TypeError):
         raise AppError("External OCR provider registry is invalid. Contact the server operator.", 503) from None
+    factory = settings._external_provider_sessions
+    if factory:
+        from sqlalchemy import select
+
+        from app.db.models import ExternalProvider
+        from app.services.external_provider_service import provider_from_record
+        with factory() as session:
+            records = session.scalars(select(ExternalProvider).order_by(ExternalProvider.created_at))
+            for record in records:
+                if record.enabled or include_disabled:
+                    result[record.id] = provider_from_record(record, settings)
+    return result
 
 
 def get_provider(settings, provider_id):
     provider = providers(settings).get(provider_id)
     if provider is None:
-        raise AppError("Select an approved external OCR provider", 422)
+        raise AppError("Select an enabled external OCR provider", 422)
     return provider
 
 
@@ -155,6 +183,16 @@ class ExternalClient:
                                  timeout=httpx.Timeout(self.provider.timeout_seconds, connect=10))
 
     async def request(self, request_id, png=None):
+        from app.core.external_quota import reserve
+        quota = reserve(self.settings, "connection_checks" if png is None else "inference", 20 if png is None else 600)
+        if not quota.connections.acquire(blocking=False):
+            raise GatewayError("External request capacity reached", "EXTERNAL_HTTP_429", http_status=429, retry_after="5")
+        try:
+            return await self._request(request_id, png)
+        finally:
+            quota.connections.release()
+
+    async def _request(self, request_id, png=None):
         provider = self.provider
         secret = provider.secret()
         if provider.auth_mode != "none" and not secret:
@@ -167,7 +205,7 @@ class ExternalClient:
         kwargs = {}
         if png is None:
             if not provider.readiness_url:
-                return {"status": "configuration_valid", "message": "Approved configuration. Provider has no readiness endpoint. Inference has not been tested."}
+                return {"status": "configuration_valid", "message": "Configuration valid. Provider has no readiness endpoint. Inference has not been tested."}
             url, method = provider.readiness_url, "GET"
         else:
             if len(png) > self.settings.max_upload_mb * 1024**2:
@@ -198,11 +236,22 @@ class ExternalClient:
                         body.extend(chunk)
                     if secret and secret.encode() in body:
                         raise GatewayError("External response contains credential material", "EXTERNAL_INVALID_RESPONSE")
+                    # Bound container/object counts before json.loads allocates a
+                    # Python graph. A byte limit alone permits millions of atoms.
+                    depth = 0
+                    with BytesIO(body) as source:
+                        for count, (event, value) in enumerate(ijson.basic_parse(source), 1):
+                            if event in {"start_map", "start_array"}:
+                                depth += 1
+                            elif event in {"end_map", "end_array"}:
+                                depth -= 1
+                            if count > 50000 or depth > 32:
+                                raise ValueError("External JSON structure exceeds limits")
+                            if secret and isinstance(value, str) and secret in value:
+                                raise ValueError("External JSON contains credential material")
                     payload = json.loads(body)
                     if not isinstance(payload, dict):
                         raise ValueError("Expected object")
-                    if secret and secret in json.dumps(payload, ensure_ascii=False):
-                        raise GatewayError("External response contains credential material", "EXTERNAL_INVALID_RESPONSE")
                     if png is None:
                         if payload.get("status") not in {"ready", "ok"}:
                             return {"status": "reachable", "message": "HTTP200 and authentication accepted. Readiness contract unconfirmed. Inference has not been tested."}
@@ -212,7 +261,7 @@ class ExternalClient:
             raise GatewayError("External provider timed out", "EXTERNAL_TIMEOUT") from None
         except httpx.HTTPError:
             raise GatewayError("External provider connection failed or destination blocked", "EXTERNAL_UNAVAILABLE") from None
-        except (ValueError, RecursionError):
+        except (ValueError, RecursionError, ijson.JSONError):
             raise GatewayError("External provider returned invalid JSON", "EXTERNAL_INVALID_RESPONSE") from None
         finally:
             if "files" in kwargs:

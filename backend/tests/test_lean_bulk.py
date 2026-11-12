@@ -367,7 +367,7 @@ def test_postgresql_clean_head_and_bulk_fk_cascades(settings):
             command.upgrade(cfg, "head")
             assert (
                 conn.scalar(text("SELECT version_num FROM alembic_version"))
-                == "0012_ocr_jobs"
+                == "0013_external_providers"
             )
             previous = conn.dialect.default_schema_name
             conn.dialect.default_schema_name = schema

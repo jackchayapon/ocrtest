@@ -10,7 +10,8 @@ test("real local OpenThai through Settings, durable Job, refresh, GT, metrics, H
   await page.goto("/settings/pipelines");
   await page.getByRole("button", {name: "เพิ่ม Pipeline", exact: true}).click();
   await page.getByLabel("Pipeline execution source").selectOption("external");
-  await page.getByLabel("Approved External Provider").selectOption("openthai");
+  await page.getByLabel("การตั้งค่า External API").selectOption("existing");
+  await page.getByRole("combobox", {name: "External Provider", exact: true}).selectOption("openthai");
   const name = "OpenThai real " + randomUUID();
   await page.getByLabel("ชื่อ Pipeline", {exact: true}).fill(name);
   await page.getByRole("button", {name: "บันทึก Pipeline", exact: true}).click();

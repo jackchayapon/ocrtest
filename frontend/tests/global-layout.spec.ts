@@ -147,8 +147,11 @@ test('calculation requires complete synchronized GT and persists both views with
  const metrics=page.getByTestId(`comparison-row-${c.global_fields![1].id}`).getByTestId('global-metrics-mint');
  await expect(metrics.getByTestId('global-evaluation')).toBeVisible();
  await metrics.getByRole('button',{name:'ดูสถิติอักขระ',exact:true}).click();
- await expect(metrics.getByTestId('field-error-ground-truth')).toContainText('ABXD');
- await expect(metrics.getByTestId('field-error-raw-ocr')).toContainText('ABCD');
+ const detail=page.getByRole('dialog',{name:'Mint Pipeline · Field 02 · สถิติอักขระ',exact:true});
+ await expect(detail).toBeVisible();
+ await expect(detail.getByTestId('field-error-ground-truth')).toContainText('ABXD');
+ await expect(detail.getByTestId('field-error-raw-ocr')).toContainText('ABCD');
+ await detail.getByRole('button',{name:'ปิดรายละเอียด',exact:true}).click();
  await page.getByRole('button',{name:'Whole Field',exact:true}).click();
  await expect(page.getByTestId('global-metrics-mint').getByTestId('global-evaluation')).toBeVisible();
  saved=await(await request.get(root)).json();expect(saved.runs.every((r:PipelineRun)=>r.document_evaluation&&r.fields![1].evaluation)).toBeTruthy();

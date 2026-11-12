@@ -71,6 +71,7 @@ export type ExternalOCRProvider = {
   response_adapter: "openthai_v1" | "text_json";
   auth_mode: "none" | "bearer" | "x_api_key" | "custom_header"; auth_header: string;
   api_key_configured: boolean;
+  managed?: boolean; enabled?: boolean; revision?: number; text_path?: string; confidence_path?: string | null;
 };
 export type MatrixRow = {
   retired?: boolean; min_cer?: number | null; max_cer?: number | null; timed_runs: number;

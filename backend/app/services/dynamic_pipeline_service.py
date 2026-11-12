@@ -44,7 +44,7 @@ class DynamicPipelineService:
         self.session.commit()
         return model
 
-    def save_pipeline(self, data, pipeline_id=None):
+    def save_pipeline(self, data, pipeline_id=None, provider=None):
         pipeline = BenchmarkRepository(self.session).config(pipeline_id) if pipeline_id else PipelineConfig(
             pipeline_id="dynamic_" + uuid4().hex, request_format="multipart", file_field_name="images",
         )
@@ -61,7 +61,7 @@ class DynamicPipelineService:
         pipeline.integrated_options = dict(version=data.version, det_weight=data.det_weight, rec_weight=data.rec_weight) if data.execution_mode == "integrated" else None
         if data.execution_mode == "external_api":
             from app.integrations.external_ocr import get_provider
-            provider = get_provider(self.settings, data.provider_id)
+            provider = provider or get_provider(self.settings, data.provider_id)
             pipeline.integrated_options = provider.identity(data.provider_id)
             pipeline.endpoint = ""
             pipeline.base_url = ""

@@ -330,3 +330,14 @@ class PipelineConfig(Base):
     rec_model: Mapped[OCRModel | None] = relationship(foreign_keys=[rec_model_id], lazy="selectin")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
+class ExternalProvider(Base):
+    __tablename__ = "external_providers"
+    id: Mapped[str] = mapped_column(String(50), primary_key=True)
+    config: Mapped[dict] = mapped_column(JSON_TYPE)
+    encrypted_credential: Mapped[str | None] = mapped_column(Text, nullable=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    revision: Mapped[int] = mapped_column(Integer, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)

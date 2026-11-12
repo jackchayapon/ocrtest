@@ -8,18 +8,18 @@ flowchart LR
   Jobs --> Manager[PipelineManager]
   Manager --> Internal[Existing Custom and Official adapters]
   Manager --> External[ExternalOCRAdapter]
-  External --> HTTP[Approved provider and DNS-pinned HTTP]
+  External --> HTTP[Shared provider and DNS-pinned HTTP]
   HTTP --> OpenThai[Standalone OpenThai service]
   OpenThai --> Model[Local ONNX CPU models]
   Manager --> Result[Existing PipelineResult and incremental persistence]
   Result --> Views[GT Evaluation History Comparison Export]
 ```
 
-The new mode/source is `external_api`. Existing `pipeline_configs.dynamic_mode` and `source` strings accept this value. The JSON `integrated_options` stores provider ID, provider name, response adapter and a SHA256 fingerprint of public routing/adapter settings. Existing columns and foreign keys support null DET/REC selections. Database schema changes are unnecessary.
+The mode/source is `external_api`. Existing `pipeline_configs.dynamic_mode` and `source` strings accept it. JSON `integrated_options` stores only provider ID/name, adapter and the public routing fingerprint, with null DET/REC selections. Migration0013 adds a single `external_providers` table for shared public configuration and authenticated encrypted credentials. A separate table is necessary to keep ciphertext and credential lifecycle outside existing PipelineConfig serialization, Job snapshots and exports, and to support shared provider references. No existing application table is altered; no login/session tables exist.
 
-`DynamicPipelineInput` validates an approved provider ID without DET/REC IDs. `DynamicPipelineService` resolves it server-side. Public config serialization exposes `external_provider` identity and keeps integrated model options separate. Existing snapshot/restore functions already persist these fields for durable Jobs.
+`DynamicPipelineInput` validates a saved provider ID without DET/REC IDs. `DynamicPipelineService` resolves it server-side. `/api/external-pipelines` saves a provider and Pipeline atomically; `/api/external-providers` offers public shared CRUD. Public config serialization exposes `external_provider` identity and keeps integrated model options separate. Existing snapshot/restore functions persist these fields for durable Jobs.
 
-Execution resolves the operator registry and compares its fingerprint with the saved Job configuration. Changes to destination, adapters, limits or public auth semantics require pipeline review/save before new execution. Removed or changed registrations fail safely. Credential rotation preserves the public fingerprint and uses the server credential at request time. Safe run provenance retains provider ID/name/adapter/fingerprint, genuine geometry availability and a validated upstream model revision when supplied. Credentials and upstream envelopes are excluded.
+Execution merges immutable environment registrations with enabled database providers, then compares the saved Job fingerprint. Editing a DB provider updates referencing PipelineConfigs for future Jobs atomically, while accepted Job snapshots remain unchanged and fail closed on routing changes. Credential rotation preserves the public fingerprint. Origin changes invalidate the old key and require a different credential. Deleting a referenced provider returns409. Safe run provenance retains provider ID/name/adapter/fingerprint, genuine geometry availability and validated model revision; credentials and upstream envelopes are excluded.
 
 External adapters receive the same canonical PNG crop/ROI as other pipelines. The Backend performs one POST per logical Field execution without automatic retry. Existing checkpoint uniqueness prevents replay of committed outputs. A request interrupted before its output commits can be repeated after worker recovery. Existing GT prefill selects its established Custom DET/REC configuration and keeps its existing behavior.
 

@@ -1,5 +1,7 @@
 # ผลการพัฒนาและตรวจสอบ OpenThai External OCR
 
+> หลักฐาน baseline ของ commit3fa9fa4 ก่อนคำแก้ requirement: Part2 ปัจจุบันเป็น Public Shared Workspace ทุกคนแก้ Endpoint/Key ได้ ไม่มี Admin Login และเพิ่ม migration0013 สำหรับ credential ที่เข้ารหัส ดู [release ล่าสุด](external-ocr-shared-release.md) และ [security boundary](external-ocr-pipelines-security.md) ข้อความ approved-provider-only และ schema0012 ด้านล่างอธิบายรุ่นก่อนแก้ ไม่ใช่ข้อกำหนดปัจจุบัน ผล Part1 ด้านล่างเป็นหลักฐานเดิม ไม่ได้รันหรือ deploy ใหม่ในรอบ Part2
+
 ตรวจวันที่ 13 พฤศจิกายน 2569 บน branch `feature/openthai-external-ocr` จาก main `3440dbe98a56f38097c4eecf5413d4439d81aa39`
 
 ## ขอบเขตที่พัฒนา
