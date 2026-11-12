@@ -186,3 +186,6 @@ export async function exportEvaluationExcel(caseId: string, selection: {
  const url=URL.createObjectURL(await response.blob()),link=document.createElement("a");
  link.href=url;link.download="OCRLab_Evaluation.xlsx";link.click();setTimeout(()=>URL.revokeObjectURL(url),0);
 }
+export async function getExternalOCRProviders(): Promise<import("@/types").ExternalOCRProvider[]> {
+  return request("/pipelines/external-providers");
+}

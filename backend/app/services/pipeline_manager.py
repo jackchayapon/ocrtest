@@ -13,6 +13,7 @@ from app.pipelines.dynamic import (
     DynamicOfficialAdapter,
     DynamicRecognitionAdapter,
 )
+from app.pipelines.external import ExternalOCRAdapter
 from app.services.lean_storage import compact_provenance
 from app.services.metrics_service import normalize_text
 
@@ -52,6 +53,7 @@ class PipelineManager:
             adapter_class = None
             if config.execution_mode:
                 adapter_class = {
+                    "external_api": ExternalOCRAdapter,
                     "det_rec": DynamicDetectionRecognitionAdapter,
                     "rec": DynamicRecognitionAdapter,
                     "integrated": DynamicCustomAdapter if config.source == "custom" else DynamicOfficialAdapter,

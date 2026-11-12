@@ -5,6 +5,7 @@ import { Cpu, Plus, Save, Settings2, X, Circle, PlugZap, Trash2 } from "lucide-r
 import { deletePipeline, getOCRModels, saveOCRModel, saveDynamicPipeline, testConnection } from "@/lib/api";
 import {versionLabel, pipelineModelDisplay} from "@/lib/pipeline-model-label";
 import type { DynamicPipelineInput, OCRModel, PipelineConfig } from "@/types";
+import ExternalPipelineEditor from "@/components/ExternalPipelineEditor";
 
 const messageOf = (e: unknown) => e instanceof Error ? e.message : "ไม่สามารถบันทึกได้ กรุณาลองอีกครั้ง";
 
@@ -21,7 +22,7 @@ function initial(p: PipelineConfig | undefined, models: OCRModel[]): DynamicPipe
   const det = p?.det_model || models.find(m => m.id === p?.det_model_id);
   const rec = p?.rec_model || models.find(m => m.id === p?.rec_model_id);
   const weight = (value?: string) => !value || value === "default" ? "baseline" : value;
-  return { name: p?.name || "", source: p?.source || "custom", execution_mode: officialIntegrated ? "integrated" : "det_rec",
+  return { name: p?.name || "", source: p?.source === "external_api" ? "custom" : p?.source || "custom", execution_mode: officialIntegrated ? "integrated" : "det_rec",
     det_model_id: officialIntegrated ? null : selected("det"), rec_model_id: officialIntegrated ? null : selected("rec"),
     paddle_model_defaults: false,
     det_version: p?.integrated_options?.det_version || (det?.version.replace(/^v/, "") as "5" | "6") || "6", rec_version: p?.integrated_options?.rec_version || (rec?.version.replace(/^v/, "") as "5" | "6") || "5",
@@ -60,6 +61,7 @@ function PipelineEditor({ pipeline, models, onSaved, onCancel }: {
   pipeline?: PipelineConfig; models: OCRModel[]; onSaved: () => void; onCancel: () => void;
 }) {
   const [form, setForm] = useState(() => initial(pipeline, models));
+  const [executionSource, setExecutionSource] = useState(pipeline?.execution_mode === "external_api" ? "external" : "internal");
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
   function change<K extends keyof DynamicPipelineInput>(key: K, value: DynamicPipelineInput[K]) {
     setForm(f => ({ ...f, [key]: value })); setError("");
@@ -79,7 +81,13 @@ function PipelineEditor({ pipeline, models, onSaved, onCancel }: {
     if (current && !weights.has(current)) weights.set(current, current);
     return [...weights];
   }
-  return <form onSubmit={submit} data-execution-mode={form.execution_mode} className="space-y-5 border-t border-slate-100 p-5 sm:p-6">
+  const sourceSelector = <label className="field p-5 pb-0 sm:px-6">Pipeline execution source
+    <select className="select" value={executionSource} disabled={busy} onChange={e => setExecutionSource(e.target.value)}>
+      <option value="internal">โมเดลในระบบ (Custom / Official)</option><option value="external">External OCR API</option>
+    </select>
+  </label>;
+  if (executionSource === "external") return <div>{sourceSelector}<ExternalPipelineEditor pipeline={pipeline} onSaved={onSaved} onCancel={onCancel}/></div>;
+  return <div>{sourceSelector}<form onSubmit={submit} data-execution-mode={form.execution_mode} className="space-y-5 border-t border-slate-100 p-5 sm:p-6">
     <fieldset disabled={busy} className="space-y-5 min-w-0 [&_.field]:text-sm [&_.field]:text-slate-700 [&_.input]:bg-white [&_.select]:bg-white">
       <label className="flex flex-col gap-2"><span className="text-base font-semibold text-slate-900">ชื่อ Pipeline</span>
         <input className="input" required maxLength={100} placeholder="เช่น Custom V6 · Thai FT v2" value={form.name} onChange={e => change("name", e.target.value)} />
@@ -124,7 +132,7 @@ function PipelineEditor({ pipeline, models, onSaved, onCancel }: {
         <button type="submit" className="button primary"><Save size={15} />{busy ? "กำลังบันทึก…" : "บันทึก Pipeline"}</button>
       </div>
     </fieldset>
-  </form>;
+  </form></div>;
 }
 
 function DynamicCard({ pipeline, models, onSaved }: { pipeline: PipelineConfig; models: OCRModel[]; onSaved: () => void }) {
@@ -132,8 +140,9 @@ function DynamicCard({ pipeline, models, onSaved }: { pipeline: PipelineConfig; 
   async function remove(){if(deleting)return;setDeleting(true);setDeleteError("");try{await deletePipeline(pipeline.pipeline_id);onSaved();}catch(e){setDeleteError(messageOf(e));}finally{setDeleting(false);}}
   const [editing, setEditing] = useState(false), [testing, setTesting] = useState(false), [message, setMessage] = useState("");
   const [status, setStatus] = useState<string | null>(null);
-  const ready = status === "gateway_connected" && pipeline.enabled && !testing;
-  const statusText = !pipeline.enabled ? "ปิดใช้งาน" : testing ? "กำลังทดสอบ Gateway…" : ready ? "พร้อมใช้งาน · Gateway" : status ? "เชื่อมต่อไม่สำเร็จ" : "ยังไม่ได้ทดสอบ Gateway";
+  const external = pipeline.execution_mode === "external_api";
+  const ready = (status === "gateway_connected" || status === "provider_ready") && pipeline.enabled && !testing;
+  const statusText = !pipeline.enabled ? "ปิดใช้งาน" : testing ? "กำลังทดสอบการเชื่อมต่อ…" : ready ? external ? "Provider รายงานพร้อม · ยังไม่ได้ทดสอบ OCR" : "พร้อมใช้งาน · Gateway" : status === "reachable" || status === "configuration_valid" ? "ตรวจบางส่วนแล้ว · ยังไม่ได้ทดสอบ OCR" : status ? "เชื่อมต่อไม่สำเร็จ" : "ยังไม่ได้ทดสอบการเชื่อมต่อ";
   function modelText(kind: "det" | "rec") {
     return pipelineModelDisplay(pipeline, kind).summary;
   }
@@ -154,16 +163,16 @@ function DynamicCard({ pipeline, models, onSaved }: { pipeline: PipelineConfig; 
     </div>
     <div className="p-5 sm:p-6 space-y-4">
       <p className="text-sm">Engine pipeline <code className="ml-2 rounded bg-slate-100 px-2 py-1">{pipeline.source || "—"}</code></p>
-      <dl className="grid gap-4 sm:grid-cols-2 text-sm">
+      {external ? <p className="text-sm">External OCR API · {pipeline.external_provider?.provider_name || "Provider ไม่พร้อมใช้งาน"}</p> : <dl className="grid gap-4 sm:grid-cols-2 text-sm">
         <div><dt className="text-xs text-slate-500">โมเดล Text Detection</dt><dd className="mt-1 font-medium break-words">{modelText("det")}</dd></div>
         <div><dt className="text-xs text-slate-500">โมเดล Text Recognition</dt><dd className="mt-1 font-medium break-words">{modelText("rec")}</dd></div>
-      </dl>
+      </dl>}
       {message && <p role="status" className="text-sm text-slate-600">{message}</p>}
     </div>
     {editing && <PipelineEditor pipeline={pipeline} models={models} onSaved={() => { setEditing(false); setStatus(null); onSaved(); }} onCancel={() => setEditing(false)} />}
     <div className="flex flex-wrap justify-between items-center gap-3 border-t border-slate-100 bg-slate-50/40 px-5 py-4 sm:px-6">
       <p className="text-xs text-slate-500">สถานะการเชื่อมต่อ: {statusText}</p>
-      <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={deleting || confirmDelete || testing || editing || !pipeline.enabled} onClick={() => void check()}><PlugZap size={15} />{testing ? "กำลังทดสอบ…" : "ทดสอบ Gateway"}</button>
+      <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={deleting || confirmDelete || testing || editing || !pipeline.enabled} onClick={() => void check()}><PlugZap size={15} />{testing ? "กำลังทดสอบ…" : external ? "Test Connection" : "ทดสอบ Gateway"}</button>
         <button className="button secondary" disabled={testing || deleting || confirmDelete} onClick={() => setEditing(v => !v)}><Settings2 size={15} />{editing ? "ปิดการแก้ไข" : "แก้ไข"}</button>
         <button className="button secondary text-red-700" disabled={testing||editing||deleting} onClick={()=>{setConfirmDelete(true);setDeleteError("");}} aria-label={`ลบ Pipeline ${pipeline.name}`}><Trash2 size={15}/>ลบ</button></div>
     </div>

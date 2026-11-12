@@ -72,6 +72,19 @@ class PipelineConfigService:
 
     async def test_connection(self, pipeline_id):
         config = self.repository.config(pipeline_id)
+        if config.execution_mode == "external_api":
+            from uuid import uuid4
+
+            from app.integrations.external_ocr import ExternalClient, get_provider
+            from app.integrations.model_gateway import GatewayError
+            provider = get_provider(self.settings, (config.integrated_options or {}).get("provider_id"))
+            try:
+                result = await ExternalClient(self.settings, provider).request("check_" + uuid4().hex)
+            except GatewayError as error:
+                result = {"status": "unavailable", "message": str(error), "error_code": error.code}
+            config.last_connection_status = result["status"]
+            self.repository.save(config)
+            return result
         if config.execution_mode:
             if not self.settings.api_key(pipeline_id):
                 config.last_connection_status = "missing_key"

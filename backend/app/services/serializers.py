@@ -184,6 +184,7 @@ def test_case_json(record, detail=False, *, summary=False):
 
 def config_json(record, settings=None):
     from app.services.dynamic_pipeline_service import model_json
+    external = record.execution_mode == "external_api"
     keys = (
         "id",
         "pipeline_id",
@@ -202,14 +203,15 @@ def config_json(record, settings=None):
     return {
         **{key: getattr(record, key) for key in keys},
         "execution_mode": record.execution_mode,
-        "integrated_options": record.integrated_options,
+        "integrated_options": None if external else record.integrated_options,
+        **({"external_provider": record.integrated_options} if external else {}),
         "source": record.source,
         "det_model_id": record.det_model_id,
         "rec_model_id": record.rec_model_id,
         "det_model": model_json(record.det_model),
         "rec_model": model_json(record.rec_model),
-        "base_url": settings.model_gateway_base_url if settings else record.base_url,
-        "api_key_configured": bool(settings.api_key(record.pipeline_id)) if settings else False,
+        "base_url": "" if external else settings.model_gateway_base_url if settings else record.base_url,
+        "api_key_configured": False if external else bool(settings.api_key(record.pipeline_id)) if settings else False,
         "created_at": timestamp(record.created_at),
         "updated_at": timestamp(record.updated_at),
     }

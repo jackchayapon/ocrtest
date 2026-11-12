@@ -42,7 +42,8 @@ export type TestCase = { has_ground_truth?: boolean; history_status?: string;
   categories: Category[]; runs: PipelineRun[];
 };
 export type PipelineConfig = {
-  execution_mode?: "integrated" | "det_rec" | "rec" | null; source?: "custom" | "official" | null;
+  execution_mode?: "integrated" | "det_rec" | "rec" | "external_api" | null; source?: "custom" | "official" | "external_api" | null;
+  external_provider?: {provider_id: string; provider_name: string; adapter: string; fingerprint: string};
   integrated_options?: {version?: "5" | "6"; det_weight: string; rec_weight: string; paddle_model_defaults?: boolean; det_version?: "5" | "6" | null; rec_version?: "5" | "6" | null} | null;
   det_model_id?: string | null; rec_model_id?: string | null;
   det_model?: OCRModel | null; rec_model?: OCRModel | null;
@@ -58,10 +59,18 @@ export type OCRModel = {
   version: string; weight: string; single_path: string; batch_path: string;
 };
 export type DynamicPipelineInput = {
-  name: string; source: "custom" | "official"; execution_mode: "integrated" | "det_rec" | "rec";
+  name: string; source: "custom" | "official" | "external_api"; execution_mode: "integrated" | "det_rec" | "rec" | "external_api";
+  provider_id?: string;
   det_model_id: string | null; rec_model_id: string | null; enabled: boolean;
   version: "5" | "6"; det_weight: string; rec_weight: string;
   paddle_model_defaults?: boolean; det_version?: "5" | "6" | null; rec_version?: "5" | "6" | null;
+};
+export type ExternalOCRProvider = {
+  id: string; name: string; endpoint: string; readiness_url: string | null; http_method: "POST";
+  request_format: "multipart" | "json_base64"; image_field: string;
+  response_adapter: "openthai_v1" | "text_json";
+  auth_mode: "none" | "bearer" | "x_api_key" | "custom_header"; auth_header: string;
+  api_key_configured: boolean;
 };
 export type MatrixRow = {
   retired?: boolean; min_cer?: number | null; max_cer?: number | null; timed_runs: number;
