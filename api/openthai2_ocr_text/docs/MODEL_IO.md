@@ -4,6 +4,8 @@ Reviewed revision `39fa41bdd49f067ba41b1d9de79c06ab506d67d4` on 13 November 2026
 
 The Batch wrapper reuses the verified reader and calls `LineOCR.read(image)` sequentially for each input. It preserves each call's text, line order, polygons, rotation and confidence semantics. Model/runtime SHA-256 verification remains the startup prerequisite. Decoded images close explicitly after conversion, including error paths. Batch output matches repeated single-image output in the local real-model tests. Neural tensor batching and parallel inference remain outside this wrapper's implementation.
 
+The response-mapping regression checks compare raw reader output, Single `data`, and successful Batch `data.results[index].result` using synthetic original, rotated, skewed and blank images. Each input retains its own dimensions. `rotation` and `text_angle` are descriptive model output. Consumers preserve the original-image polygons without another rotation/deskew operation. API validation rejects nonfinite coordinates/angles, including strings that Pydantic would otherwise coerce to NaN/infinity. [Mapping investigation and reproduction](RESPONSE_MAPPING.md).
+
 - Detector PP-OCRv6-tiny, 428K parameters, approximately 1.8 MB ONNX.
 - iApp Thai/English CTC recognizer, 587K parameters, approximately 2.4 MB ONNX. Input `[N,3,48,W]`, output `[N,W/8,530]` softmax.
 - `LineOCR(model_dir, threads=1, runtime={"backend":"onnxruntime"})` loads two networks once. The service chooses ONNX Runtime explicitly for a reproducible CPU dependency set.
