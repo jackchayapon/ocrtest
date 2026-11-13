@@ -31,3 +31,33 @@ Errors share this envelope.
 | 504 | REQUEST_TIMEOUT |
 
 Generated request IDs appear in response headers and envelopes. Logs contain request ID, path, status, duration and failure category. Inputs, OCR text, credentials and exception messages are excluded. Inference runs in one executor thread. On HTTP deadline/disconnect, an ongoing native call retains the inference slot until it finishes. An indefinitely stuck native call requires a supervised process restart. Configure a proxy body/read deadline and operational restart policy.
+
+## Multi-image Batch
+
+`POST /api/v1/ocr-text-batches` accepts repeated multipart files named `images`. Authentication follows the single-image endpoint. The wrapper invokes `LineOCR.read(image)` sequentially on the existing reader. Batch and single requests share one admission slot, including multipart parsing. Concurrent POSTs receive429 with `Retry-After`5.
+
+This example illustrates one success and one invalid image. Each submitted image retains its zero-based index. Successful `result` values use the single-image `data` schema and preserve full text, reading order, supplied geometry and nullable confidence.
+
+```json
+{"data":{"results":[{"index":0,"status":"success","result":{"text":"ตัวอย่าง","lines":[],"confidence":null,"geometry_available":false,"image":{"width":780,"height":250},"rotation":0,"text_angle":0},"error":null},{"index":1,"status":"error","result":null,"error":{"code":"INVALID_IMAGE","message":"The uploaded image is invalid."}}],"total":2,"succeeded":1,"failed":1},"meta":{"request_id":"req_generated","api_version":"v1","service":"openthai2-ocr-text","model":"iapp/OpenThai2.0-OCR-Text","model_revision":"39fa41bdd49f067ba41b1d9de79c06ab506d67d4","duration_ms":250}}
+```
+
+HTTP200 returns a complete ordered result list even when some or all images have per-image errors. Invalid/corrupt/empty/oversized images, excessive per-image output and native inference failures become error items. Native exception messages use a fixed safe replacement. Structural errors use the top-level error envelope and start no inference. Missing/wrong multipart fields return422 `IMAGES_REQUIRED`, malformed multipart400 `BAD_REQUEST`, unsupported media415, and excessive count or aggregate upload413. Unready/disabled service returns503.
+
+Aggregate output overflow returns503 `OUTPUT_TOO_LARGE` for the whole request. A deadline returns504. A detected disconnect stops the remaining batch and emits a499 diagnostic when a response can still be sent. Clients may receive no response after disconnect. This stateless wrapper does not persist completed items. Retrying can repeat inference. OCRLab retains checkpoint-aware single mode until a Batch recovery contract is integrated.
+
+| Environment variable | Default | Allowed range or behavior |
+| --- | --- | --- |
+| `OPENTHAI_MAX_BATCH_IMAGES` |8|1–16|
+| `OPENTHAI_MAX_BATCH_UPLOAD_BYTES` |20MiB|1byte–80MiB, plus64KiB multipart body overhead|
+| `OPENTHAI_MAX_UPLOAD_BYTES` |10MiB|Per-image ceiling shared with single mode|
+| `OPENTHAI_MAX_PIXELS` |2,000,000|Per-image decoded pixel ceiling|
+| `OPENTHAI_MAX_DIMENSION` |8000|Per-image dimension ceiling|
+| `OPENTHAI_MAX_BATCH_RESPONSE_BYTES` |8MiB|1KiB–16MiB aggregate serialized response|
+| `OPENTHAI_MAX_RESPONSE_BYTES` |2MiB|Per-image encoded item ceiling, shared setting with single response|
+| `OPENTHAI_BATCH_TIMEOUT_SECONDS` |120|Greater than0, at most600seconds including upload|
+| `OPENTHAI_MAX_CONCURRENT_BATCH_REQUESTS` |1|0disables Batch,1uses the shared native slot|
+
+The parser spools files and closes them on success, error, timeout or disconnect. One raw image and one decoded image are processed at a time. Encoded result items accumulate within the aggregate response limit. A running native call retains its byte buffer after HTTP cancellation and closes its decoded image explicitly at completion. Native calls cannot be forcibly cancelled.
+
+Cleanup uses Starlette's parser-owned temporary-handle list to cover failures before `FormData` exists. Retain the interrupted-upload regression tests when upgrading Starlette. They verify that disconnect, body-limit exceptions and cancellation close every partially created file.

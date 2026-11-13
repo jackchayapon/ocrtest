@@ -1,5 +1,9 @@
 # ผลการพัฒนาและตรวจสอบ OpenThai External OCR
 
+ผล Recovery ล่าสุดวันที่ 13 พฤศจิกายน 2569 ผ่าน PR17 ที่ main `fd7ccac38ae237d2cd5aed2ca62a2dda11dcc328` Railway `59251c6d-2386-4e8b-ab2e-f8562f0a7a0d` SUCCESS และ Vercel `dpl_DKA5iMDVia9j64vucxKSiihEQqVF` READY พร้อมยืนยัน public domain และ Chromium Desktop/Mobile Backend เต็ม 761 tests ผ่าน รวม Docker runtime/import/health และ source hashes 92 ไฟล์ตรงกัน ผล Frontend 232+1 เป็นผลที่รันจริงก่อน hotfix ซึ่งแก้เฉพาะ dependency lock และ test
+
+Batch standalone เพิ่มใน branch แยกและตรวจโมเดลจริงผ่าน HTTP local ผล benchmark 24 รอบและกรณี 2 MP × 8 ตรงกับ single-image ไม่มี OOM ชุด model-doubled 37 tests ผ่าน รวมแก้ไฟล์ชั่วคราวค้างเมื่อ upload ขาดกลางทาง อ่าน [ตัวเลขและขอบเขตการวัด](../api/openthai2_ocr_text/docs/BATCH_BENCHMARKS.md) การเรียก OpenThai บน CDGS จริงยังรอ Key ที่ได้รับอนุญาต โดย GET ไม่ส่ง Key ตอบ 401 จึงยังไม่อ้างผล OCR จริงบน CDGS และเก็บ shared Pipeline เป็น disabled
+
 > หลักฐาน baseline ของ commit3fa9fa4 ก่อนคำแก้ requirement: Part2 ปัจจุบันเป็น Public Shared Workspace ทุกคนแก้ Endpoint/Key ได้ ไม่มี Admin Login และเพิ่ม migration0013 สำหรับ credential ที่เข้ารหัส ดู [release ล่าสุด](external-ocr-shared-release.md) และ [security boundary](external-ocr-pipelines-security.md) ข้อความ approved-provider-only และ schema0012 ด้านล่างอธิบายรุ่นก่อนแก้ ไม่ใช่ข้อกำหนดปัจจุบัน ผล Part1 ด้านล่างเป็นหลักฐานเดิม ไม่ได้รันหรือ deploy ใหม่ในรอบ Part2
 
 ตรวจวันที่ 13 พฤศจิกายน 2569 บน branch `feature/openthai-external-ocr` จาก main `3440dbe98a56f38097c4eecf5413d4439d81aa39`

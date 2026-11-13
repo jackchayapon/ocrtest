@@ -1,5 +1,7 @@
 # CDGS infrastructure handover
 
+The Batch upgrade requires infrastructure-owner review and deployment. The current implementation has been tested locally. See [the Batch handover](CDGS_HANDOVER.md) for public-to-internal path mapping, authentication compatibility and rollout checks.
+
 Build from `api/openthai2_ocr_text` as a standalone Docker context. Provision the pinned snapshot before starting the container.
 
 ```sh

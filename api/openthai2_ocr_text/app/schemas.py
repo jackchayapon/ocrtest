@@ -22,6 +22,30 @@ class OCRData(BaseModel):
     text_angle: float = 0
 
 
+class BatchError(BaseModel):
+    code: str
+    message: str
+
+
+class BatchItem(BaseModel):
+    index: int = Field(ge=0)
+    status: Literal["success", "error"]
+    result: OCRData | None
+    error: BatchError | None
+
+
+class BatchData(BaseModel):
+    results: list[BatchItem] = Field(max_length=16)
+    total: int = Field(ge=1, le=16)
+    succeeded: int = Field(ge=0, le=16)
+    failed: int = Field(ge=0, le=16)
+
+
+class BatchEnvelope(BaseModel):
+    data: BatchData
+    meta: dict
+
+
 def native(value):
     """Accept numeric NumPy scalars/arrays without serializing arbitrary objects."""
     if isinstance(value, dict):

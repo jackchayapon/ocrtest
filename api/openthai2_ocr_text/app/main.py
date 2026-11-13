@@ -9,9 +9,11 @@ from fastapi.responses import Response
 from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException
 
+from app.batch import BATCH_REQUEST_OPENAPI, batch_ocr
 from app.config import MODEL_REVISION, Settings
 from app.errors import ServiceError, error_response
 from app.inference import Inference
+from app.schemas import BatchEnvelope
 from app.security import RequestControls
 
 logger = logging.getLogger("openthai")
@@ -70,8 +72,7 @@ def create_app(settings=None, loader=None):
         except (ValueError, RuntimeError, HTTPException):
             raise ServiceError("BAD_REQUEST", "Malformed multipart request.", 400) from None
         started = time.perf_counter()
-        inference.pending = asyncio.get_running_loop().run_in_executor(inference.executor, inference.read, content)
-        inference.pending.add_done_callback(lambda future: future.exception() if not future.cancelled() else None)
+        inference.submit(content)
         # A deadline/disconnect never releases an actively running native model slot.
         data = await asyncio.shield(inference.pending)
         payload = {"data": data, "meta": {"request_id": request.state.request_id, "api_version": "v1",
@@ -81,6 +82,10 @@ def create_app(settings=None, loader=None):
         if len(body) > settings.max_response_bytes:
             raise ServiceError("OUTPUT_TOO_LARGE", "Model output exceeds the response limit.", 503)
         return Response(body, media_type="application/json")
+
+    @app.post("/api/v1/ocr-text-batches", response_model=BatchEnvelope, openapi_extra=BATCH_REQUEST_OPENAPI)
+    async def batches(request: Request):
+        return await batch_ocr(request, inference, settings)
 
     return app
 

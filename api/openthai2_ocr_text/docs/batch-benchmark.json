@@ -1,0 +1,163 @@
+{
+  "date_local": "2026-11-13",
+  "scope": "Real installed OpenThai model; local Linux Docker; synthetic PNG/JPEG; no live CDGS traffic",
+  "model_revision": "39fa41bdd49f067ba41b1d9de79c06ab506d67d4",
+  "cpu_limit": 1,
+  "memory_limit_bytes": 1610612736,
+  "startup_to_ready_s": 1.828,
+  "first_single_after_startup_s": 0.1334,
+  "first_batch8_after_startup_s": 0.7948,
+  "warm_batch8_s": 0.7289,
+  "kernel_peak_bytes": 352837632,
+  "edge_kernel_peak_bytes": 349331456,
+  "rss_high_water_bytes": 386232320,
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\n",
+  "oom_killed": false,
+  "groups": [
+    {
+      "images": 1,
+      "mode": "single",
+      "trials": 3,
+      "median_wall_s": 0.0901,
+      "median_amortized_s_per_image": 0.0901,
+      "images_per_s": 11.099,
+      "http_requests_per_trial": 1,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 244752384,
+      "sampled_rss_peak_bytes": 285495296,
+      "median_sampled_cpu_percent": 99.92
+    },
+    {
+      "images": 1,
+      "mode": "batch",
+      "trials": 3,
+      "median_wall_s": 0.088912,
+      "median_amortized_s_per_image": 0.088912,
+      "images_per_s": 11.247,
+      "http_requests_per_trial": 1,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 244752384,
+      "sampled_rss_peak_bytes": 285495296,
+      "median_sampled_cpu_percent": 96.05
+    },
+    {
+      "images": 2,
+      "mode": "single",
+      "trials": 3,
+      "median_wall_s": 0.23057,
+      "median_amortized_s_per_image": 0.115285,
+      "images_per_s": 8.674,
+      "http_requests_per_trial": 2,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 344104960,
+      "sampled_rss_peak_bytes": 384438272,
+      "median_sampled_cpu_percent": 100.31
+    },
+    {
+      "images": 2,
+      "mode": "batch",
+      "trials": 3,
+      "median_wall_s": 0.213942,
+      "median_amortized_s_per_image": 0.106971,
+      "images_per_s": 9.348,
+      "http_requests_per_trial": 1,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 344068096,
+      "sampled_rss_peak_bytes": 384442368,
+      "median_sampled_cpu_percent": 100.09
+    },
+    {
+      "images": 4,
+      "mode": "single",
+      "trials": 3,
+      "median_wall_s": 0.455518,
+      "median_amortized_s_per_image": 0.113879,
+      "images_per_s": 8.781,
+      "http_requests_per_trial": 4,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 344141824,
+      "sampled_rss_peak_bytes": 384454656,
+      "median_sampled_cpu_percent": 99.97
+    },
+    {
+      "images": 4,
+      "mode": "batch",
+      "trials": 3,
+      "median_wall_s": 0.453827,
+      "median_amortized_s_per_image": 0.113457,
+      "images_per_s": 8.814,
+      "http_requests_per_trial": 1,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 343871488,
+      "sampled_rss_peak_bytes": 384454656,
+      "median_sampled_cpu_percent": 99.74
+    },
+    {
+      "images": 8,
+      "mode": "single",
+      "trials": 3,
+      "median_wall_s": 0.929244,
+      "median_amortized_s_per_image": 0.116155,
+      "images_per_s": 8.609,
+      "http_requests_per_trial": 8,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 344289280,
+      "sampled_rss_peak_bytes": 384471040,
+      "median_sampled_cpu_percent": 99.32
+    },
+    {
+      "images": 8,
+      "mode": "batch",
+      "trials": 3,
+      "median_wall_s": 0.882353,
+      "median_amortized_s_per_image": 0.110294,
+      "images_per_s": 9.067,
+      "http_requests_per_trial": 1,
+      "errors": 0,
+      "sampled_cgroup_peak_bytes": 344367104,
+      "sampled_rss_peak_bytes": 384475136,
+      "median_sampled_cpu_percent": 99.96
+    }
+  ],
+  "accepted_2mp_batch8": {
+    "passed": true,
+    "wall_seconds": 1.3192,
+    "output_matches_single": true
+  },
+  "image_source_verification": {
+    "image_id": "sha256:766ad46b2f097ebd5bf485fd2e7926c13909f46c14ae64afaaa54a08a0642345",
+    "files": 9,
+    "match": true,
+    "sha256": {
+      "app/batch.py": "cc690715931bd36bde1a4bdfd61f731e712388fb9256c4073c51792bf8a44266",
+      "app/config.py": "80369aac1cd7a93beb8abe5ce8fe435025730e840d63ec6fecc99f907ed9c2eb",
+      "app/errors.py": "5989ceb94bbaaafd769bd0355d92291d03739065f014bdd921f1f9599c755dc1",
+      "app/inference.py": "89f26b4e1d48140d31f4bb3bc206eb503208a8e40bb61248543da680f0d0bee9",
+      "app/main.py": "c04def3fed8c9ee065c1c8b2165fceb1889e1447bb7a323a3dde5284bd39a3ee",
+      "app/schemas.py": "85b5fe506c28f6a738f110ab8a40c1912dd43ca8d00ebc5a8623e0b5d6f3030b",
+      "app/security.py": "23a1c4a7cb3638b000d8782699807fa230b7e6d3c56d82ca69fdf32d6ca4911b",
+      "app/__init__.py": "d0f84a25f2f464c2907fa4f7b4dbc692c95711f093f802eab9a67f8851877839",
+      "app/__main__.py": "7327abc02e9bfb516cdbdb4c23ca17c58f80426e38885974a4549349ef15917c"
+    }
+  },
+  "previous_run_context": {
+    "highest_kernel_peak_bytes": 573382656,
+    "source": "before interrupted-upload cleanup correction",
+    "limitation": "Shared file-page charging and host cache reuse change cgroup totals. No isolated memory-improvement or 512MB deployment claim."
+  },
+  "measurement_limits": "50ms cgroup/RSS/CPU sampler is included in resource totals; short-lived peaks can be missed by samples. kernel memory.peak is exact for each complete container run. Batch per-image latency is amortized, not independent inference latency. Three fixed-order warm trials per group on loopback do not establish CDGS capacity or native batching speedup.",
+  "fixture_sha256": "0a882ec61546f55cde6bb45d83a11ff1e364418d38e00a5cec55428a92f2c0f9",
+  "reference_characters": 34,
+  "reference_lines": 2,
+  "all_outputs_match_single": true,
+  "artifact_sha256": {
+    ".runtime/openthai-batch/unit.xml": "a5f880eadcd1f0d3075bbdc66ead3c3f637455ee262bffce9c0e5528da6c95c9",
+    ".runtime/openthai-batch/http-benchmark.json": "129741506e3effd6ddb2418c258c1e8702d21ebc9659931b740e4e446e43f86c",
+    ".runtime/openthai-batch/resources.jsonl": "f25c4f63fea4cae85f05ba0590578ee396fe936c66d0a3875bf8463168abadcd",
+    ".runtime/openthai-batch/container.json": "fb13ee3d533eab265af46ee3ef744c66a6e8d9818afb3d27212665597d5d8987",
+    ".runtime/openthai-batch/cold-edge.json": "d52f628c9f46e236e91672ce7f81cc829676fe1bcd09420e3c1ffda59b1efa15",
+    ".runtime/openthai-batch/server.log": "11a9327022d9ca0e9c39bed2c7223970eb552efb5ee4ba44481be24fc44dc145",
+    ".runtime/openthai-batch/cold-edge-server.log": "df81e99c04cc151b2d9442efab36e20cd0c4304af0e01f6a490d25c0ccb91530",
+    ".runtime/openthai-batch/image-source-check.json": "35703255ba97b3666c05b227d20d3b3ad07bb866fc4b1c255d74012da8d5c4eb"
+  }
+}
