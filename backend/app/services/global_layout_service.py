@@ -46,6 +46,20 @@ def reading_lines(run):
     return (run.final_text or "").splitlines() or [""]
 
 
+def stored_ocr_text(run):
+    """Persist external model text unchanged. Other pipelines keep visual line order."""
+    if getattr(run, "crop_stage", None) == "external_api":
+        return run.final_text or ""
+    return "\n".join(reading_lines(run))
+
+
+def stored_boxes(run):
+    """OpenThai polygons stay in model order. Detection boxes keep visual row order."""
+    if getattr(run, "crop_stage", None) == "external_api":
+        return list(run.boxes or [])
+    return ordered_detection_boxes(run.boxes)
+
+
 class GlobalLayoutService:
     def __init__(self, cases):
         self.cases = cases
@@ -373,7 +387,7 @@ class GlobalLayoutService:
                         parent = parents[result.pipeline_id]
                         if checkpoint and any(p.global_field_id == field.id for p in parent.fields):
                             continue
-                        lines = reading_lines(result)
+                        ocr_text = stored_ocr_text(result)
                         trace_keys = (
                             "input_sha256",
                             "input_width",
@@ -409,7 +423,7 @@ class GlobalLayoutService:
                                            result.request_id, trace, diagnostics["http_status"])
                         raw_parts[result.pipeline_id].append(result.raw_text if result.raw_text is not None else result.final_text or "")
                         diagnostics.update(
-                            boxes=ordered_detection_boxes(result.boxes),
+                            boxes=stored_boxes(result),
                             ordering="row_then_left_within_global_field",
                         )
                         if checkpoint:
@@ -419,7 +433,7 @@ class GlobalLayoutService:
                                 global_field_id=field.id,
                                 field_index=field.field_index,
                                 geometry={"roi": field.roi},
-                                ocr_text="\n".join(lines),
+                                ocr_text=ocr_text,
                                 confidence=result.confidence,
                                 status=result.status,
                                 diagnostics=diagnostics,

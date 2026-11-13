@@ -278,6 +278,44 @@ def path_value(data, path):
     return data
 
 
+def _exact_count(value):
+    return type(value) is int
+
+
+def openthai_document(data):
+    """Return one OpenThai document from a single body or a one-image batch body.
+
+    OCRLab submits one image. A batch envelope must identify that image as index 0.
+    A nested copy, a leaf-inference envelope, or an error item is not OCR text.
+    """
+    if "text" in data:
+        return data
+    if "results" not in data:
+        raise GatewayError("OpenThai response text is missing or not a string", "INVALID_OCR_RESPONSE")
+    results = data.get("results")
+    total, succeeded, failed = data.get("total"), data.get("succeeded"), data.get("failed")
+    shaped = (_exact_count(total) and _exact_count(succeeded) and _exact_count(failed)
+              and isinstance(results, list) and total == len(results) and succeeded + failed == total
+              and all(isinstance(item, dict) and _exact_count(item.get("index")) and item.get("status") in {"success", "error"}
+                      for item in results))
+    if not shaped:
+        raise GatewayError("OpenThai response is not a single text result or a batch item", "INVALID_OCR_RESPONSE")
+    if total != 1:
+        raise GatewayError("Batch result count does not match input images", "INVALID_OCR_RESPONSE")
+    item = results[0]
+    if item["index"] != 0:
+        raise GatewayError("Batch result index does not match the input image", "INVALID_OCR_RESPONSE")
+    if item["status"] == "error" and item.get("result") is None and succeeded == 0 and failed == 1:
+        error = item.get("error") if isinstance(item.get("error"), dict) else {}
+        code = error.get("code")
+        suffix = f": {code}" if isinstance(code, str) and re.fullmatch(r"[A-Z][A-Z0-9_]{0,63}", code) else ""
+        raise GatewayError(f"OpenThai batch item failed{suffix}", "INVALID_OCR_RESPONSE")
+    result = item.get("result")
+    if item["status"] != "success" or not isinstance(result, dict) or item.get("error") is not None or succeeded != 1 or failed != 0:
+        raise GatewayError("OpenThai batch item is not a successful OCR result", "INVALID_OCR_RESPONSE")
+    return result
+
+
 def normalize_external(payload, provider, crop, roi):
     boxes = []
     meta = {}
@@ -288,6 +326,7 @@ def normalize_external(payload, provider, crop, roi):
         data, meta = payload.get("data"), payload.get("meta", {})
         if not isinstance(data, dict) or not isinstance(meta, dict):
             raise GatewayError("External response contract mismatch", "EXTERNAL_INVALID_RESPONSE")
+        data = openthai_document(data)
         text, score = bounded_text(data.get("text")), confidence(data.get("confidence"))
         lines = data.get("lines", [])
         if not isinstance(lines, list) or len(lines) > MAX_DETECTION_REGIONS:

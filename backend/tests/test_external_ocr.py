@@ -255,3 +255,157 @@ def test_geometry_invalid_and_text_only_order(settings):
             normalize_external({"data": {"text": "text", "lines": [{"text": "text", "box": box}]}}, provider, crop, None)
     run = SimpleNamespace(crop_stage="external_api", final_text="right\nleft", boxes=[{"text": "left", "bbox": [0, 0, 10, 10]}])
     assert reading_lines(run) == ["right", "left"]
+
+
+EXACT_TEXT = "ไทย English\r\nSecond\u2028row\n\n"
+EXACT_LINES = [
+    {"text": "right", "confidence": 0.95, "row": 0, "box": [[40, 1], [70, 1], [70, 10], [40, 10]]},
+    {"text": "left", "confidence": None, "row": 0, "box": [[1, 1], [30, 1], [30, 10], [1, 10]]},
+]
+
+
+def openthai_data(**changes):
+    data = {"text": EXACT_TEXT, "lines": deepcopy(EXACT_LINES), "confidence": None,
+            "geometry_available": True, "image": {"width": 80, "height": 60}, "rotation": 0, "text_angle": 0}
+    data.update(changes)
+    return data
+
+
+def openthai_envelope(data, service="openthai2-ocr-text"):
+    return {"data": data, "meta": {"request_id": "req_synthetic_contract", "api_version": "v1", "service": service,
+                                    "duration_ms": 12}}
+
+
+def batch_envelope(result, **counters):
+    item = {"index": counters.pop("index", 0), "status": counters.pop("status", "success"),
+            "result": result, "error": counters.pop("error", None)}
+    data = {"results": [item], "total": 1, "succeeded": 1, "failed": 0}
+    data.update(counters)
+    return openthai_envelope(data)
+
+
+def sample_crop(settings):
+    with Image.new("RGB", (100, 100)) as image:
+        return ImageService(settings).canonical_crop(image, {"x1": 10, "y1": 20, "x2": 90, "y2": 80})
+
+
+def test_single_and_gateway_envelopes_preserve_text_geometry_and_null_confidence(settings):
+    crop, provider, roi = sample_crop(settings), Provider(**REGISTRATION), {"x1": 10, "y1": 20}
+    for service in ("openthai2-ocr-text", "model-api-gateway"):
+        payload = openthai_envelope(openthai_data(), service)
+        original = deepcopy(payload)
+        text, score, boxes, meta = normalize_external(payload, provider, crop, roi)
+        assert text == EXACT_TEXT and score is None and payload == original
+        assert meta["service"] == service
+        assert boxes[0]["text"] == "right" and boxes[0]["confidence"] == 0.95
+        assert boxes[0]["crop_polygon"][0] == [40, 1] and boxes[0]["polygon"][0] == [50, 21]
+        assert boxes[1]["text"] == "left" and boxes[1]["confidence"] is None
+        assert boxes[1]["polygon"][0] == [11, 21]
+
+
+def test_one_image_batch_envelope_uses_matching_item_once(settings):
+    crop, provider = sample_crop(settings), Provider(**REGISTRATION)
+    payload = batch_envelope(openthai_data())
+    text, score, boxes, _ = normalize_external(payload, provider, crop, {"x1": 10, "y1": 20})
+    assert text == EXACT_TEXT and score is None
+    assert [box["polygon"][0] for box in boxes] == [[50, 21], [11, 21]]
+    assert boxes[0]["crop_bbox"] == [40, 1, 70, 10]
+
+
+def test_batch_count_index_and_failed_items_are_not_successful_text(settings):
+    crop, provider = sample_crop(settings), Provider(**REGISTRATION)
+    partial = openthai_envelope({"results": [
+        {"index": 0, "status": "success", "result": openthai_data(), "error": None},
+        {"index": 1, "status": "error", "result": None, "error": {"code": "INVALID_IMAGE", "message": "The uploaded image is invalid."}},
+    ], "total": 2, "succeeded": 1, "failed": 1})
+    wrong_index = batch_envelope(openthai_data(), index=1)
+    failed = batch_envelope(None, status="error", error={"code": "INVALID_IMAGE", "message": "The uploaded image is invalid."},
+                            succeeded=0, failed=1)
+    hidden = batch_envelope(openthai_data(text="do-not-keep"), status="error",
+                            error={"code": "INVALID_IMAGE", "message": "The uploaded image is invalid."}, succeeded=0, failed=1)
+    leaf = openthai_envelope({"contract_version": "leaf-inference-v1", "kind": "text_recognition_batch", "count": 1,
+                              "results": [{"rec_text": "อย่าใช้", "rec_score": 0.4}]})
+    wrapped = {"data": openthai_envelope(openthai_data()), "meta": {"request_id": "outer"}}
+    cases = (
+        (partial, "Batch result count does not match input images"),
+        (wrong_index, "Batch result index does not match the input image"),
+        (failed, "OpenThai batch item failed: INVALID_IMAGE"),
+        (hidden, "OpenThai batch item is not a successful OCR result"),
+        (leaf, "OpenThai response is not a single text result or a batch item"),
+        (wrapped, "OpenThai response text is missing or not a string"),
+        (openthai_envelope({}), "OpenThai response text is missing or not a string"),
+    )
+    for payload, message in cases:
+        with pytest.raises(GatewayError) as error:
+            normalize_external(payload, provider, crop, None)
+        assert error.value.code == "INVALID_OCR_RESPONSE" and str(error.value) == message
+        assert "อย่าใช้" not in str(error.value) and "do-not-keep" not in str(error.value)
+
+
+def test_invalid_text_geometry_dimensions_and_line_limit(settings):
+    crop, provider = sample_crop(settings), Provider(**REGISTRATION)
+    too_long = openthai_envelope(openthai_data(text="ก" * 32769, lines=[]))
+    missing_line = openthai_envelope(openthai_data(lines=[{"text": None, "box": [[1, 1], [2, 1], [2, 2], [1, 2]]}]))
+    bad_frame = openthai_envelope(openthai_data(image={"width": 79, "height": 60}))
+    too_many = openthai_envelope(openthai_data(lines=[{"text": "a"} for _ in range(129)]))
+    many = openthai_envelope(openthai_data(text="a\n" * 127 + "a", lines=[{"text": "a"} for _ in range(128)]))
+    with pytest.raises(GatewayError) as error:
+        normalize_external(too_long, provider, crop, None)
+    assert error.value.code == "INVALID_OCR_RESPONSE"
+    with pytest.raises(GatewayError) as error:
+        normalize_external(missing_line, provider, crop, None)
+    assert error.value.code == "INVALID_OCR_RESPONSE"
+    for payload, message in (
+        (bad_frame, "External image coordinate frame mismatch"),
+        (too_many, "External lines exceed contract limits"),
+        (openthai_envelope(openthai_data(lines=[{"text": "a", "box": [[1, 1], [2, 2]]}])), "External geometry is invalid"),
+    ):
+        with pytest.raises(GatewayError) as error:
+            normalize_external(payload, provider, crop, None)
+        assert error.value.code == "EXTERNAL_INVALID_RESPONSE" and message in str(error.value)
+    assert normalize_external(many, provider, crop, None)[0] == "a\n" * 127 + "a"
+
+
+def test_batch_result_persists_exact_text_boxes_and_replay(client, document, external):
+    behavior, calls = external
+    case, fields = layout(client, document, count=1, prefill=False)
+    behavior["handler"] = lambda request: httpx.Response(200, json=batch_envelope(openthai_data(
+        image={"width": 190, "height": 100})))
+    pipeline_id = client.post("/api/pipelines", json=definition()).json()["pipeline_id"]
+    job = submit(client, case, [pipeline_id], "openthai-batch-contract")
+    final = wait_job(client, job["job_id"])
+    assert final["status"] == "completed" and final["completed_units"] == 1 and final["failed_units"] == 0
+    results = client.get(f"/api/ocr-jobs/{job['job_id']}/results").json()
+    run = results["runs"][0]
+    field = run["fields"][0]
+    assert run["status"] == "success" and run["final_text"] == EXACT_TEXT and run["confidence"] is None
+    assert field["status"] == "success" and field["ocr_text"] == EXACT_TEXT and field["confidence"] is None
+    boxes = field["diagnostics"]["boxes"]
+    assert boxes[0]["text"] == "right" and boxes[0]["polygon"][0] == [50, 21]
+    assert boxes[0]["crop_polygon"][0] == [40, 1] and boxes[1]["confidence"] is None
+    assert submit(client, case, [pipeline_id], "openthai-batch-contract")["job_id"] == job["job_id"]
+    assert len(calls) == 1
+    again = client.get(f"/api/ocr-jobs/{job['job_id']}/results").json()["runs"][0]["fields"][0]
+    assert again["ocr_text"] == field["ocr_text"] and again["diagnostics"]["boxes"] == boxes
+    assert fields[0]["roi"] == {"x1": 10, "y1": 20, "x2": 200, "y2": 120}
+
+
+def test_failed_batch_item_stays_failed_without_manufactured_text(client, document, external):
+    behavior, calls = external
+    case, _ = layout(client, document, count=1, prefill=False)
+    behavior["handler"] = lambda request: httpx.Response(200, json=batch_envelope(
+        None, status="error", error={"code": "INVALID_IMAGE", "message": "The uploaded image is invalid."},
+        succeeded=0, failed=1))
+    pipeline_id = client.post("/api/pipelines", json=definition()).json()["pipeline_id"]
+    job = submit(client, case, [pipeline_id], "openthai-batch-failure")
+    final = wait_job(client, job["job_id"])
+    assert final["status"] == "failed" and final["failed_units"] == 1 and final["progress_percent"] == 100
+    run = client.get(f"/api/ocr-jobs/{job['job_id']}/results").json()["runs"][0]
+    field = run["fields"][0]
+    assert run["status"] == "error" and run["error_code"] == "FIELD_PIPELINE_ERROR"
+    assert field["status"] == "error" and field["ocr_text"] == ""
+    assert field["diagnostics"]["error_code"] == "INVALID_OCR_RESPONSE"
+    assert field["diagnostics"]["failure_stage"] == "gateway_contract" and field["diagnostics"]["http_status"] is None
+    assert "INVALID_IMAGE" in field["diagnostics"]["error_message"]
+    assert submit(client, case, [pipeline_id], "openthai-batch-failure")["job_id"] == job["job_id"]
+    assert len(calls) == 1
