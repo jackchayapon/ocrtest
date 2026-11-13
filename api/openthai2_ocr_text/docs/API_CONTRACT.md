@@ -14,6 +14,8 @@ Success has the following shape. Values below illustrate the contract.
 
 Full text follows model reading order. Polygon coordinates use original input pixels, after the runtime's inverse rotation/deskew. Confidence is nullable per line and always null at aggregate level. Empty inference returns empty text and lines with `geometry_available=false`. The API bounds lines1024, text32768 characters and serialized response2 MiB by default.
 
+Each `line.box` contains exactly four finite `[x,y]` pairs. Coordinates and `text_angle` must remain finite after numeric coercion. The wrapper preserves model coordinates. It does not scale, rotate, clamp or add a document ROI offset. A consuming document adapter adds a crop offset once. [Verified Single/Batch selection and diagnostics](RESPONSE_MAPPING.md).
+
 Errors share this envelope.
 
 ```json
