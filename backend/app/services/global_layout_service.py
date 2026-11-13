@@ -60,6 +60,13 @@ def stored_boxes(run):
     return ordered_detection_boxes(run.boxes)
 
 
+def stored_ordering(run):
+    """Name the order actually stored. External polygons stay in model order."""
+    if getattr(run, "crop_stage", None) == "external_api":
+        return "model_reading_order"
+    return "row_then_left_within_global_field"
+
+
 class GlobalLayoutService:
     def __init__(self, cases):
         self.cases = cases
@@ -424,7 +431,7 @@ class GlobalLayoutService:
                         raw_parts[result.pipeline_id].append(result.raw_text if result.raw_text is not None else result.final_text or "")
                         diagnostics.update(
                             boxes=stored_boxes(result),
-                            ordering="row_then_left_within_global_field",
+                            ordering=stored_ordering(result),
                         )
                         if checkpoint:
                             diagnostics["raw_text"] = result.raw_text if result.raw_text is not None else result.final_text or ""

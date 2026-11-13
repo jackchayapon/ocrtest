@@ -366,6 +366,24 @@ def test_invalid_text_geometry_dimensions_and_line_limit(settings):
     assert normalize_external(many, provider, crop, None)[0] == "a\n" * 127 + "a"
 
 
+def test_sync_run_keeps_model_order_and_labels_it(client, document, external):
+    behavior, _calls = external
+    case, _fields = layout(client, document, count=1, prefill=False)
+    behavior["handler"] = lambda request: httpx.Response(200, json=batch_envelope(openthai_data(
+        image={"width": 190, "height": 100})))
+    pipeline_id = client.post("/api/pipelines", json=definition()).json()["pipeline_id"]
+    response = client.post(f"/api/test-cases/{case['id']}/run", json={"pipelines": [pipeline_id]})
+    assert response.status_code == 200, response.text
+    run = response.json()["runs"][0]
+    field = run["fields"][0]
+    assert run["final_text"] == field["ocr_text"] == EXACT_TEXT
+    assert run["confidence"] is None and field["confidence"] is None
+    assert field["diagnostics"]["ordering"] == "model_reading_order"
+    boxes = field["diagnostics"]["boxes"]
+    assert [box["text"] for box in boxes] == ["right", "left"]
+    assert boxes[0]["polygon"][0] == [50, 21] and boxes[0]["crop_polygon"][0] == [40, 1]
+
+
 def test_batch_result_persists_exact_text_boxes_and_replay(client, document, external):
     behavior, calls = external
     case, fields = layout(client, document, count=1, prefill=False)
@@ -381,12 +399,15 @@ def test_batch_result_persists_exact_text_boxes_and_replay(client, document, ext
     assert run["status"] == "success" and run["final_text"] == EXACT_TEXT and run["confidence"] is None
     assert field["status"] == "success" and field["ocr_text"] == EXACT_TEXT and field["confidence"] is None
     boxes = field["diagnostics"]["boxes"]
-    assert boxes[0]["text"] == "right" and boxes[0]["polygon"][0] == [50, 21]
+    assert [box["text"] for box in boxes] == ["right", "left"]
+    assert boxes[0]["polygon"][0] == [50, 21]
     assert boxes[0]["crop_polygon"][0] == [40, 1] and boxes[1]["confidence"] is None
+    assert field["diagnostics"]["ordering"] == "model_reading_order"
     assert submit(client, case, [pipeline_id], "openthai-batch-contract")["job_id"] == job["job_id"]
     assert len(calls) == 1
     again = client.get(f"/api/ocr-jobs/{job['job_id']}/results").json()["runs"][0]["fields"][0]
     assert again["ocr_text"] == field["ocr_text"] and again["diagnostics"]["boxes"] == boxes
+    assert again["diagnostics"]["ordering"] == "model_reading_order"
     assert fields[0]["roi"] == {"x1": 10, "y1": 20, "x2": 200, "y2": 120}
 
 
@@ -406,6 +427,7 @@ def test_failed_batch_item_stays_failed_without_manufactured_text(client, docume
     assert field["status"] == "error" and field["ocr_text"] == ""
     assert field["diagnostics"]["error_code"] == "INVALID_OCR_RESPONSE"
     assert field["diagnostics"]["failure_stage"] == "gateway_contract" and field["diagnostics"]["http_status"] is None
+    assert field["diagnostics"]["ordering"] == "model_reading_order"
     assert "INVALID_IMAGE" in field["diagnostics"]["error_message"]
     assert submit(client, case, [pipeline_id], "openthai-batch-failure")["job_id"] == job["job_id"]
     assert len(calls) == 1

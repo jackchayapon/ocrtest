@@ -16,7 +16,12 @@ from sqlalchemy.dialects.postgresql import JSONB, array
 from sqlalchemy.orm import defer, noload, sessionmaker
 
 from app.db.models import OCRField, OCRJob, PipelineRun, TestCase, now
-from app.services.global_layout_service import reading_lines, stored_boxes, stored_ocr_text
+from app.services.global_layout_service import (
+    reading_lines,
+    stored_boxes,
+    stored_ocr_text,
+    stored_ordering,
+)
 from app.services.gt_prefill_service import DETECTION, RECOGNITION, prefill_pipeline, pristine_gt
 from app.services.metrics_service import normalize_text
 from app.services.pipeline_manager import PipelineManager
@@ -131,7 +136,7 @@ class IncrementalGlobalJob:
                         diagnostics.update(failure_stage=failure.get("stage", "adapter"),
                                            http_status=failure.get("http_status"))
                     diagnostics.update(boxes=stored_boxes(result),
-                                       ordering="row_then_left_within_global_field",
+                                       ordering=stored_ordering(result),
                                        raw_text=result.raw_text if result.raw_text is not None else result.final_text or "")
                     session.add(OCRField(pipeline_run_id=run_id, global_field_id=field.id,
                                 field_index=field.field_index, geometry={"roi": field.roi},
