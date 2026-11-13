@@ -1,20 +1,21 @@
 # Local verification
 
-The current suite has 37 model-doubled tests covering the original single route and Batch ordering, partial failures, authentication, body/count/pixel/output limits, shared admission, deadlines, disconnects, cleanup and OpenAPI. Three negative ASGI upload cases reproduced open temporary handles before the fix and verify closure after disconnect, body overflow and deadline cancellation. Run all tests through the standalone environment.
+The current suite has 50 model-doubled tests, compared with the preceding37. It covers the original single route and Batch ordering, partial failures, authentication, body/count/pixel/output limits, shared admission, deadlines, disconnects, cleanup and OpenAPI. New cases reproduced missing/unusable-key exposure and Single upload handle leaks before their fixes. Interrupted-upload coverage includes both endpoints and in-memory/disk-backed files. Positive-path fixtures supply an explicit synthetic key, while missing/wrong-key tests retain their independent assertions. Run all tests through the standalone environment.
 
 ```sh
 pip install -r requirements-dev.txt
 python scripts/download_model.py
 python -m pytest tests -q
 python -m ruff check app tests scripts
+# Configure a private OPENTHAI_API_KEY before starting the real service.
 python -m app
 ```
 
-In another terminal, set the same private test key when authentication is enabled and run actual HTTP inference.
+In another terminal, configure the same required private test key and run actual HTTP inference.
 
 ```sh
 python scripts/smoke_http.py --font /path/to/NotoSansThai-Regular.ttf
-curl -F image=@sample.png http://127.0.0.1:8091/api/v1/ocr-text
+curl --config /private/openthai-curl.conf -F image=@sample.png http://127.0.0.1:8091/api/v1/ocr-text
 ```
 
 Service unit/HTTP tests use explicit reader doubles to exercise validation, NumPy conversion, blank output, authentication, readiness failure, contention, deadlines and cleanup. `smoke_http.py` talks to the running service and its actual installed model. Keep these results separately identified in test reports.

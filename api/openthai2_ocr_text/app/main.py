@@ -8,13 +8,15 @@ from fastapi import FastAPI, Request
 from fastapi.responses import Response
 from starlette.datastructures import UploadFile
 from starlette.exceptions import HTTPException
+from starlette.formparsers import MultiPartException
+from starlette.requests import ClientDisconnect
 
-from app.batch import BATCH_REQUEST_OPENAPI, batch_ocr
+from app.batch import BATCH_REQUEST_OPENAPI, batch_ocr, multipart_form
 from app.config import MODEL_REVISION, Settings
 from app.errors import ServiceError, error_response
 from app.inference import Inference
 from app.schemas import BatchEnvelope
-from app.security import RequestControls
+from app.security import RequestControls, valid_api_key
 
 logger = logging.getLogger("openthai")
 
@@ -25,10 +27,13 @@ def create_app(settings=None, loader=None):
 
     @asynccontextmanager
     async def lifespan(app):
-        try:
-            await asyncio.get_running_loop().run_in_executor(inference.executor, inference.initialize)
-        except Exception as error:
-            logger.error("model_initialization_failed revision=%s category=%s", MODEL_REVISION, type(error).__name__)
+        if valid_api_key(settings.api_key.get_secret_value()):
+            try:
+                await asyncio.get_running_loop().run_in_executor(inference.executor, inference.initialize)
+            except Exception as error:
+                logger.error("model_initialization_failed revision=%s category=%s", MODEL_REVISION, type(error).__name__)
+        else:
+            logger.error("authentication_not_configured")
         yield
         inference.executor.shutdown(wait=True, cancel_futures=True)
 
@@ -62,14 +67,16 @@ def create_app(settings=None, loader=None):
         if not request.headers.get("content-type", "").startswith("multipart/form-data"):
             raise ServiceError("UNSUPPORTED_MEDIA_TYPE", "Use multipart/form-data.", 415)
         try:
-            async with request.form(max_files=1, max_fields=0, max_part_size=settings.max_upload_bytes) as form:
+            async with multipart_form(request, settings, max_files=1) as form:
                 upload = form.get("image")
                 if not isinstance(upload, UploadFile) or len(form) != 1:
                     raise ServiceError("IMAGE_REQUIRED", "Upload one file using the image field.")
                 content = await upload.read(settings.max_upload_bytes + 1)
         except ServiceError:
             raise
-        except (ValueError, RuntimeError, HTTPException):
+        except ClientDisconnect:
+            raise ServiceError("CLIENT_DISCONNECTED", "Client disconnected during image upload.", 499) from None
+        except (ValueError, RuntimeError, HTTPException, MultiPartException):
             raise ServiceError("BAD_REQUEST", "Malformed multipart request.", 400) from None
         started = time.perf_counter()
         inference.submit(content)

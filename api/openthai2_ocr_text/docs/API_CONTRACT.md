@@ -2,6 +2,8 @@
 
 `GET /health` returns HTTP200 `{"status":"alive"}` without inference. `GET /api/v1/readiness` returns HTTP200 with `status=ready` after successful loading, or HTTP503 `MODEL_NOT_READY`. Readiness and inference require the configured API key. Model loading failures leave liveness operational for diagnosis.
 
+The service requires a nonempty printable-ASCII `OPENTHAI_API_KEY` without whitespace. An unset, empty or unusable value skips model loading and fails protected APIs with503 `AUTH_NOT_CONFIGURED`. Liveness remains available. Compose rejects an empty/unset value before startup. Existing valid-key Bearer and X-API-Key requests retain their contracts. Gateway-client and upstream-service keys are an owner-approved configuration decision.
+
 `POST /api/v1/ocr-text` accepts exactly one multipart file named `image`. PNG and JPEG content are accepted regardless of filename. Default upload limit is 10 MiB, request body limit is upload limit plus64 KiB, pixel limit2,000,000 and maximum dimension8000. The request deadline defaults120 seconds. These service limits are operator-configurable. One request is admitted before multipart parsing and inference. Other POSTs receive429 with `Retry-After: 5`.
 
 Success has the following shape. Values below illustrate the contract.
@@ -27,7 +29,7 @@ Errors share this envelope.
 | 422 | IMAGE_REQUIRED, INVALID_IMAGE |
 | 429 | SERVICE_BUSY |
 | 500 | INTERNAL_ERROR, invalid native output or inference exception |
-| 503 | MODEL_NOT_READY, OUTPUT_TOO_LARGE |
+| 503 | AUTH_NOT_CONFIGURED, MODEL_NOT_READY, OUTPUT_TOO_LARGE |
 | 504 | REQUEST_TIMEOUT |
 
 Generated request IDs appear in response headers and envelopes. Logs contain request ID, path, status, duration and failure category. Inputs, OCR text, credentials and exception messages are excluded. Inference runs in one executor thread. On HTTP deadline/disconnect, an ongoing native call retains the inference slot until it finishes. An indefinitely stuck native call requires a supervised process restart. Configure a proxy body/read deadline and operational restart policy.
@@ -60,4 +62,4 @@ Aggregate output overflow returns503 `OUTPUT_TOO_LARGE` for the whole request. A
 
 The parser spools files and closes them on success, error, timeout or disconnect. One raw image and one decoded image are processed at a time. Encoded result items accumulate within the aggregate response limit. A running native call retains its byte buffer after HTTP cancellation and closes its decoded image explicitly at completion. Native calls cannot be forcibly cancelled.
 
-Cleanup uses Starlette's parser-owned temporary-handle list to cover failures before `FormData` exists. Retain the interrupted-upload regression tests when upgrading Starlette. They verify that disconnect, body-limit exceptions and cancellation close every partially created file.
+Single and Batch cleanup use Starlette's parser-owned temporary-handle list to cover failures before `FormData` exists. Retain the interrupted-upload regression tests when upgrading Starlette. They verify that disconnect, body-limit exceptions and cancellation close every partially created file, including uploads rolled to disk. A detected Single upload disconnect uses the499 diagnostic and existing safe error envelope. Successful Single response fields and model conversion are unchanged.

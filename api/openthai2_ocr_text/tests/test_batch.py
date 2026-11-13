@@ -14,6 +14,7 @@ from app.main import create_app
 from app.schemas import BatchEnvelope
 
 PATH = "/api/v1/ocr-text-batches"
+TEST_HEADERS = {"X-API-Key": "synthetic-unit-test-key"}
 
 
 def png(width=30):
@@ -37,7 +38,7 @@ def test_batch_order_counts_single_model_and_single_compatibility(count):
     def loader():
         loaded.append(True)
         return Reader()
-    with TestClient(create_app(Settings(_env_file=None), loader)) as client:
+    with TestClient(create_app(Settings(_env_file=None), loader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png(30+index) for index in range(count)]))
         assert response.status_code == 200, response.text
         value = BatchEnvelope.model_validate(response.json())
@@ -58,7 +59,7 @@ def test_mixed_corrupt_empty_and_native_failure_are_per_image_and_redacted(caplo
             if image.width == 31:
                 raise RuntimeError("private OCR text and private-provider-key")
             return super().read(image)
-    with TestClient(create_app(Settings(_env_file=None), FaultReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None), FaultReader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png(), b"corrupt", b"", png(31), png(32)]))
         assert response.status_code == 200
         payload = response.json()["data"]
@@ -89,7 +90,7 @@ def test_structure_limits_and_no_inference_for_rejected_batch():
         def read(self, image):
             called.append(True)
             return super().read(image)
-    with TestClient(create_app(Settings(_env_file=None, max_batch_images=2), TrackingReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_batch_images=2), TrackingReader), headers=TEST_HEADERS) as client:
         excessive = client.post(PATH, files=files([png()] * 3))
         assert excessive.status_code == 413 and excessive.json()["error"]["code"] == "TOO_MANY_IMAGES"
         excessive = client.post(PATH, files=files([png()] * 4))
@@ -104,20 +105,20 @@ def test_structure_limits_and_no_inference_for_rejected_batch():
 
 
 def test_upload_pixel_per_image_and_aggregate_response_limits():
-    with TestClient(create_app(Settings(_env_file=None, max_batch_upload_bytes=10), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_batch_upload_bytes=10), Reader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png()]))
         assert response.status_code == 413
-    with TestClient(create_app(Settings(_env_file=None, max_upload_bytes=10), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_upload_bytes=10), Reader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png()]))
         assert response.status_code == 200
         assert response.json()["data"]["results"][0]["error"]["code"] == "PAYLOAD_TOO_LARGE"
-    with TestClient(create_app(Settings(_env_file=None, max_pixels=10), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_pixels=10), Reader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png()]))
         assert response.json()["data"]["results"][0]["error"]["code"] == "IMAGE_TOO_LARGE"
     class LargeReader(Reader):
         def read(self, image):
             return {"text": "ก" * 300, "lines": []}
-    with TestClient(create_app(Settings(_env_file=None, max_batch_response_bytes=1024), LargeReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_batch_response_bytes=1024), LargeReader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png(), png()]))
         assert response.status_code == 503 and response.json()["error"]["code"] == "OUTPUT_TOO_LARGE"
 
@@ -130,7 +131,7 @@ def test_single_and_batch_share_busy_admission(first):
             started.set()
             release.wait(5)
             return super().read(image)
-    with TestClient(create_app(Settings(_env_file=None), SlowReader)) as client, ThreadPoolExecutor(1) as executor:
+    with TestClient(create_app(Settings(_env_file=None), SlowReader), headers=TEST_HEADERS) as client, ThreadPoolExecutor(1) as executor:
         def run():
             return client.post(PATH, files=files([png()])) if first == "batch" else client.post("/api/v1/ocr-text", files={"image": png()})
         future = executor.submit(run)
@@ -149,7 +150,7 @@ def test_batch_timeout_retains_slot_and_stops_remaining_images():
             calls.append(image.width)
             time.sleep(.2)
             return super().read(image)
-    with TestClient(create_app(Settings(_env_file=None, batch_timeout_seconds=.05), SlowReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, batch_timeout_seconds=.05), SlowReader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png(), png(31)]))
         assert response.status_code == 504
         assert client.post("/api/v1/ocr-text", files={"image": png()}).status_code == 429
@@ -171,7 +172,7 @@ def test_upload_and_decoded_resources_are_closed(monkeypatch):
         await original(upload)
         closed.append(upload.file.closed)
     monkeypatch.setattr(UploadFile, "close", close)
-    with TestClient(create_app(Settings(_env_file=None), TrackingReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None), TrackingReader), headers=TEST_HEADERS) as client:
         assert client.post(PATH, files=files([png(), b"corrupt", png(31)])).status_code == 200
         assert len(closed) == 3 and all(closed)
         assert client.app.state.inference.pending.done()
@@ -211,7 +212,7 @@ def test_disconnect_stops_batch_and_preserves_native_slot():
             messages.append(message)
         scope = {"type":"http", "asgi":{"version":"3.0"}, "http_version":"1.1", "method":"POST", "scheme":"http",
             "path":PATH,"raw_path":PATH.encode(),"query_string":b"", "root_path":"", "server":("test",80),"client":("test",1),
-            "headers":[(b"content-type",b"multipart/form-data; boundary="+boundary),(b"content-length",str(len(body)).encode())]}
+            "headers":[(b"x-api-key", b"synthetic-unit-test-key"),(b"content-type",b"multipart/form-data; boundary="+boundary),(b"content-length",str(len(body)).encode())]}
         async with app.router.lifespan_context(app):
             try:
                 await app(scope, receive, send)
@@ -228,7 +229,7 @@ def test_batch_can_be_disabled_and_bounds_cannot_be_bypassed():
         Settings(_env_file=None, max_batch_images=17)
     with pytest.raises(ValueError):
         Settings(_env_file=None, max_concurrent_batch_requests=2)
-    with TestClient(create_app(Settings(_env_file=None, max_concurrent_batch_requests=0), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_concurrent_batch_requests=0), Reader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png()]))
         assert response.status_code == 503 and response.json()["error"]["code"] == "BATCH_DISABLED"
         assert client.post("/api/v1/ocr-text", files={"image":png()}).status_code == 200
@@ -243,7 +244,7 @@ def test_batch_jpeg_and_per_image_output_limit():
             if image.width == 30:
                 return {"text": "ก" * 2000, "lines": []}
             return super().read(image)
-    with TestClient(create_app(Settings(_env_file=None, max_response_bytes=1024), LargeReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_response_bytes=1024), LargeReader), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png(), jpeg]))
         assert response.status_code == 200
         results = response.json()["data"]["results"]
@@ -252,7 +253,7 @@ def test_batch_jpeg_and_per_image_output_limit():
 
 
 def test_chunked_batch_body_is_bounded_before_inference():
-    with TestClient(create_app(Settings(_env_file=None, max_batch_upload_bytes=32), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_batch_upload_bytes=32), Reader), headers=TEST_HEADERS) as client:
         body = iter([b'--bound\r\nContent-Disposition: form-data; name="images"; filename="x.png"\r\n\r\n', b"x" * 70000, b"\r\n--bound--\r\n"])
         response = client.post(PATH, content=body, headers={"Content-Type":"multipart/form-data; boundary=bound"})
         assert response.status_code == 413 and response.json()["error"]["code"] == "PAYLOAD_TOO_LARGE"
@@ -261,7 +262,7 @@ def test_chunked_batch_body_is_bounded_before_inference():
 def test_batch_model_not_ready_and_openapi_contract():
     def fail():
         raise RuntimeError("private model path")
-    with TestClient(create_app(Settings(_env_file=None), fail)) as client:
+    with TestClient(create_app(Settings(_env_file=None), fail), headers=TEST_HEADERS) as client:
         response = client.post(PATH, files=files([png()]))
         assert response.status_code == 503 and response.json()["error"]["code"] == "MODEL_NOT_READY"
         assert "private model path" not in response.text
@@ -270,7 +271,9 @@ def test_batch_model_not_ready_and_openapi_contract():
 
 
 @pytest.mark.parametrize("failure", ["disconnect", "body_limit", "timeout"])
-def test_interrupted_multipart_upload_closes_partial_files(monkeypatch, failure):
+@pytest.mark.parametrize("path", [PATH, "/api/v1/ocr-text"])
+@pytest.mark.parametrize("spill", [False, True])
+def test_interrupted_multipart_upload_closes_partial_files(monkeypatch, failure, path, spill):
     import starlette.formparsers
     handles = []
     original = starlette.formparsers.SpooledTemporaryFile
@@ -281,28 +284,33 @@ def test_interrupted_multipart_upload_closes_partial_files(monkeypatch, failure)
     monkeypatch.setattr(starlette.formparsers, "SpooledTemporaryFile", tracked_file)
 
     async def scenario():
-        app = create_app(Settings(_env_file=None, max_batch_upload_bytes=32, batch_timeout_seconds=.05), Reader)
+        limit = 2 * 1024**2 if spill else 32
+        app = create_app(Settings(_env_file=None, max_batch_upload_bytes=limit, max_upload_bytes=limit,
+            batch_timeout_seconds=.2, request_timeout_seconds=.2), Reader)
         delivered = False
         messages = []
         async def receive():
             nonlocal delivered
             if not delivered:
                 delivered = True
-                return {"type": "http.request", "body": b'--bound\r\nContent-Disposition: form-data; name="images"; filename="x.png"\r\n\r\npartial', "more_body": True}
+                field = b"images" if path == PATH else b"image"
+                payload = b"x" * (1024**2 + 1) if spill else b"partial"
+                return {"type": "http.request", "body": b'--bound\r\nContent-Disposition: form-data; name="'+field+b'"; filename="x.png"\r\n\r\n'+payload, "more_body": True}
             if failure == "disconnect":
                 return {"type": "http.disconnect"}
             if failure == "body_limit":
-                return {"type": "http.request", "body": b"x" * 70000, "more_body": False}
+                return {"type": "http.request", "body": b"x" * (limit + 70000), "more_body": False}
             await asyncio.sleep(1)
             raise AssertionError("The upload deadline should cancel receive")
         async def send(message):
             messages.append(message)
         scope = {"type": "http", "asgi": {"version": "3.0"}, "http_version": "1.1", "method": "POST", "scheme": "http",
-            "path": PATH, "raw_path": PATH.encode(), "query_string": b"", "root_path": "", "server": ("test", 80), "client": ("test", 1),
-            "headers": [(b"content-type", b"multipart/form-data; boundary=bound")]}
+            "path": path, "raw_path": path.encode(), "query_string": b"", "root_path": "", "server": ("test", 80), "client": ("test", 1),
+            "headers": [(b"x-api-key", b"synthetic-unit-test-key"),(b"content-type", b"multipart/form-data; boundary=bound")]}
         async with app.router.lifespan_context(app):
             await app(scope, receive, send)
             assert len(handles) == 1 and handles[0].closed
+            assert handles[0]._rolled == spill
             assert app.state.inference.pending is None
             status = next(message["status"] for message in messages if message["type"] == "http.response.start")
             assert status == {"disconnect": 499, "body_limit": 413, "timeout": 504}[failure]

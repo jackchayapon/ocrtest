@@ -1,38 +1,11 @@
-# CDGS infrastructure handover
+# Standalone deployment
 
-The Batch upgrade requires infrastructure-owner review and deployment. The current implementation has been tested locally. See [the Batch handover](CDGS_HANDOVER.md) for public-to-internal path mapping, authentication compatibility and rollout checks.
+The infrastructure team updates its existing OpenThai service from `api/openthai2_ocr_text/` on the same server infrastructure as CDGS Gateway. Preserve the existing service/container identity and supervisor. Build context, model provisioning and runtime remain independent of OCRLab.
 
-Build from `api/openthai2_ocr_text` as a standalone Docker context. Provision the pinned snapshot before starting the container.
+Follow [the CDGS handover](CDGS_HANDOVER.md) for owner-run Linux commands, source verification, routing, smoke tests and rollback. The packaged Compose file has one service named `openthai`. Reuse the current Compose project and service identity after verifying them. For another supervisor or service name, reconcile the existing configuration before replacement.
 
-```sh
-python scripts/download_model.py
-docker compose build
-docker compose up -d
-docker compose ps
-curl http://127.0.0.1:8091/health
-```
+The tested envelope is Python3.12, ONNX Runtime CPU,1CPU,1536MiB,1worker,1executor/native slot,UID10001,read-only filesystem/model mount,32MiB temporary storage,dropped capabilities and loopback8091. Owner approval and shared-host capacity checks precede deployment. [Measured limits](BATCH_BENCHMARKS.md).
 
-Compose binds8091 to loopback, mounts model files read-only, runs UID10001, drops capabilities and uses a read-only filesystem with32 MiB temporary space. Ensure the snapshot directories are traversable and files readable by UID10001. Set a private `OPENTHAI_API_KEY` before exposing readiness/inference. The container image contains application/dependencies. The mounted snapshot remains independently versioned.
+Configure a required private `OPENTHAI_API_KEY`. Compose rejects an unset/empty value. Direct startup with missing/unusable authentication leaves liveness available, skips model loading and returns503 `AUTH_NOT_CONFIGURED` from protected APIs. Readiness monitoring must check authorized readiness and a deliberate synthetic inference. Public `/health` alone does not establish model readiness.
 
-One process, one slot, `threads=1` and one CPU are initial settings. Compose assigns1536 MiB locally as a provisional isolation limit. This allocation requires infrastructure-owner approval on the CDGS server and shared-host capacity assessment. Measure representative documents and long-running RSS/cgroup peaks before sizing production. Additional worker processes each load their own networks. `OPENTHAI_WORKERS` currently accepts1 to enforce the initial deployment envelope.
-
-The infrastructure owner must provide a port allocation, CPU/RAM budget, a snapshot path with permissions, supervisor/log retention, secret storage, firewall policy, TLS hostname and approved public route. Independently supervise this process alongside existing CDGS processes.
-
-An Nginx location can be added by the infrastructure owner after route approval. This example maps the same versioned prefix and preserves multipart data.
-
-```nginx
-location /openthai/api/v1/ {
-    client_max_body_size 11m;
-    client_body_timeout 15s;
-    proxy_connect_timeout 5s;
-    proxy_read_timeout 125s;
-    proxy_send_timeout 30s;
-    proxy_pass http://127.0.0.1:8091/api/v1/;
-}
-```
-
-The example route is proposed. HTTPS termination, per-client rate limits and concurrent connection limits belong at the approved reverse proxy. Keep8091 private. Configure liveness against `/health` and authorized readiness against `/api/v1/readiness`. Healthchecks alone do not execute inference.
-
-Rotate a credential by provisioning a new private server value and updating the corresponding OCRLab credential environment reference during a maintenance window. Only one active key is supported by this initial service. Restart the independent container to reload configuration. Existing requests can be interrupted and callers receive a provider failure. OCRLab preserves committed checkpoints through its existing recovery mechanism. In-flight inference can be repeated after interruption.
-
-For rollback, retain the previous image digest and matching read-only snapshot. Stop/drain requests, restore that pair and recheck readiness plus a deliberate synthetic inference. Server registry changes invalidate existing OCRLab pipeline fingerprints until reviewed and saved again. Database migrations are unnecessary for this integration.
+The intended public Single path is `/paddle/api/v1/openthai-text`, mapped to `/api/v1/ocr-text`. Public Batch `/paddle/api/v1/openthai-text-batches` remains **NOT DEPLOYED / PENDING CDGS**, with intended mapping to `/api/v1/ocr-text-batches`. Proxy implementation and current mapping require owner verification. Preserve TLS, private ports, credential matching, body limits, deadlines and per-client abuse controls using the existing proxy technology.

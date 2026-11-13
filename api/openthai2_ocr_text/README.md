@@ -11,6 +11,7 @@ python -m venv .venv
 pip install -r requirements-dev.txt
 python scripts/download_model.py
 python -m pytest tests -q
+# Configure OPENTHAI_API_KEY through your private environment before startup.
 python -m app
 ```
 
@@ -18,13 +19,14 @@ The default model directory is `models/openthai2`. Set `OPENTHAI_MODEL_DIR` for 
 
 ```sh
 curl http://127.0.0.1:8091/health
-curl http://127.0.0.1:8091/api/v1/readiness
-curl -F image=@sample.png http://127.0.0.1:8091/api/v1/ocr-text
+# Use a mode-0600 curl config containing the private authentication header.
+curl --config /private/openthai-curl.conf http://127.0.0.1:8091/api/v1/readiness
+curl --config /private/openthai-curl.conf -F image=@sample.png http://127.0.0.1:8091/api/v1/ocr-text
 python scripts/smoke_http.py --font /path/to/NotoSansThai-Regular.ttf
-curl -F images=@sample1.png -F images=@sample2.jpg http://127.0.0.1:8091/api/v1/ocr-text-batches
+curl --config /private/openthai-curl.conf -F images=@sample1.png -F images=@sample2.jpg http://127.0.0.1:8091/api/v1/ocr-text-batches
 ```
 
-When `OPENTHAI_API_KEY` is configured, readiness and inference accept `Authorization: Bearer …` or `X-API-Key`. Supply secrets through the deployment environment. Liveness stays lightweight and public.
+`OPENTHAI_API_KEY` is required for readiness and inference. It must be nonempty printable ASCII without whitespace. Missing or unusable configuration leaves `/health` public, skips model loading and returns503 `AUTH_NOT_CONFIGURED` from protected APIs. Compose refuses an unset/empty key before creating a container. Valid configuration accepts `Authorization: Bearer …` or `X-API-Key`, using constant-time comparison. Supply secrets through the private deployment environment.
 
 | Guide | Content |
 | --- | --- |
@@ -38,3 +40,5 @@ API-level Batch accepts up to 8 images by default and reads them sequentially th
 OCRLab uses a Public Shared Workspace with editable External Provider configuration and write-only encrypted keys. It submits single-image requests through durable Jobs and per-Field checkpoints. The supplied CDGS single-image target is `https://websolution.cdgs.co.th/paddle/api/v1/openthai-text`. Its authentication and deployed behavior require separate live verification. The proposed public Batch path requires CDGS routing and deployment approval. The repository Batch route is ready for local testing and handover.
 
 See [Batch measurements](docs/BATCH_BENCHMARKS.md) and [CDGS handover](docs/CDGS_HANDOVER.md).
+
+The infrastructure team updates its existing OpenThai service from this standalone directory on the same server infrastructure as CDGS Gateway. Reuse its existing project/service identity and supervisor after verifying them.

@@ -6,20 +6,20 @@ Each row summarizes three warm trials over loopback. Batch per-image time is amo
 
 | Images | Mode | Median wall seconds | Amortized seconds/image | Images/second | HTTP requests | Sampled peak cgroup MB | Sampled peak RSS MB | Median sampled CPU |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|1|Repeated single|0.090100|0.090100|11.099|1|244.75|285.50|99.92%|
-|1|Batch|0.088912|0.088912|11.247|1|244.75|285.50|96.05%|
-|2|Repeated single|0.230570|0.115285|8.674|2|344.10|384.44|100.31%|
-|2|Batch|0.213942|0.106971|9.348|1|344.07|384.44|100.09%|
-|4|Repeated single|0.455518|0.113879|8.781|4|344.14|384.45|99.97%|
-|4|Batch|0.453827|0.113457|8.814|1|343.87|384.45|99.74%|
-|8|Repeated single|0.929244|0.116155|8.609|8|344.29|384.47|99.32%|
-|8|Batch|0.882353|0.110294|9.067|1|344.37|384.48|99.96%|
+|1|Repeated single|0.101598|0.101598|9.843|1|469.99|284.31|99.55%|
+|1|Batch|0.089584|0.089584|11.163|1|469.99|284.31|101.88%|
+|2|Repeated single|0.232466|0.116233|8.603|2|569.19|383.32|100.40%|
+|2|Batch|0.241399|0.120700|8.285|1|569.16|383.32|100.84%|
+|4|Repeated single|0.443776|0.110944|9.014|4|569.50|383.33|100.02%|
+|4|Batch|0.436792|0.109198|9.158|1|569.54|383.33|99.41%|
+|8|Repeated single|0.867788|0.108474|9.219|8|569.98|383.36|99.67%|
+|8|Batch|0.852203|0.106525|9.387|1|569.97|383.37|100.10%|
 
-The 24 timed trials had zero request or item errors. Separate real HTTP mixed-valid/corrupt input returned ordered success/error/success. Startup to readiness took 1.828 seconds. The first single request after initialization took 0.1334 seconds. In a fresh process, the first Batch of eight took 0.7948 seconds and the subsequent warm Batch took 0.7289 seconds. Provisioned weights and host filesystem caches were reused.
+The 24 timed trials had zero request or item errors. Separate real HTTP mixed-valid/corrupt input returned ordered success/error/success. Startup to readiness took1.875seconds. The first single request took0.1464seconds. In a fresh process, first Batch8 took0.7812seconds and warm Batch8 took0.7018seconds. Provisioned weights and host filesystem caches were reused.
 
-Kernel `memory.peak` for the final-source matrix was 352,837,632 bytes. Process RSS high-water was 386,232,320 bytes. A separate accepted-limit test with eight 2 MP synthetic images completed in 1.3192 seconds, matched its single-image reference, and reached a kernel peak of 349,331,456 bytes. Both containers reported zero OOM kills and no `memory.max` pressure events. All nine Docker application source hashes matched the final candidate.
+Kernel `memory.peak` for the final-source matrix was577,847,296bytes. RSS high-water was385,036,288bytes. A separate eight2MP synthetic-image case completed in1.2754seconds, matched Single results and reached kernelpeak577,671,168bytes. Both containers had zero OOM/max events. Source hashes matched9/9files. A local container restart passed health, authorized readiness, wrong-key rejection and real Single/Batch inference. Runtime UID10001, pip check, read-only root/model,1CPU and1536MiB/no-swap settings were verified.
 
-An earlier run before the upload-cleanup correction reached 573,382,656 bytes under the same 1,536 MiB limit. Host cache reuse and shared file-page charging can change cgroup totals, including totals below RSS. These runs do not isolate a memory improvement caused by the cleanup change. Retain the earlier higher peak when sizing the service. Kernel peaks include charged file cache and sampled peaks can miss short allocations. This evidence does not approve a 512 MB standalone deployment.
+The preceding candidate had37tests and24trials, with final-source kernelpeak352,837,632bytes and an earlier peak573,382,656bytes. This pass has50tests and a freshly executed24-trial matrix after fail-closed authentication and Single upload cleanup fixes. Cache/shared-page charging changes cgroup totals, including totals below RSS in earlier runs. These experiments do not isolate a causal memory improvement. Kernel peaks include charged cache and samples can miss brief allocations. This evidence does not approve512MB standalone deployment.
 
 The measurements show reduced HTTP request count. Latency differences were small in this loopback sample. Execution remains sequential and these trials do not establish a native-model batching speedup or CDGS production capacity. OCRLab's Railway container retains its separate 512 MB limit. This benchmark used the standalone container described above.
 
@@ -29,4 +29,4 @@ Reproduce after starting the local container with its verified model and private
 python scripts/benchmark_batch.py --url http://127.0.0.1:8091 --rounds 3 --output /private/path/batch-benchmark.json
 ```
 
-Sanitized aggregates and evidence hashes are in [batch-benchmark.json](batch-benchmark.json). Raw local probes, logs and credentials remain in ignored `.runtime/openthai-batch/`.
+Sanitized aggregates and evidence hashes are in [batch-benchmark.json](batch-benchmark.json). Current raw evidence remains in ignored `.runtime/openthai-finalize/`, with previous evidence preserved in `.runtime/openthai-batch/`. Direct-Docker missing-key tests returned503 protected APIs and200 liveness. Compose rejected an empty key before container creation. No live CDGS load tests were run.

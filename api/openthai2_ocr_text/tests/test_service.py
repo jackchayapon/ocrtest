@@ -11,6 +11,8 @@ from app.config import Settings
 from app.main import create_app
 from app.schemas import convert
 
+TEST_HEADERS = {"X-API-Key": "synthetic-unit-test-key"}
+
 
 class Reader:
     def read(self, image):
@@ -26,7 +28,7 @@ def png():
 
 @pytest.fixture
 def client():
-    with TestClient(create_app(Settings(_env_file=None), Reader)) as value:
+    with TestClient(create_app(Settings(_env_file=None), Reader), headers=TEST_HEADERS) as value:
         yield value
 
 
@@ -51,10 +53,34 @@ def test_authentication(mode, png):
         assert client.post("/api/v1/ocr-text", files={"image": png}, headers=headers).status_code == 200
 
 
+@pytest.mark.parametrize("key", ["", "   ", "invalid\nkey"])
+def test_missing_or_misconfigured_key_fails_closed(key, png):
+    loaded = []
+    def loader():
+        loaded.append(True)
+        return Reader()
+    with TestClient(create_app(Settings(_env_file=None, api_key=key), loader)) as client:
+        assert client.get("/health").json() == {"status": "alive"}
+        for path in ["/api/v1/readiness", "/api/v1/ocr-text", "/api/v1/ocr-text-batches"]:
+            response = client.get(path) if path.endswith("readiness") else client.post(path, files={"image": png})
+            assert response.status_code == 503
+            assert response.json()["error"]["code"] == "AUTH_NOT_CONFIGURED"
+            assert response.headers["x-request-id"] == response.json()["error"]["request_id"]
+        assert loaded == []
+
+
+def test_unset_api_key_keeps_only_liveness_available(monkeypatch):
+    monkeypatch.delenv("OPENTHAI_API_KEY", raising=False)
+    with TestClient(create_app(Settings(_env_file=None), Reader)) as client:
+        assert client.get("/health").json() == {"status": "alive"}
+        assert client.get("/api/v1/readiness").status_code == 503
+        assert client.app.state.inference.reader is None
+
+
 def test_not_ready():
     def fail():
         raise RuntimeError("private/model/path")
-    with TestClient(create_app(Settings(_env_file=None), fail)) as client:
+    with TestClient(create_app(Settings(_env_file=None), fail), headers=TEST_HEADERS) as client:
         assert client.get("/health").status_code == 200
         for path in ("/api/v1/readiness", "/api/v1/ocr-text"):
             response = client.get(path) if path.endswith("readiness") else client.post(path)
@@ -69,14 +95,14 @@ def test_invalid_image(client, content, code):
 
 
 def test_input_limits_and_formats(png):
-    with TestClient(create_app(Settings(_env_file=None, max_pixels=10), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_pixels=10), Reader), headers=TEST_HEADERS) as client:
         assert client.post("/api/v1/ocr-text", files={"image": png}).status_code == 413
-    with TestClient(create_app(Settings(_env_file=None, max_upload_bytes=10), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_upload_bytes=10), Reader), headers=TEST_HEADERS) as client:
         assert client.post("/api/v1/ocr-text", files={"image": png}).status_code == 413
         assert client.post("/api/v1/ocr-text", content=b"x" * 70000).status_code == 413
     with Image.new("RGB", (20, 20)) as image, io.BytesIO() as output:
         image.save(output, "GIF")
-        with TestClient(create_app(Settings(_env_file=None), Reader)) as client:
+        with TestClient(create_app(Settings(_env_file=None), Reader), headers=TEST_HEADERS) as client:
             assert client.post("/api/v1/ocr-text", files={"image": ("fake.png", output.getvalue())}).status_code == 415
             assert client.post("/api/v1/ocr-text", json={}).status_code == 415
             assert client.post("/api/v1/ocr-text", files={"wrong": png}).status_code == 422
@@ -101,7 +127,7 @@ def test_concurrent_admission_and_failure_cleanup(png):
             started.set()
             release.wait(5)
             raise RuntimeError("private document text")
-    with TestClient(create_app(Settings(_env_file=None), SlowReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None), SlowReader), headers=TEST_HEADERS) as client:
         results = []
         thread = threading.Thread(target=lambda: results.append(client.post("/api/v1/ocr-text", files={"image": png})))
         thread.start()
@@ -122,7 +148,7 @@ def test_deadline_keeps_native_slot_until_completion(png):
         def read(self, image):
             time.sleep(.2)
             return super().read(image)
-    with TestClient(create_app(Settings(_env_file=None, request_timeout_seconds=.05), SlowReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, request_timeout_seconds=.05), SlowReader), headers=TEST_HEADERS) as client:
         response = client.post("/api/v1/ocr-text", files={"image": png})
         assert response.status_code == 504
         assert client.post("/api/v1/ocr-text", files={"image": png}).status_code == 429
@@ -138,13 +164,13 @@ def test_jpeg_and_output_limit(png):
     class LargeReader(Reader):
         def read(self, image):
             return {"text": "ก" * 1024, "lines": []}
-    with TestClient(create_app(Settings(_env_file=None, max_response_bytes=1024), LargeReader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_response_bytes=1024), LargeReader), headers=TEST_HEADERS) as client:
         result = client.post("/api/v1/ocr-text", files={"image": ("misleading.png", jpeg, "image/png")})
         assert result.status_code == 503 and result.json()["error"]["code"] == "OUTPUT_TOO_LARGE"
 
 
 def test_chunked_body_limit_and_bad_multipart():
-    with TestClient(create_app(Settings(_env_file=None, max_upload_bytes=32), Reader)) as client:
+    with TestClient(create_app(Settings(_env_file=None, max_upload_bytes=32), Reader), headers=TEST_HEADERS) as client:
         response = client.post("/api/v1/ocr-text", content=iter([b"x" * 40000, b"y" * 40000]),
                                headers={"Content-Type": "multipart/form-data; boundary=abc"})
         assert response.status_code in {400, 413}
@@ -159,5 +185,5 @@ def test_model_output_caps_and_corrupt_snapshot(tmp_path):
         convert({"text": "", "lines": [{}] * 1025}, 10, 10)
     with pytest.raises(ValueError):
         convert({"text": "x" * 32769, "lines": []}, 10, 10)
-    with TestClient(create_app(Settings(_env_file=None, model_dir=tmp_path))) as client:
+    with TestClient(create_app(Settings(_env_file=None, model_dir=tmp_path)), headers=TEST_HEADERS) as client:
         assert client.get("/api/v1/readiness").status_code == 503

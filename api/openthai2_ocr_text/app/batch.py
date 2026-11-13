@@ -27,8 +27,9 @@ def encoded(value):
 
 
 @asynccontextmanager
-async def multipart_form(request, settings):
-    parser = MultiPartParser(request.headers, request.stream(), max_files=settings.max_batch_images,
+async def multipart_form(request, settings, max_files=None):
+    parser = MultiPartParser(request.headers, request.stream(),
+        max_files=settings.max_batch_images if max_files is None else max_files,
         max_fields=0, max_part_size=settings.max_upload_bytes)
     try:
         form = await parser.parse()

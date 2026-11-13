@@ -9,9 +9,13 @@ from starlette.datastructures import Headers
 from app.errors import ServiceError, error_response
 
 
+def valid_api_key(key):
+    return bool(key) and all(33 <= ord(character) <= 126 for character in key)
+
+
 def authenticate(headers, key):
-    if not key:
-        return
+    if not valid_api_key(key):
+        raise ServiceError("AUTH_NOT_CONFIGURED", "Service authentication is not configured.", 503)
     bearer = headers.get("authorization", "")
     value = bearer[7:] if bearer.startswith("Bearer ") else headers.get("x-api-key", "")
     if not hmac.compare_digest(value.encode(), key.encode()):
