@@ -5,7 +5,7 @@ services:
       - "127.0.0.1:8091:8091"
     environment:
       OPENTHAI_MODEL_DIR: /models/openthai2
-      OPENTHAI_API_KEY: ${OPENTHAI_API_KEY:-}
+      OPENTHAI_API_KEY: ${OPENTHAI_API_KEY:?Set the approved private OpenThai service key}
     volumes:
       - ./models/openthai2:/models/openthai2:ro
     mem_limit: 1536m

@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import importlib
 import io
@@ -5,6 +6,7 @@ import json
 import sys
 import warnings
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
@@ -58,8 +60,15 @@ class Inference:
     def initialize(self):
         self.reader = self.loader()
 
+    def submit(self, content):
+        if self.pending is not None and not self.pending.done():
+            raise ServiceError("SERVICE_BUSY", "The inference slot is occupied.", 429)
+        self.pending = asyncio.get_running_loop().run_in_executor(self.executor, self.read, content)
+        self.pending.add_done_callback(lambda future: future.exception() if not future.cancelled() else None)
+        return self.pending
+
     def read(self, content):
-        with decode_image(content, self.settings) as image:
+        with closing(decode_image(content, self.settings)) as image:
             result = self.reader.read(image)
             from app.schemas import convert
             return convert(result, image.width, image.height)

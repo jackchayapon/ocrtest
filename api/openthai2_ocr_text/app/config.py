@@ -18,3 +18,8 @@ class Settings(BaseSettings):
     max_dimension: int = Field(default=8000, ge=1, le=12000)
     max_response_bytes: int = Field(default=2 * 1024**2, ge=1024, le=8 * 1024**2)
     request_timeout_seconds: float = Field(default=120, gt=0, le=600)
+    max_batch_images: int = Field(default=8, ge=1, le=16)
+    max_batch_upload_bytes: int = Field(default=20 * 1024**2, ge=1, le=80 * 1024**2)
+    max_batch_response_bytes: int = Field(default=8 * 1024**2, ge=1024, le=16 * 1024**2)
+    batch_timeout_seconds: float = Field(default=120, gt=0, le=600)
+    max_concurrent_batch_requests: int = Field(default=1, ge=0, le=1)

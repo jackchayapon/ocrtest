@@ -1,5 +1,7 @@
 # External OCR architecture
 
+The standalone wrapper now implements sequential multi-image Batch for local testing and CDGS handover. OCRLab retains per-Field single-image requests and existing durable checkpoints. The supplied live single-image URL is `https://websolution.cdgs.co.th/paddle/api/v1/openthai-text`. Public Batch routing has not been confirmed. Enabling Batch in OCRLab requires a verified route and an explicit recovery/idempotency design for partially completed requests. See [the handover](../api/openthai2_ocr_text/docs/CDGS_HANDOVER.md).
+
 ```mermaid
 flowchart LR
   UI[Next.js Pipeline Settings] --> API[OCRLab FastAPI]

@@ -9,9 +9,13 @@ from starlette.datastructures import Headers
 from app.errors import ServiceError, error_response
 
 
+def valid_api_key(key):
+    return bool(key) and all(33 <= ord(character) <= 126 for character in key)
+
+
 def authenticate(headers, key):
-    if not key:
-        return
+    if not valid_api_key(key):
+        raise ServiceError("AUTH_NOT_CONFIGURED", "Service authentication is not configured.", 503)
     bearer = headers.get("authorization", "")
     value = bearer[7:] if bearer.startswith("Bearer ") else headers.get("x-api-key", "")
     if not hmac.compare_digest(value.encode(), key.encode()):
@@ -33,6 +37,9 @@ class RequestControls:
         owns_slot = response_started = False
         status = 500
         headers = Headers(scope=scope)
+        batch = scope["path"] == "/api/v1/ocr-text-batches"
+        body_limit = (self.settings.max_batch_upload_bytes if batch else self.settings.max_upload_bytes) + 65536
+        deadline = self.settings.batch_timeout_seconds if batch else self.settings.request_timeout_seconds
 
         async def send_headers(message):
             nonlocal response_started, status
@@ -48,7 +55,7 @@ class RequestControls:
             nonlocal received
             message = await receive()
             received += len(message.get("body", b""))
-            if received > self.settings.max_upload_bytes + 65536:
+            if received > body_limit:
                 raise ServiceError("PAYLOAD_TOO_LARGE", "Request exceeds the body limit.", 413)
             return message
 
@@ -57,13 +64,15 @@ class RequestControls:
             if scope["path"].startswith("/api/"):
                 authenticate(headers, self.settings.api_key.get_secret_value())
             if scope["method"] == "POST":
+                if batch and self.settings.max_concurrent_batch_requests == 0:
+                    raise ServiceError("BATCH_DISABLED", "Batch inference is disabled.", 503)
                 if self.admitted or (self.inference.pending and not self.inference.pending.done()):
                     raise ServiceError("SERVICE_BUSY", "The inference slot is occupied.", 429)
                 self.admitted = owns_slot = True
                 size = headers.get("content-length")
-                if size and (not size.isdecimal() or int(size) > self.settings.max_upload_bytes + 65536):
+                if size and (not size.isdecimal() or int(size) > body_limit):
                     raise ServiceError("PAYLOAD_TOO_LARGE", "Request exceeds the body limit.", 413)
-            await asyncio.wait_for(self.app(scope, bounded_receive, send_headers), self.settings.request_timeout_seconds)
+            await asyncio.wait_for(self.app(scope, bounded_receive, send_headers), deadline)
         except ServiceError as failure:
             error = failure
         except TimeoutError:
@@ -76,6 +85,6 @@ class RequestControls:
                 self.admitted = False
         if error and not response_started:
             await error_response(error, request_id)(scope, receive, send_headers)
-        path = scope["path"] if scope["path"] in {"/health", "/api/v1/readiness", "/api/v1/ocr-text"} else "unmatched"
+        path = scope["path"] if scope["path"] in {"/health", "/api/v1/readiness", "/api/v1/ocr-text", "/api/v1/ocr-text-batches"} else "unmatched"
         logging.getLogger("openthai").info("request_id=%s path=%s status=%s duration_ms=%.1f", request_id,
                                          path, status, (time.perf_counter()-started)*1000)
