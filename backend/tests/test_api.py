@@ -244,10 +244,15 @@ def test_auto_roi_and_failure_do_not_block_manual(client, case, document, gatewa
     )
     result = client.post(f"/api/documents/{document['id']}/auto-rois", json={}).json()
     assert result["regions"][0]["roi"] == {"x1": 10, "y1": 20, "x2": 291, "y2": 100}
-    assert calls[-1].url.path == "/api/v1/document-layouts"
+    assert calls[-1].url.path == "/api/v1/layout-predictions"
     from tests.test_gateway_and_fairness import multipart
 
-    assert multipart(calls[-1])["expand_text_rois"] == b"false"
+    parts = multipart(calls[-1])
+    assert calls[-1].method == "POST"
+    assert set(parts) == {"image", "auto_roi_mode", "expand_text_rois"}
+    assert parts["image"].startswith(b"\x89PNG\r\n\x1a\n")
+    assert parts["auto_roi_mode"] == b"text-line"
+    assert parts["expand_text_rois"] == b"false"
     behavior["handler"] = lambda request: httpx.Response(
         503, json={"error": {"code": "UNAVAILABLE"}}
     )
