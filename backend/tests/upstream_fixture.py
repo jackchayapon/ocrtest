@@ -23,7 +23,7 @@ def response(request):
             }, "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
         return httpx.Response(200, json={"data": {"results": [{"text": TEXT, "confidence": 0.97} for _ in range(count)], "count": count},
                                         "meta": {"request_id": "fixture-rec", "duration_ms": 20, "service": "test-only-upstream"}})
-    if request.url.path.endswith("document-layouts"):
+    if request.url.path.endswith("layout-predictions"):
         from tests.test_gateway_and_fairness import multipart
 
         if multipart(request).get("auto_roi_mode") == b"layout":

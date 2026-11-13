@@ -80,8 +80,8 @@ def test_independent_prefixes_and_legacy_database_paths(settings, png):
 
     assert request("paddle")["url"] == "https://gateway.example/paddle/api/v1/ocr-results"
     assert request("custom")["url"] == "https://gateway.example/api/v1/ocr-results"
-    assert client.resolve_endpoint("/api/v1/document-layouts", "layout").endswith(
-        "/api/v1/document-layouts"
+    assert client.resolve_endpoint("/api/v1/layout-predictions", "layout").endswith(
+        "/api/v1/layout-predictions"
     )
     batch = client.build_batch_request(
         pngs=[png, png], endpoint="/api/v1/text-detection-batches", version=6, request_id="det"
@@ -89,6 +89,34 @@ def test_independent_prefixes_and_legacy_database_paths(settings, png):
     assert batch["params"] == {"version": "6"}
     assert batch["url"] == "https://gateway.example/api/v1/text-detection-batches"
     assert [part[1][1] for part in batch["files"]] == [png, png]
+
+
+@pytest.mark.parametrize("base", ["https://gateway.example/paddle", "https://gateway.example/paddle/api/v1"])
+@pytest.mark.parametrize("path", ["/api/v1/layout-predictions", "/paddle/api/v1/layout-predictions"])
+def test_layout_predictions_use_layout_prefix_once(settings, png, base, path):
+    settings.model_gateway_base_url = base
+    settings.model_gateway_service_prefixes = {"layout": "/paddle/api/v1", "det_rec": "/rec/api/v1"}
+    client = ModelGatewayClient(settings)
+    request = client.build_request(png=png, endpoint=path, query_params={},
+                                   fields={"auto_roi_mode": "text-line", "expand_text_rois": False},
+                                   request_id="layout-route")
+    assert request["url"] == "https://gateway.example/paddle/api/v1/layout-predictions"
+    assert client.service_for(request["url"], {}) == "layout"
+    assert set(request["files"]) == {"image"}
+    assert request["files"]["image"][1] == png
+    assert request["data"] == {"auto_roi_mode": "text-line", "expand_text_rois": "false"}
+
+
+def test_layout_predictions_honor_independent_or_disabled_service(settings, png):
+    settings.model_gateway_base_url = "https://gateway.example/paddle"
+    settings.model_gateway_service_prefixes = {"layout": "/layout/api/v1", "det_rec": "/rec/api/v1"}
+    client = ModelGatewayClient(settings)
+    arguments = dict(png=png, endpoint="/api/v1/layout-predictions", query_params={}, fields={}, request_id="layout")
+    assert client.build_request(**arguments)["url"] == "https://gateway.example/layout/api/v1/layout-predictions"
+    settings.model_gateway_service_prefixes["layout"] = None
+    with pytest.raises(GatewayError) as error:
+        client.build_request(**arguments)
+    assert error.value.code == "GATEWAY_SERVICE_UNAVAILABLE"
 
 
 @pytest.mark.parametrize(

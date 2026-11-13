@@ -164,7 +164,7 @@ class ModelGatewayClient:
         path = urlsplit(str(endpoint)).path
         if path.endswith(("/health", "/readiness")):
             return "status"
-        if path.endswith("/document-layouts"):
+        if path.endswith(("/document-layouts", "/layout-predictions")):
             return "layout"
         return {"paddle": "paddle", "custom": "custom"}.get(params.get("engine"), "det_rec")
 

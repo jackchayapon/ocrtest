@@ -37,6 +37,31 @@ def is_text_region(region, *, text_only=False):
     return text_only or any(isinstance(region.get(key), str) and region[key].strip() for key in ("text", "rec_text"))
 
 
+def layout_prediction_response(data):
+    """Adapt the verified single-image layout model body to existing ROI parsing."""
+    if isinstance(data, dict):
+        return data
+    message = "Auto ROI returned an unsupported response. Manual selection remains available."
+    if (not isinstance(data, list) or len(data) != 1 or not isinstance(data[0], dict)
+            or not isinstance(data[0].get("boxes"), list)):
+        raise AppError(message, 502)
+    regions = []
+    for box in data[0]["boxes"][:1000]:
+        if not isinstance(box, dict):
+            raise AppError(message, 502)
+        coordinates = box.get("coordinate")
+        label = box.get("label")
+        if (not isinstance(coordinates, list) or len(coordinates) != 4
+                or any(isinstance(value, bool) or not isinstance(value, (int, float))
+                       or not math.isfinite(value) for value in coordinates)
+                or coordinates[0] >= coordinates[2] or coordinates[1] >= coordinates[3]
+                or not isinstance(label, str) or not label.strip()):
+            raise AppError(message, 502)
+        regions.append({"bbox": coordinates, "label": label, "score": box.get("score"),
+                        "source": "layout-predictions"})
+    return {"regions": regions}
+
+
 class AutoROIService:
     def __init__(self, session, settings, storage):
         self.repository = BenchmarkRepository(session)
@@ -51,7 +76,7 @@ class AutoROIService:
             payload = await self.gateway.send(
                 self.gateway.build_request(
                     png=png,
-                    endpoint="/api/v1/document-layouts",
+                    endpoint="/api/v1/layout-predictions",
                     query_params={},
                     fields=data.model_dump(exclude={"page_number"}),
                     request_id=f"roi_{uuid4().hex}",
@@ -61,12 +86,7 @@ class AutoROIService:
             raise AppError(
                 f"Auto ROI is unavailable: {exc}. Draw a region manually to continue.", 503
             ) from None
-        result = payload["data"]
-        if not isinstance(result, dict):
-            raise AppError(
-                "Auto ROI returned an unsupported response. Manual selection remains available.",
-                502,
-            )
+        result = layout_prediction_response(payload["data"])
         suggestions = []
         regions = result.get("regions", result.get("text_lines", []))
         if not isinstance(regions, list):
