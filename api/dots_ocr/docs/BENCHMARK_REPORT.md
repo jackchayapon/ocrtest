@@ -57,8 +57,8 @@ Each model has6,078,431,736safetensors bytes (verified hashes). Downloaded snaps
 
 |Docker profile|Docker-reported image Size bytes|Apparent root filesystem bytes without weights|
 |---|---:|---:|
-|ocrlab-dots:cpu-test|372210586|1299588797|
-|ocrlab-dots:vllm-test|9314247150|20897679127|
+|ocrlab-dots:cpu-test|372210562|1299588564|
+|ocrlab-dots:vllm-test|9314247130|20897678894|
 
 Apparent filesystem size was measured with `du -sbx /` in an unmounted container. Add the chosen6.09GB snapshot to that profile's installed filesystem footprint; this is NOT host incremental/VHD disk allocation. Shared image layers and separate model snapshots are distinct. Two model downloads, caches and testing images consumed local disk; no models/environments are committed.
 

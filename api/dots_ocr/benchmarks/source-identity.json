@@ -1,0 +1,28 @@
+{
+  "changes": [
+    {
+      "profile": "ocr-final",
+      "file": "app/prompt.py",
+      "difference": "CRLF vs LF only; original raw hash retained"
+    },
+    {
+      "profile": "ocr-final",
+      "file": "model-manifest.json",
+      "difference": "CRLF vs LF only; original raw hash retained"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "file": "app/prompt.py",
+      "difference": "CRLF vs LF only; original raw hash retained"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "file": "model-manifest.json",
+      "difference": "CRLF vs LF only; original raw hash retained"
+    }
+  ],
+  "prompt_ast_unchanged": true,
+  "other_application_bytes_unchanged": true,
+  "raw_benchmark_hashes_preserved": true,
+  "parsed_model_manifest_unchanged": true
+}

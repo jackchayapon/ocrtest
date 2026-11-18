@@ -29,10 +29,16 @@ def main():
         )
         verification = json.loads((directory / "verification.json").read_text())
         assert verification["status"] == "PASS"
+        source_hashes = report.get(
+            "source_canonical_lf_sha256", report["source_sha256"]
+        )
         mismatches = [
             name
-            for name, value in report["source_sha256"].items()
-            if hashlib.sha256((ROOT / name).read_bytes()).hexdigest() != value
+            for name, value in source_hashes.items()
+            if hashlib.sha256(
+                (ROOT / name).read_bytes().replace(b"\r\n", b"\n")
+            ).hexdigest()
+            != value
         ]
         assert not mismatches, mismatches
         profile = {

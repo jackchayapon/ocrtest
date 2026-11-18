@@ -1,19 +1,19 @@
 {
   "checks": [
     {
-      "name": "pytest",
+      "name": "pytest-normalized",
       "exit_code": 0
     },
     {
-      "name": "ruff",
+      "name": "ruff-normalized",
       "exit_code": 0
     },
     {
-      "name": "ruff-format",
+      "name": "format-normalized",
       "exit_code": 0
     },
     {
-      "name": "compile",
+      "name": "compile-normalized",
       "exit_code": 0
     },
     {
@@ -25,7 +25,7 @@
       "exit_code": 0
     },
     {
-      "name": "summarize",
+      "name": "summarize-normalized",
       "exit_code": 0
     }
   ],
@@ -43,7 +43,7 @@
     "app/inference.py": "db4635936b39a5a121a3509f5730632b50ee448aad851439f3c307d9848dfff7",
     "app/integrity.py": "e3212ed894dc8cfe2236aa0150b0dca4029f16af9ca7a9842361ee1a360897ab",
     "app/main.py": "3df7442eec074c04a2c5213808a9aa3e197d92097bd716edbf766695dc478998",
-    "app/prompt.py": "e5dbe7d6546d5a493ccb65eec161c3351eb041a812d12c61b1be75b3b17a82b7",
+    "app/prompt.py": "10c2e46688ae7b7988eb214eadb75fb57144ec88a89a4edd74951af04db19a4b",
     "app/schemas.py": "b1c02a1a25b7e90d23befb16705cedc46c460a05fcab8a56d3780af3a5a183fe",
     "app/security.py": "47458e4dbb751f29e649ef925c01c51362e0994aaa9075cddb51bf5d3420474b",
     "app/__init__.py": "5fd8cf49767b2c071723e52f44932401f632b687b7c0a07e1c1b8cc45afa3be2",
@@ -55,7 +55,7 @@
     "scripts/download_models.py": "16c9150ff7906be507503382b60358d378229ebaee99bda3c2b0e1d6a69a5836",
     "scripts/generate_fixtures.py": "0b62ee068293b2e63fca5de92b7858b86c713238806d14ab443d503932ab8557",
     "scripts/profile_load.py": "e4ca2b5567e5342fadba9dbf86f7c0ed0a8d217656d6e49ec75f2b055d45d46d",
-    "scripts/summarize_results.py": "7f94f1c144154b153ac002b5ceca6da6c86ce1719216a9d8875c034fee990258",
+    "scripts/summarize_results.py": "a7f76ecc819b7efef034b56b7c71b500050f980bade847d0c0cf612d3b329adf",
     "scripts/verify_responses.py": "c728d3bd681e2decf1445305294cecd700049b0a873fc6540048f15aadefdab4"
   },
   "pytest": {
@@ -63,5 +63,7 @@
     "failures": 0,
     "errors": 0,
     "skipped": 0
-  }
+  },
+  "source_identity": "Final LF working files; historical benchmark raw hashes retained with canonical LF equivalence",
+  "broken_document_links": []
 }
