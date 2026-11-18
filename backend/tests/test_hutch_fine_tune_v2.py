@@ -48,6 +48,31 @@ def test_rec_only_exact_crop_contract_normalization_and_raw_metadata(settings, g
     assert result.diagnostics["gateway_duration_ms"] == 12
 
 
+@pytest.mark.parametrize("text,score", [("", 0.0), ("direct REC", 0.91)])
+def test_rec_only_direct_data_array(settings, gateway, png, text, score):
+    payload = {"data": [{"input_path": "/tmp/crop.png", "page_index": None,
+                         "rec_text": text, "rec_score": score,
+                         "vis_font": {"_local_path": None, "_font_name": "simfang.ttf"}}],
+               "meta": {"request_id": "direct-rec", "duration_ms": 2687.26, "inference_ms": 33.71}}
+    gateway[0]["handler"] = lambda r: httpx.Response(200, json=payload)
+    config = PipelineConfig(pipeline_id=SLUG, enabled=True)
+    with ImageService.open(png) as original:
+        crop = ImageService(settings).canonical_crop(original, None)
+        result = asyncio.run(HutchFineTuneV2PipelineAdapter(config, settings).run(cropped_image=crop))
+    assert result.final_text == text
+    assert result.confidence == score
+    assert result.raw_response == payload
+
+
+@pytest.mark.parametrize("data", [[], [{"rec_text": None}], ["invalid"],
+                                  [{"rec_text": "a"}, {"rec_text": "b"}]])
+def test_direct_rec_rejects_invalid_results(data):
+    from app.pipelines.normalizers import recognition_items
+
+    with pytest.raises(GatewayError):
+        recognition_items(data, 1)
+
+
 def test_requires_prebuilt_crop(settings):
     adapter = HutchFineTuneV2PipelineAdapter(PipelineConfig(pipeline_id=SLUG, enabled=True), settings)
     with pytest.raises(GatewayError):

@@ -189,10 +189,11 @@ class PaddleResultNormalizer:
 
 def recognition_items(data, count):
     """Shared verified batch REC parser; retain upstream order and raw payload elsewhere."""
-    items = data.get("results") if isinstance(data, dict) else None
-    if not isinstance(items, list) or len(items) != count or data.get("count") != count:
+    direct = isinstance(data, list)
+    items = data if direct else data.get("results") if isinstance(data, dict) else None
+    if not isinstance(items, list) or len(items) != count or (not direct and data.get("count") != count):
         raise GatewayError("Recognition result count does not match line crops", "INVALID_OCR_RESPONSE")
-    leaf = data.get("contract_version") == "leaf-inference-v1" and data.get("kind") == "text_recognition_batch"
+    leaf = direct or (data.get("contract_version") == "leaf-inference-v1" and data.get("kind") == "text_recognition_batch")
     result = []
     for item in items:
         if not isinstance(item, dict):

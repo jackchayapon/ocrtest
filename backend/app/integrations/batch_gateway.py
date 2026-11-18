@@ -52,11 +52,12 @@ class BatchGateway:
                 for owner in {owner for owner, _ in chunk}:
                     request_ids[owner].append(upstream_id)
                 data = response.get("data", {})
-                if not isinstance(data, dict):
+                direct = isinstance(data, list)
+                if not isinstance(data, (dict, list)):
                     raise GatewayError("Invalid batch response data", "INVALID_OCR_RESPONSE", request_id=upstream_id, http_status=200)
-                nested = isinstance(data.get("result"), dict)
-                items = data["result"].get("results") if nested else data.get("results")
-                if not isinstance(items, list) or len(items) != len(chunk) or data.get("count") != len(chunk):
+                nested = not direct and isinstance(data.get("result"), dict)
+                items = data if direct else data["result"].get("results") if nested else data.get("results")
+                if not isinstance(items, list) or len(items) != len(chunk) or (not direct and data.get("count") != len(chunk)):
                     raise GatewayError("Batch result count does not match input images", "INVALID_OCR_RESPONSE", request_id=upstream_id, http_status=200)
                 template = response
                 value = response.get("meta", {}).get("duration_ms")
@@ -71,14 +72,14 @@ class BatchGateway:
                 response = {
                     "meta": deepcopy(template["meta"]),
                     "data": {
-                        k: deepcopy(v) for k, v in template["data"].items()
+                        k: deepcopy(v) for k, v in (template["data"].items() if isinstance(template["data"], dict) else ())
                         if k not in {"result", "results", "predictions", "raw_output"}
                     },
                 }
                 data = response["data"]
                 data["count"] = len(collected[index])
                 owned = deepcopy(collected[index])
-                if isinstance(template["data"].get("result"), dict):
+                if isinstance(template["data"], dict) and isinstance(template["data"].get("result"), dict):
                     data["result"] = {
                         k: deepcopy(v) for k, v in template["data"]["result"].items()
                         if k != "results"
@@ -89,6 +90,8 @@ class BatchGateway:
                 data["results"] = owned
                 if "predictions" in template["data"]:
                     data["predictions"] = owned
+                if isinstance(template["data"], list):
+                    response["data"] = owned
                 response["meta"]["duration_ms"] = duration / len(entries) if duration_known else None
                 response["meta"]["combined_input_count"] = len(flat)
                 response["meta"]["batch_request_ids"] = request_ids[index]
