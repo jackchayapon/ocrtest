@@ -68,11 +68,15 @@ def execute(settings, *, roi=None, cfg=None):
         return result, crop
 
 
-def test_verified_contract_chaining_order_crop_and_traces(settings, gateway):
+@pytest.mark.parametrize("direct", [False, True])
+def test_verified_contract_chaining_order_crop_and_traces(settings, gateway, direct):
     det, rec = fixtures()
+    det_payload = {**det, "data": det["data"]["result"]["results"]} if direct else det
+    rec_payload = {**rec, "data": [{"rec_text": row["text"], "rec_score": row["confidence"]}
+                                  for row in rec["data"]["results"]]} if direct else rec
 
     def handler(request):
-        return httpx.Response(200, json=det if request.url.path == DETECTION_ENDPOINT else rec)
+        return httpx.Response(200, json=det_payload if request.url.path == DETECTION_ENDPOINT else rec_payload)
 
     gateway[0]["handler"] = handler
     result, crop = execute(
@@ -109,12 +113,26 @@ def test_verified_contract_chaining_order_crop_and_traces(settings, gateway):
     assert result.raw_response["recognition_batches"][0]["meta"] == rec["meta"]
 
 
-def test_empty_detection_skips_recognition_and_has_no_fabricated_confidence(settings, gateway):
+@pytest.mark.parametrize("direct", [False, True])
+def test_empty_detection_skips_recognition_and_has_no_fabricated_confidence(settings, gateway, direct):
     det, _ = fixtures()
     det["data"]["result"]["results"][0] = {"dt_polys": [], "dt_scores": []}
+    if direct:
+        det["data"] = det["data"]["result"]["results"]
     gateway[0]["handler"] = lambda request: httpx.Response(200, json=det)
     result, _ = execute(settings)
     assert result.raw_text == "" and result.boxes == [] and result.confidence is None
+    assert len(gateway[1]) == 1
+
+
+@pytest.mark.parametrize("data", [[], [{"dt_polys": []}] * 2, [None],
+                                  [{"dt_polys": None}],
+                                  [{"dt_polys": [], "dt_scores": [0.9]}]])
+def test_invalid_direct_detection_rejected_before_recognition(settings, gateway, data):
+    gateway[0]["handler"] = lambda request: httpx.Response(200, json={"data": data, "meta": {}})
+    with pytest.raises(GatewayError) as error:
+        execute(settings)
+    assert error.value.code == "INVALID_OCR_RESPONSE"
     assert len(gateway[1]) == 1
 
 

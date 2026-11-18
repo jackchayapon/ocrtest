@@ -105,20 +105,22 @@ class BenchmarkPipelineAdapter(CropInputAdapter):
         self.failure_stage = "detection_contract"
         self.diagnostics["gateway_request_id"] = detection.get("meta", {}).get("request_id")
         data = detection["data"]
-        if (
+        direct = isinstance(data, list)
+        if not direct and (
             not isinstance(data, dict)
             or data.get("kind") != "text_detection_batch"
             or data.get("contract_version") != "leaf-inference-v1"
         ):
             raise invalid("Unexpected detection batch contract")
         results = (
+            data if direct else
             data.get("result", {}).get("results") if isinstance(data.get("result"), dict) else None
         )
         if (
             not isinstance(results, list)
             or len(results) != 1
             or not isinstance(results[0], dict)
-            or data.get("count") != 1
+            or (not direct and data.get("count") != 1)
         ):
             raise invalid("Detection result count does not match the input batch")
         polygons = results[0].get("dt_polys")

@@ -6,7 +6,7 @@ from tests.test_global_layout import layout
 
 
 @pytest.mark.parametrize("mode", ["det_rec", "rec"])
-@pytest.mark.parametrize("contract", ["legacy", "leaf_aliases", "direct"])
+@pytest.mark.parametrize("contract", ["legacy", "leaf_aliases", "direct", "direct_det_rec"])
 def test_global_crops_are_batched_and_results_keep_field_identity(client, document, gateway, mode, contract):
     # This test deliberately exercises a single 3-image batch; defaults are tested separately.
     client.app.state.settings.ocr_max_concurrent_fields = 3
@@ -33,7 +33,9 @@ def test_global_crops_are_batched_and_results_keep_field_identity(client, docume
             items = data["result"]["results"] if detection else [{"rec_text": f"field-{i}", "rec_score": .9} for i in range(count)]
             data = {"contract_version": "leaf-inference-v1", "kind": "text_detection_batch" if detection else "text_recognition_batch", "count": count,
                     "result": {"results": items}, "results": items, "predictions": items, "raw_output": items}
-        if contract == "direct" and "detection" not in request.url.path:
+        if contract == "direct_det_rec" and "detection" in request.url.path:
+            data = data["result"]["results"]
+        if contract in {"direct", "direct_det_rec"} and "detection" not in request.url.path:
             data = [{"rec_text": f"field-{i}", "rec_score": .9} for i in range(count)]
         return httpx.Response(200, json={"data": data, "meta": {"duration_ms": 90}})
 
