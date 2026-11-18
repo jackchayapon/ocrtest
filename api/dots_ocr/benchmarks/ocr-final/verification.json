@@ -1,0 +1,6 @@
+{
+  "status": "PASS",
+  "requests": 37,
+  "data_and_element_checks": 112,
+  "scope": "Saved real synthetic HTTP artifacts, not OCR accuracy/capacity proof"
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "image": "ocrlab-dots:cpu-test",
+    "id": "sha256:465da77de5a94f8e77f02de1f8876aa30e0b44d87c259a35e3724ad2ca1f8050",
+    "logical_image_size_bytes": 372210586,
+    "root_apparent_bytes_without_models": 1299588797,
+    "du_exit_code": 0,
+    "measurement_note": "Docker-reported image Size plus apparent root filesystem bytes; shared layers, host VHD allocation and installed model snapshots are different metrics."
+  },
+  {
+    "image": "ocrlab-dots:vllm-test",
+    "id": "sha256:5f54fba5cdf00f737bbd1ecb225e6d438f4f1668524e7f9c41408a374ba5240a",
+    "logical_image_size_bytes": 9314247150,
+    "root_apparent_bytes_without_models": 20897679127,
+    "du_exit_code": 0,
+    "measurement_note": "Docker-reported image Size plus apparent root filesystem bytes; shared layers, host VHD allocation and installed model snapshots are different metrics."
+  }
+]

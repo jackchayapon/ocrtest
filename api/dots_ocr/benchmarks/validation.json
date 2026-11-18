@@ -1,0 +1,67 @@
+{
+  "checks": [
+    {
+      "name": "pytest",
+      "exit_code": 0
+    },
+    {
+      "name": "ruff",
+      "exit_code": 0
+    },
+    {
+      "name": "ruff-format",
+      "exit_code": 0
+    },
+    {
+      "name": "compile",
+      "exit_code": 0
+    },
+    {
+      "name": "verify-ocr",
+      "exit_code": 0
+    },
+    {
+      "name": "verify-mocr",
+      "exit_code": 0
+    },
+    {
+      "name": "summarize",
+      "exit_code": 0
+    }
+  ],
+  "pytest_passed": 56,
+  "docker_contract_passed": 56,
+  "scan_files": 148,
+  "scope_violations": [],
+  "private_runtime_files_included": false,
+  "real_model_http_requests": 74,
+  "real_model_preflight_busy_http_calls": 4,
+  "source_and_test_sha256": {
+    "app/batch.py": "d8aa26552006d97a89963ee10ac8aa7bfef8bcab4d2a8cb02a1c648a7e8feb26",
+    "app/config.py": "ca7a17ee73cbb7b36f299a4eecef4a4dedd9fc0277178107d4d1025f2688f5d1",
+    "app/errors.py": "cd03da56f1d902d1254b9519580016783882de51271cd324161af73bf5dabf9c",
+    "app/inference.py": "db4635936b39a5a121a3509f5730632b50ee448aad851439f3c307d9848dfff7",
+    "app/integrity.py": "e3212ed894dc8cfe2236aa0150b0dca4029f16af9ca7a9842361ee1a360897ab",
+    "app/main.py": "3df7442eec074c04a2c5213808a9aa3e197d92097bd716edbf766695dc478998",
+    "app/prompt.py": "e5dbe7d6546d5a493ccb65eec161c3351eb041a812d12c61b1be75b3b17a82b7",
+    "app/schemas.py": "b1c02a1a25b7e90d23befb16705cedc46c460a05fcab8a56d3780af3a5a183fe",
+    "app/security.py": "47458e4dbb751f29e649ef925c01c51362e0994aaa9075cddb51bf5d3420474b",
+    "app/__init__.py": "5fd8cf49767b2c071723e52f44932401f632b687b7c0a07e1c1b8cc45afa3be2",
+    "tests/conftest.py": "bc432b5e8e9fa6dacfa45db8fc804f333e8d8c68df663689c672d7e1abbe3b99",
+    "tests/test_contract.py": "80e08474341f987118b69e20888943f37015fddbc35bcde9583ecd908c53db44",
+    "tests/test_lifecycle.py": "85d05fb0ce84ac67430d6c171918bd5e0fdda123f55222ca8906519a9e390194",
+    "tests/test_limits.py": "bd1b71f55139155288a8c4826dc5cbc95cd2325d1b996a62bae26a81840e636f",
+    "scripts/benchmark.py": "ac4b0078e51af7bd6c04b3c121484453a74a1b6b702b7be667952ad35aa4ba35",
+    "scripts/download_models.py": "16c9150ff7906be507503382b60358d378229ebaee99bda3c2b0e1d6a69a5836",
+    "scripts/generate_fixtures.py": "0b62ee068293b2e63fca5de92b7858b86c713238806d14ab443d503932ab8557",
+    "scripts/profile_load.py": "e4ca2b5567e5342fadba9dbf86f7c0ed0a8d217656d6e49ec75f2b055d45d46d",
+    "scripts/summarize_results.py": "7f94f1c144154b153ac002b5ceca6da6c86ce1719216a9d8875c034fee990258",
+    "scripts/verify_responses.py": "c728d3bd681e2decf1445305294cecd700049b0a873fc6540048f15aadefdab4"
+  },
+  "pytest": {
+    "tests": 56,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

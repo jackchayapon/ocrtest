@@ -1,0 +1,765 @@
+{
+  "evidence_type": "MEASURED_LOCAL_SYNTHETIC",
+  "hardware": {
+    "observed_at": "2026-11-19T02:01:01.6427781+07:00",
+    "cpu": "13th Gen Intel(R) Core(TM) i7-13700K",
+    "physical_cores": 16,
+    "logical_cores": 24,
+    "os": "Microsoft Windows 10 Pro",
+    "os_version": "10.0.19045",
+    "ram_total_bytes": 34111770624,
+    "ram_available_bytes": 8216489984,
+    "gpu_csv": "NVIDIA GeForce RTX 4070, 581.80, 12282, 9304",
+    "disk_free_bytes": 55566209024,
+    "shared_machine": true
+  },
+  "profiles": [
+    {
+      "profile": "ocr-final",
+      "model": "dots-studio/dots.ocr",
+      "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+      "machine": {
+        "os": "Windows-10-10.0.19045-SP0",
+        "python": "3.12.10",
+        "cpu_logical": 24,
+        "ram_total_bytes": 34111770624,
+        "torch": "2.5.1+cu121",
+        "cuda": "12.1",
+        "transformers": "4.51.3",
+        "gpu": "NVIDIA GeForce RTX 4070"
+      },
+      "load_seconds": 13.046999999787658,
+      "resources": {
+        "sampled_process_peak_rss_bytes": 5021184000,
+        "sampled_host_used_ram_peak_bytes": 31398006784,
+        "sampled_cpu_percent_peak": 615.0,
+        "sampled_device_used_vram_peak_mib": 9228.0,
+        "sampled_device_gpu_utilization_peak_percent": 99.0
+      },
+      "cgroup": null,
+      "requests": 37,
+      "verification": {
+        "status": "PASS",
+        "requests": 37,
+        "data_and_element_checks": 112,
+        "scope": "Saved real synthetic HTTP artifacts, not OCR accuracy/capacity proof"
+      },
+      "resolution_latency": [
+        {
+          "fixture": "resolution_small",
+          "n": 3,
+          "p50_seconds": 1.1409999998286366,
+          "p95_nearest_rank_seconds": 1.2340000001713634
+        },
+        {
+          "fixture": "resolution_medium",
+          "n": 3,
+          "p50_seconds": 1.328999999910593,
+          "p95_nearest_rank_seconds": 1.3590000001713634
+        },
+        {
+          "fixture": "resolution_large",
+          "n": 3,
+          "p50_seconds": 2.3130000000819564,
+          "p95_nearest_rank_seconds": 2.375
+        }
+      ],
+      "batch_latency": [
+        {
+          "images": 1,
+          "latency_seconds": 2.0469999997876585,
+          "images_per_second": 0.48851978510197025,
+          "single_equivalence": true
+        },
+        {
+          "images": 2,
+          "latency_seconds": 5.342999999877065,
+          "images_per_second": 0.3743215422133665,
+          "single_equivalence": true
+        },
+        {
+          "images": 4,
+          "latency_seconds": 12.266000000294298,
+          "images_per_second": 0.32610467959432804,
+          "single_equivalence": true
+        },
+        {
+          "images": 8,
+          "latency_seconds": 12.703000000212342,
+          "images_per_second": 0.6297724946757673,
+          "single_equivalence": true
+        }
+      ],
+      "source_hashes_match": true
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "model": "dots-studio/dots.mocr",
+      "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+      "machine": {
+        "os": "Linux-6.18.58.1-microsoft-standard-WSL2-x86_64-with-glibc2.35",
+        "python": "3.12.13",
+        "cpu_logical": 24,
+        "ram_total_bytes": 16641896448,
+        "torch": "2.10.0+cu129",
+        "cuda": "12.9",
+        "transformers": "4.57.6",
+        "gpu": "NVIDIA GeForce RTX 4070"
+      },
+      "load_seconds": 99.84455764900008,
+      "resources": {
+        "sampled_process_peak_rss_bytes": 1510055936,
+        "sampled_host_used_ram_peak_bytes": 4149915648,
+        "sampled_cpu_percent_peak": 374.3,
+        "sampled_device_used_vram_peak_mib": 11290.0,
+        "sampled_device_gpu_utilization_peak_percent": 99.0
+      },
+      "cgroup": {
+        "memory.current": "3571486720\n",
+        "memory.peak": "6442450944\n",
+        "memory.events": "low 0\nhigh 0\nmax 22727\noom 0\noom_kill 0\noom_group_kill 0\n",
+        "memory.stat": "anon 1092907008\nfile 2423881728\nkernel 51236864\nkernel_stack 1163264\npagetables 5099520\nsec_pagetables 0\npercpu 10504\nsock 0\nvmalloc 12288\nshmem 85987328\nfile_mapped 394506240\nfile_dirty 0\nfile_writeback 0\nswapcached 0\nanon_thp 0\nfile_thp 247463936\nshmem_thp 0\ninactive_anon 1092894720\nactive_anon 85999616\ninactive_file 1649127424\nactive_file 688652288\nunevictable 0\nslab_reclaimable 43530936\nslab_unreclaimable 1372040\nslab 44902976\nworkingset_refault_anon 0\nworkingset_refault_file 182970\nworkingset_activate_anon 0\nworkingset_activate_file 0\nworkingset_restore_anon 0\nworkingset_restore_file 0\nworkingset_nodereclaim 0\npgdemote_kswapd 0\npgdemote_direct 0\npgdemote_khugepaged 0\npgdemote_proactive 0\npgscan 1739366\npgsteal 746699\npswpin 0\npswpout 0\npgscan_kswapd 0\npgscan_direct 1739366\npgscan_khugepaged 0\npgscan_proactive 0\npgsteal_kswapd 0\npgsteal_direct 746699\npgsteal_khugepaged 0\npgsteal_proactive 0\npgfault 1196015\npgmajfault 6789\npgrefill 0\npgactivate 184184\npgdeactivate 0\npglazyfree 0\npglazyfreed 0\nswpin_zero 0\nswpout_zero 0\nthp_fault_alloc 0\nthp_collapse_alloc 0\nthp_swpout 0\nthp_swpout_fallback 0\n",
+        "memory.max": "6442450944\n"
+      },
+      "requests": 37,
+      "verification": {
+        "status": "PASS",
+        "requests": 37,
+        "data_and_element_checks": 132,
+        "scope": "Saved real synthetic HTTP artifacts, not OCR accuracy/capacity proof"
+      },
+      "resolution_latency": [
+        {
+          "fixture": "resolution_small",
+          "n": 3,
+          "p50_seconds": 0.5347207499999058,
+          "p95_nearest_rank_seconds": 0.5649609439999494
+        },
+        {
+          "fixture": "resolution_medium",
+          "n": 3,
+          "p50_seconds": 0.48660513199979505,
+          "p95_nearest_rank_seconds": 0.5434986540001319
+        },
+        {
+          "fixture": "resolution_large",
+          "n": 3,
+          "p50_seconds": 0.4630246450001323,
+          "p95_nearest_rank_seconds": 0.5325784520000525
+        }
+      ],
+      "batch_latency": [
+        {
+          "images": 1,
+          "latency_seconds": 0.853850760999876,
+          "images_per_second": 1.1711648518401276,
+          "single_equivalence": true
+        },
+        {
+          "images": 2,
+          "latency_seconds": 1.862009179000097,
+          "images_per_second": 1.0741085610942072,
+          "single_equivalence": true
+        },
+        {
+          "images": 4,
+          "latency_seconds": 3.9198031210000863,
+          "images_per_second": 1.0204594150584412,
+          "single_equivalence": true
+        },
+        {
+          "images": 8,
+          "latency_seconds": 7.46475349100001,
+          "images_per_second": 1.0717031727364228,
+          "single_equivalence": true
+        }
+      ],
+      "source_hashes_match": true
+    }
+  ],
+  "capabilities": [
+    {
+      "profile": "ocr-final",
+      "fixture": "english",
+      "category": "english",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-english.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "thai",
+      "category": "thai",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-thai.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "mixed",
+      "category": "mixed",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-mixed.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "english_jpeg",
+      "category": "english",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-english_jpeg.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "english_webp",
+      "category": "english",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-english_webp.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "crop",
+      "category": "crop",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-crop.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "rotated",
+      "category": "rotated_90",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-rotated.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "skewed",
+      "category": "skewed_6_degrees",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-skewed.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "blurred",
+      "category": "blur_low_resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-blurred.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "blank",
+      "category": "blank",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 1,
+      "categories": [
+        "Picture"
+      ],
+      "evidence": "ocr-final/response-blank.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "resolution_small",
+      "category": "resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-resolution_small.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "resolution_medium",
+      "category": "resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "ocr-final/response-resolution_medium.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "resolution_large",
+      "category": "resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Page-header"
+      ],
+      "evidence": "ocr-final/response-resolution_large.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "full_page",
+      "category": "full_page",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Section-header",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-full_page.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "table",
+      "category": "table",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Table"
+      ],
+      "evidence": "ocr-final/response-table.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "complex_table",
+      "category": "complex_table",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Table"
+      ],
+      "evidence": "ocr-final/response-complex_table.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "invoice",
+      "category": "invoice",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-invoice.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "multicolumn",
+      "category": "multicolumn",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Section-header",
+        "Text",
+        "Text",
+        "Section-header",
+        "Text",
+        "Text"
+      ],
+      "evidence": "ocr-final/response-multicolumn.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "formula",
+      "category": "formula",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Formula",
+        "Formula"
+      ],
+      "evidence": "ocr-final/response-formula.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "chart",
+      "category": "chart",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Caption",
+        "Picture"
+      ],
+      "evidence": "ocr-final/response-chart.json"
+    },
+    {
+      "profile": "ocr-final",
+      "fixture": "corrupt",
+      "category": "corrupted",
+      "http_status": 422,
+      "expected_marker_found": null,
+      "geometry_out_of_bounds": null,
+      "categories": [],
+      "evidence": "ocr-final/response-corrupt.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "english",
+      "category": "english",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-english.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "thai",
+      "category": "thai",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-thai.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "mixed",
+      "category": "mixed",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-mixed.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "english_jpeg",
+      "category": "english",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-english_jpeg.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "english_webp",
+      "category": "english",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-english_webp.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "crop",
+      "category": "crop",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 1,
+      "categories": [
+        "Page-header",
+        "Page-header"
+      ],
+      "evidence": "mocr-vllm-final/response-crop.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "rotated",
+      "category": "rotated_90",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-rotated.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "skewed",
+      "category": "skewed_6_degrees",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-skewed.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "blurred",
+      "category": "blur_low_resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-blurred.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "blank",
+      "category": "blank",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 1,
+      "categories": [
+        "Picture"
+      ],
+      "evidence": "mocr-vllm-final/response-blank.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "resolution_small",
+      "category": "resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-resolution_small.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "resolution_medium",
+      "category": "resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-resolution_medium.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "resolution_large",
+      "category": "resolution",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-resolution_large.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "full_page",
+      "category": "full_page",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Section-header",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-full_page.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "table",
+      "category": "table",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Table"
+      ],
+      "evidence": "mocr-vllm-final/response-table.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "complex_table",
+      "category": "complex_table",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Table"
+      ],
+      "evidence": "mocr-vllm-final/response-complex_table.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "invoice",
+      "category": "invoice",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Text",
+        "Text",
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-invoice.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "multicolumn",
+      "category": "multicolumn",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Section-header",
+        "Text",
+        "Text",
+        "Section-header",
+        "Text",
+        "Text"
+      ],
+      "evidence": "mocr-vllm-final/response-multicolumn.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "formula",
+      "category": "formula",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Title",
+        "Formula",
+        "Formula"
+      ],
+      "evidence": "mocr-vllm-final/response-formula.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "chart",
+      "category": "chart",
+      "http_status": 200,
+      "expected_marker_found": true,
+      "geometry_out_of_bounds": 0,
+      "categories": [
+        "Caption",
+        "Picture"
+      ],
+      "evidence": "mocr-vllm-final/response-chart.json"
+    },
+    {
+      "profile": "mocr-vllm-final",
+      "fixture": "corrupt",
+      "category": "corrupted",
+      "http_status": 422,
+      "expected_marker_found": null,
+      "geometry_out_of_bounds": null,
+      "categories": [],
+      "evidence": "mocr-vllm-final/response-corrupt.json"
+    }
+  ],
+  "methodology": {
+    "rss_cpu_sampling_ms": 50,
+    "device_gpu_sampling_ms": 200,
+    "percentile": "nearest rank, n3 per resolution; descriptive small sample, not capacity",
+    "throughput": "images / completed sequential Batch HTTP wall time",
+    "accuracy": "limited expected-marker checks; no general OCR quality/CER claim",
+    "shared_host": true
+  },
+  "blocked_or_untested": [
+    "Native MOCR/Transformers4.51.3 processor compatibility",
+    "CPU model inference",
+    "true cache-flushed disk-cold loading",
+    "sustained dedicated-host capacity",
+    "hard native kernel hang",
+    "target CDGS server deployment"
+  ],
+  "observed_issues": [
+    "Blank images can produce out-of-frame Picture boxes; retained native, mapped box null with out_of_bounds",
+    "vLLM6GiB reaches memory.max with file-cache pressure; no OOM observed",
+    "vLLM child emits NCCL teardown warning at exit; no leftover benchmark container"
+  ],
+  "not_performed": [
+    "OCRLab integration",
+    "Production data access",
+    "CDGS changes",
+    "Railway/Vercel deployment",
+    "slides"
+  ]
+}

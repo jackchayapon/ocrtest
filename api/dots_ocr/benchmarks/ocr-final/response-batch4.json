@@ -1,0 +1,215 @@
+{
+  "data": {
+    "results": [
+      {
+        "index": 0,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "Document 123\nHello world",
+          "native_output": "[{\"bbox\": [29, 40, 207, 110], \"category\": \"Text\", \"text\": \"Document 123\\nHello world\"}]<|endofassistant|>",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "Document 123\nHello world",
+              "confidence": null,
+              "native_bbox": [
+                29.0,
+                40.0,
+                207.0,
+                110.0
+              ],
+              "bbox": [
+                28.571428571428573,
+                39.285714285714285,
+                203.9408866995074,
+                108.03571428571428
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 2422.0
+      },
+      {
+        "index": 1,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "ภาษาไทย ทดสอบเอกสาร\nกรุงเทพมหานคร 123",
+          "native_output": "[{\"bbox\": [29, 39, 322, 112], \"category\": \"Text\", \"text\": \"ภาษาไทย ทดสอบเอกสาร\\nกรุงเทพมหานคร 123\"}]<|endofassistant|>",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "ภาษาไทย ทดสอบเอกสาร\nกรุงเทพมหานคร 123",
+              "confidence": null,
+              "native_bbox": [
+                29.0,
+                39.0,
+                322.0,
+                112.0
+              ],
+              "bbox": [
+                28.571428571428573,
+                38.30357142857142,
+                317.2413793103448,
+                110.0
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 2875.0
+      },
+      {
+        "index": 2,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "ใบแจ้งหนี้ Invoice 2026\nรวม Total 250 บาท",
+          "native_output": "[{\"bbox\": [29, 39, 304, 67], \"category\": \"Text\", \"text\": \"ใบแจ้งหนี้ Invoice 2026\"}, {\"bbox\": [28, 83, 253, 110], \"category\": \"Text\", \"text\": \"รวม Total 250 บาท\"}]<|endofassistant|>",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "ใบแจ้งหนี้ Invoice 2026",
+              "confidence": null,
+              "native_bbox": [
+                29.0,
+                39.0,
+                304.0,
+                67.0
+              ],
+              "bbox": [
+                28.571428571428573,
+                38.30357142857142,
+                299.5073891625616,
+                65.80357142857143
+              ],
+              "geometry_status": "valid"
+            },
+            {
+              "index": 1,
+              "category": "Text",
+              "text": "รวม Total 250 บาท",
+              "confidence": null,
+              "native_bbox": [
+                28.0,
+                83.0,
+                253.0,
+                110.0
+              ],
+              "bbox": [
+                27.586206896551726,
+                81.51785714285714,
+                249.26108374384236,
+                108.03571428571428
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 4703.0
+      },
+      {
+        "index": 3,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "Document 123",
+          "native_output": "[{\"bbox\": [7, 15, 183, 37], \"category\": \"Text\", \"text\": \"Document 123\"}]<|endofassistant|>",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "Document 123",
+              "confidence": null,
+              "native_bbox": [
+                7.0,
+                15.0,
+                183.0,
+                37.0
+              ],
+              "bbox": [
+                7.0588235294117645,
+                18.75,
+                184.53781512605042,
+                46.25
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 480,
+            "height": 70
+          },
+          "model_image": {
+            "width": 476,
+            "height": 56
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 2250.0
+      }
+    ],
+    "count": 4,
+    "succeeded": 4,
+    "failed": 0,
+    "execution": "sequential_wrapper"
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "4f1f8975a9c4471584ccfd94a4dac661",
+    "model": "dots-studio/dots.ocr",
+    "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+    "backend": "transformers",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 12250.0
+  }
+}

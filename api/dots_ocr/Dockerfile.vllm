@@ -1,0 +1,12 @@
+# Optional isolated Linux/CUDA profile; does not alter OCRLab deployment.
+FROM vllm/vllm-openai:v0.17.1
+ENV PYTHONUNBUFFERED=1 HF_HOME=/tmp/huggingface HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 DOTS_BACKEND=vllm
+WORKDIR /service
+RUN /usr/bin/python3 -m pip install --no-cache-dir fastapi==0.121.1 uvicorn==0.38.0 pydantic-settings==2.12.0 python-multipart==0.0.20 Pillow==12.0.0 qwen-vl-utils==0.0.14 psutil==7.1.2
+COPY app/ ./app/
+COPY model-manifest.json ./
+RUN useradd --create-home --uid 10001 service
+USER 10001
+EXPOSE 8092
+ENTRYPOINT []
+CMD ["/usr/bin/python3", "-m", "app.main"]

@@ -1,0 +1,64 @@
+{
+  "data": {
+    "results": [
+      {
+        "index": 0,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "Document 123\nHello world",
+          "native_output": "[{\"bbox\": [29, 40, 207, 110], \"category\": \"Text\", \"text\": \"Document 123\\nHello world\"}]<|endofassistant|>",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "Document 123\nHello world",
+              "confidence": null,
+              "native_bbox": [
+                29.0,
+                40.0,
+                207.0,
+                110.0
+              ],
+              "bbox": [
+                28.571428571428573,
+                39.285714285714285,
+                203.9408866995074,
+                108.03571428571428
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 2047.0
+      }
+    ],
+    "count": 1,
+    "succeeded": 1,
+    "failed": 0,
+    "execution": "sequential_wrapper"
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "cf43542fa65848fabcdae1cfb2557f57",
+    "model": "dots-studio/dots.ocr",
+    "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+    "backend": "transformers",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 2047.0
+  }
+}

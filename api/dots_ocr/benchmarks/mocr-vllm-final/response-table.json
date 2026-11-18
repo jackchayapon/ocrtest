@@ -1,0 +1,52 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "<table><tr><td>Item</td><td>Quantity</td><td>Price</td></tr><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></table>",
+    "native_output": "[{\"bbox\": [30, 30, 760, 388], \"category\": \"Table\", \"text\": \"<table><tr><td>Item</td><td>Quantity</td><td>Price</td></tr><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></table>\"}]",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Table",
+        "text": "<table><tr><td>Item</td><td>Quantity</td><td>Price</td></tr><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></table>",
+        "confidence": null,
+        "native_bbox": [
+          30.0,
+          30.0,
+          760.0,
+          388.0
+        ],
+        "bbox": [
+          29.55665024630542,
+          30.133928571428573,
+          748.768472906404,
+          389.7321428571429
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [
+      0
+    ],
+    "image": {
+      "width": 800,
+      "height": 450
+    },
+    "model_image": {
+      "width": 812,
+      "height": 448
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "df21051342994e509dda44e9f8e1badb",
+    "model": "dots-studio/dots.mocr",
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "backend": "vllm",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 1930.115
+  }
+}

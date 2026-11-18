@@ -1,0 +1,9 @@
+.venv/
+models/
+.cache/
+.env
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.pyc
+benchmarks/private/
