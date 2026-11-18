@@ -1,0 +1,1290 @@
+{
+  "started_at_utc": "2026-11-18T18:57:26.318547+00:00",
+  "evidence_type": "REAL_MODEL_REAL_HTTP",
+  "model": "dots-studio/dots.ocr",
+  "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+  "machine": {
+    "os": "Windows-10-10.0.19045-SP0",
+    "python": "3.12.10",
+    "cpu_logical": 24,
+    "ram_total_bytes": 34111770624,
+    "torch": "2.5.1+cu121",
+    "cuda": "12.1",
+    "transformers": "4.51.3",
+    "gpu": "NVIDIA GeForce RTX 4070"
+  },
+  "settings": {
+    "model_id": "dots-studio/dots.ocr",
+    "backend": "transformers",
+    "device": "auto",
+    "dtype": "auto",
+    "attention": "sdpa",
+    "host": "0.0.0.0",
+    "port": 8092,
+    "cpu_threads": 4,
+    "max_upload_bytes": 10485760,
+    "max_pixels": 4000000,
+    "max_dimension": 8000,
+    "model_max_pixels": 1003520,
+    "max_new_tokens": 4096,
+    "max_response_bytes": 8388608,
+    "max_batch_images": 8,
+    "max_batch_upload_bytes": 41943040,
+    "max_batch_response_bytes": 16777216,
+    "inference_timeout_seconds": 120.0,
+    "request_timeout_seconds": 130.0,
+    "batch_timeout_seconds": 600.0,
+    "gpu_memory_utilization": 0.7
+  },
+  "measurement_limits": [
+    "Shared workstation; other processes contribute to host/device totals.",
+    "RSS/CPU sampled 50ms; total GPU sampled 200ms; sub-sample peaks may be missed.",
+    "Process CPU percent may exceed100 on multicore; native model is one worker.",
+    "First load is process-cold with filesystem cache uncontrolled; no cache flush."
+  ],
+  "source_sha256": {
+    "app/__init__.py": "5fd8cf49767b2c071723e52f44932401f632b687b7c0a07e1c1b8cc45afa3be2",
+    "app/batch.py": "d8aa26552006d97a89963ee10ac8aa7bfef8bcab4d2a8cb02a1c648a7e8feb26",
+    "app/config.py": "ca7a17ee73cbb7b36f299a4eecef4a4dedd9fc0277178107d4d1025f2688f5d1",
+    "app/errors.py": "cd03da56f1d902d1254b9519580016783882de51271cd324161af73bf5dabf9c",
+    "app/inference.py": "db4635936b39a5a121a3509f5730632b50ee448aad851439f3c307d9848dfff7",
+    "app/integrity.py": "e3212ed894dc8cfe2236aa0150b0dca4029f16af9ca7a9842361ee1a360897ab",
+    "app/main.py": "3df7442eec074c04a2c5213808a9aa3e197d92097bd716edbf766695dc478998",
+    "app/prompt.py": "e5dbe7d6546d5a493ccb65eec161c3351eb041a812d12c61b1be75b3b17a82b7",
+    "app/schemas.py": "b1c02a1a25b7e90d23befb16705cedc46c460a05fcab8a56d3780af3a5a183fe",
+    "app/security.py": "47458e4dbb751f29e649ef925c01c51362e0994aaa9075cddb51bf5d3420474b",
+    "model-manifest.json": "59e6d41660309c78e2225f1a974c71a3c8ceb9e33977d6560be669d1e09e14d1",
+    "requirements.txt": "9b433b32907e600da2b798a70bb48ee419e283b66eae3508ff7e7a12628ee76e",
+    "scripts/benchmark.py": "ac4b0078e51af7bd6c04b3c121484453a74a1b6b702b7be667952ad35aa4ba35"
+  },
+  "startup_seconds": 13.171999999787658,
+  "startup_resources": {
+    "sampled_process_peak_rss_bytes": 5021184000,
+    "sampled_host_used_ram_peak_bytes": 31398006784,
+    "sampled_cpu_percent_peak": 615.0,
+    "sampled_device_used_vram_peak_mib": 8664.0,
+    "sampled_device_gpu_utilization_peak_percent": 58.0
+  },
+  "readiness": {
+    "status": 200,
+    "body": {
+      "ready": true,
+      "load_seconds": 13.046999999787658,
+      "meta": {
+        "api_version": "v1",
+        "request_id": "887fc824b3d5468d9da5763f6ac7291c",
+        "model": "dots-studio/dots.ocr",
+        "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+        "backend": "transformers",
+        "device": "cuda",
+        "dtype": "bfloat16"
+      }
+    }
+  },
+  "requests": [
+    {
+      "label": "english",
+      "images": [
+        "english.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.1409999998286366,
+      "response_bytes": 868,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba"
+      ],
+      "sampled_process_peak_rss_bytes": 1425657856,
+      "sampled_host_used_ram_peak_bytes": 27599941632,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8748.0,
+      "sampled_device_gpu_utilization_peak_percent": 81.0,
+      "torch_peak_allocated_bytes": 6132406784,
+      "torch_peak_reserved_bytes": 6165626880,
+      "response_file": "response-english.json",
+      "text": "Document 123\nHello world",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "thai",
+      "images": [
+        "thai.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.5150000001303852,
+      "response_bytes": 1079,
+      "input_sha256": [
+        "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f"
+      ],
+      "sampled_process_peak_rss_bytes": 1428623360,
+      "sampled_host_used_ram_peak_bytes": 27579092992,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8764.0,
+      "sampled_device_gpu_utilization_peak_percent": 71.0,
+      "torch_peak_allocated_bytes": 6133243392,
+      "torch_peak_reserved_bytes": 6165626880,
+      "response_file": "response-thai.json",
+      "text": "ภาษาไทย ทดสอบเอกสาร\nกรุงเทพมหานคร 123",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "mixed",
+      "images": [
+        "mixed.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.375,
+      "response_bytes": 1284,
+      "input_sha256": [
+        "ea5fdd364f417edfe6ef6d30abe92a7098f8a8c7fd457aa9e04a3b0f12591d86"
+      ],
+      "sampled_process_peak_rss_bytes": 1430163456,
+      "sampled_host_used_ram_peak_bytes": 27619901440,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 8768.0,
+      "sampled_device_gpu_utilization_peak_percent": 87.0,
+      "torch_peak_allocated_bytes": 6133243392,
+      "torch_peak_reserved_bytes": 6174015488,
+      "response_file": "response-mixed.json",
+      "text": "ใบแจ้งหนี้ Invoice 2026\nรวม Total 250 บาท",
+      "elements": 2,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "english_jpeg",
+      "images": [
+        "english_jpeg.jpeg"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.3279999997466803,
+      "response_bytes": 867,
+      "input_sha256": [
+        "e8fb6c5d9e194d4040ec1e9a418b97255f9a7e43cecf6ae8c82295f15d83ed70"
+      ],
+      "sampled_process_peak_rss_bytes": 1431044096,
+      "sampled_host_used_ram_peak_bytes": 27643379712,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8746.0,
+      "sampled_device_gpu_utilization_peak_percent": 73.0,
+      "torch_peak_allocated_bytes": 6133243392,
+      "torch_peak_reserved_bytes": 6174015488,
+      "response_file": "response-english_jpeg.json",
+      "text": "Document 123\nHello world",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "english_webp",
+      "images": [
+        "english_webp.webp"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.4220000002533197,
+      "response_bytes": 867,
+      "input_sha256": [
+        "c7dc23624b2016dd23b02651f7d9e9349d253043b3bdc30ab077c37246c984bf"
+      ],
+      "sampled_process_peak_rss_bytes": 1432272896,
+      "sampled_host_used_ram_peak_bytes": 27652083712,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8733.0,
+      "sampled_device_gpu_utilization_peak_percent": 73.0,
+      "torch_peak_allocated_bytes": 6133243392,
+      "torch_peak_reserved_bytes": 6174015488,
+      "response_file": "response-english_webp.json",
+      "text": "Document 123\nHello world",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "crop",
+      "images": [
+        "crop.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.0469999997876585,
+      "response_bytes": 797,
+      "input_sha256": [
+        "a8061b92f0d7e9671df363e7e4cb9962ea1331de8ab3fefaeb95f927c47f8ae7"
+      ],
+      "sampled_process_peak_rss_bytes": 1438576640,
+      "sampled_host_used_ram_peak_bytes": 27566665728,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8722.0,
+      "sampled_device_gpu_utilization_peak_percent": 79.0,
+      "torch_peak_allocated_bytes": 6110924800,
+      "torch_peak_reserved_bytes": 6174015488,
+      "response_file": "response-crop.json",
+      "text": "Document 123",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 480,
+        "height": 70
+      },
+      "model_image": {
+        "width": 476,
+        "height": 56
+      }
+    },
+    {
+      "label": "rotated",
+      "images": [
+        "rotated.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.25,
+      "response_bytes": 1139,
+      "input_sha256": [
+        "01dc44e948af9643d41320a5cfc06296447c960366e9b15b72ddb600457b1716"
+      ],
+      "sampled_process_peak_rss_bytes": 1442541568,
+      "sampled_host_used_ram_peak_bytes": 27632644096,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8714.0,
+      "sampled_device_gpu_utilization_peak_percent": 87.0,
+      "torch_peak_allocated_bytes": 6133243392,
+      "torch_peak_reserved_bytes": 6174015488,
+      "response_file": "response-rotated.json",
+      "text": "Document 123\nHello world",
+      "elements": 2,
+      "tables": 0,
+      "image": {
+        "width": 220,
+        "height": 800
+      },
+      "model_image": {
+        "width": 224,
+        "height": 812
+      }
+    },
+    {
+      "label": "skewed",
+      "images": [
+        "skewed.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.4679999998770654,
+      "response_bytes": 1144,
+      "input_sha256": [
+        "777f4f16881fb0c37a746c66edfe41b266657105d15fbad0c2dfd9d4bdd7cd5d"
+      ],
+      "sampled_process_peak_rss_bytes": 1444163584,
+      "sampled_host_used_ram_peak_bytes": 27686539264,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 8727.0,
+      "sampled_device_gpu_utilization_peak_percent": 87.0,
+      "torch_peak_allocated_bytes": 6148058624,
+      "torch_peak_reserved_bytes": 6197084160,
+      "response_file": "response-skewed.json",
+      "text": "Document 123\nHello world",
+      "elements": 2,
+      "tables": 0,
+      "image": {
+        "width": 820,
+        "height": 304
+      },
+      "model_image": {
+        "width": 812,
+        "height": 308
+      }
+    },
+    {
+      "label": "blurred",
+      "images": [
+        "blurred.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.0,
+      "response_bytes": 1131,
+      "input_sha256": [
+        "45afedc321b6ba7c4f539af837ccb45dbaf4f0ebad897d86c916eea5c97daab0"
+      ],
+      "sampled_process_peak_rss_bytes": 1444716544,
+      "sampled_host_used_ram_peak_bytes": 27690586112,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8713.0,
+      "sampled_device_gpu_utilization_peak_percent": 78.0,
+      "torch_peak_allocated_bytes": 6113229312,
+      "torch_peak_reserved_bytes": 6197084160,
+      "response_file": "response-blurred.json",
+      "text": "Document 123\nHello world",
+      "elements": 2,
+      "tables": 0,
+      "image": {
+        "width": 400,
+        "height": 110
+      },
+      "model_image": {
+        "width": 392,
+        "height": 112
+      }
+    },
+    {
+      "label": "blank",
+      "images": [
+        "blank.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.0,
+      "response_bytes": 720,
+      "input_sha256": [
+        "7ddb4edf05030226e4ca3a5b07956f1103a38d1157175050c791e5599ff716bf"
+      ],
+      "sampled_process_peak_rss_bytes": 1448329216,
+      "sampled_host_used_ram_peak_bytes": 27586949120,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8724.0,
+      "sampled_device_gpu_utilization_peak_percent": 96.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6197084160,
+      "response_file": "response-blank.json",
+      "text": "",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "resolution_small",
+      "images": [
+        "resolution_small.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.0780000002123415,
+      "response_bytes": 827,
+      "input_sha256": [
+        "41b3f69c6852fe0650bf2e52905320fcd505899c8852c7b9dd82dc3fff1a2b1c"
+      ],
+      "sampled_process_peak_rss_bytes": 1446207488,
+      "sampled_host_used_ram_peak_bytes": 27618619392,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 8721.0,
+      "sampled_device_gpu_utilization_peak_percent": 96.0,
+      "torch_peak_allocated_bytes": 6117624320,
+      "torch_peak_reserved_bytes": 6197084160,
+      "response_file": "response-resolution_small.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 400,
+        "height": 200
+      },
+      "model_image": {
+        "width": 392,
+        "height": 196
+      }
+    },
+    {
+      "label": "resolution_medium",
+      "images": [
+        "resolution_medium.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.2969999997876585,
+      "response_bytes": 826,
+      "input_sha256": [
+        "0e558ec839b29bed8f7570ed89c79c1cce0fb4fd5c464b8eaa0a78f041ef5885"
+      ],
+      "sampled_process_peak_rss_bytes": 1447743488,
+      "sampled_host_used_ram_peak_bytes": 27643035648,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 8739.0,
+      "sampled_device_gpu_utilization_peak_percent": 89.0,
+      "torch_peak_allocated_bytes": 6167606784,
+      "torch_peak_reserved_bytes": 6218055680,
+      "response_file": "response-resolution_medium.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 400
+      },
+      "model_image": {
+        "width": 812,
+        "height": 392
+      }
+    },
+    {
+      "label": "resolution_large",
+      "images": [
+        "resolution_large.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.405999999959022,
+      "response_bytes": 843,
+      "input_sha256": [
+        "0ef3b790fc3d5f15fd056b65082270d751f1b147f8ab85e51cb5c65522c6c51f"
+      ],
+      "sampled_process_peak_rss_bytes": 1478332416,
+      "sampled_host_used_ram_peak_bytes": 27652886528,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9072.0,
+      "sampled_device_gpu_utilization_peak_percent": 99.0,
+      "torch_peak_allocated_bytes": 6337415680,
+      "torch_peak_reserved_bytes": 6564085760,
+      "response_file": "response-resolution_large.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 1200,
+        "height": 800
+      },
+      "model_image": {
+        "width": 1204,
+        "height": 812
+      }
+    },
+    {
+      "label": "full_page",
+      "images": [
+        "full_page.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 14.594000000040978,
+      "response_bytes": 5039,
+      "input_sha256": [
+        "db9611026554c9da7bce7638ded160911488214f37b6f296e5f17cf5b25b4439"
+      ],
+      "sampled_process_peak_rss_bytes": 1479340032,
+      "sampled_host_used_ram_peak_bytes": 27809386496,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9142.0,
+      "sampled_device_gpu_utilization_peak_percent": 99.0,
+      "torch_peak_allocated_bytes": 6329477120,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-full_page.json",
+      "text": "SYNTHETIC REPORT 2026\nSection 1: Document processing and evaluation.\nSection 2: Document processing and evaluation.\nSection 3: Document processing and evaluation.\nSection 4: Document processing and evaluation.\nSection 5: Document processing and evaluation.\nSection 6: Document processing and evaluation.\nSection 7: Document processing and evaluation.\nSection 8: Document processing and evaluation.\nSection 9: Document processing and evaluation.\nSection 10: Document processing and evaluation.",
+      "elements": 11,
+      "tables": 0,
+      "image": {
+        "width": 1000,
+        "height": 1400
+      },
+      "model_image": {
+        "width": 840,
+        "height": 1176
+      }
+    },
+    {
+      "label": "table",
+      "images": [
+        "table.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 4.061999999918044,
+      "response_bytes": 1494,
+      "input_sha256": [
+        "b6dbdd56d34c69d0e2cf6623f24b2e89330fe5eea567d876af5b400262b0f5c7"
+      ],
+      "sampled_process_peak_rss_bytes": 1449435136,
+      "sampled_host_used_ram_peak_bytes": 27734040576,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9199.0,
+      "sampled_device_gpu_utilization_peak_percent": 82.0,
+      "torch_peak_allocated_bytes": 6175560192,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-table.json",
+      "text": "<table><thead><tr><td>Item</td><td>Quantity</td><td>Price</td></tr></thead><tbody><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></tbody></table>",
+      "elements": 1,
+      "tables": 1,
+      "image": {
+        "width": 800,
+        "height": 450
+      },
+      "model_image": {
+        "width": 812,
+        "height": 448
+      }
+    },
+    {
+      "label": "complex_table",
+      "images": [
+        "complex_table.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 4.155999999959022,
+      "response_bytes": 1500,
+      "input_sha256": [
+        "7b3900bf23d94494eaf54c42d46be9a5895699c5756fe1646511d4a33e3ff092"
+      ],
+      "sampled_process_peak_rss_bytes": 1462288384,
+      "sampled_host_used_ram_peak_bytes": 27771924480,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9205.0,
+      "sampled_device_gpu_utilization_peak_percent": 80.0,
+      "torch_peak_allocated_bytes": 6175560192,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-complex_table.json",
+      "text": "<table><thead><tr><th>Merged heading</th><th></th><th>Price</th></tr></thead><tbody><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></tbody></table>",
+      "elements": 1,
+      "tables": 1,
+      "image": {
+        "width": 800,
+        "height": 450
+      },
+      "model_image": {
+        "width": 812,
+        "height": 448
+      }
+    },
+    {
+      "label": "invoice",
+      "images": [
+        "invoice.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 4.359000000171363,
+      "response_bytes": 1729,
+      "input_sha256": [
+        "9ebb5d7971bc5fba4b2d8ed2f251e91c32dccceff242faa281f2634cf0bd1e93"
+      ],
+      "sampled_process_peak_rss_bytes": 1452568576,
+      "sampled_host_used_ram_peak_bytes": 27750264832,
+      "sampled_cpu_percent_peak": 124.0,
+      "sampled_device_used_vram_peak_mib": 9170.0,
+      "sampled_device_gpu_utilization_peak_percent": 79.0,
+      "torch_peak_allocated_bytes": 6153558016,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-invoice.json",
+      "text": "INVOICE 42\nNotebook 2 x 50 = 100\nTax 7\nTOTAL 107",
+      "elements": 4,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 350
+      },
+      "model_image": {
+        "width": 812,
+        "height": 336
+      }
+    },
+    {
+      "label": "multicolumn",
+      "images": [
+        "multicolumn.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 6.609999999869615,
+      "response_bytes": 2411,
+      "input_sha256": [
+        "1d444c5785f5dfbacb7cefe19852684c006466ea1514a6941c1d71b92fd78d9e"
+      ],
+      "sampled_process_peak_rss_bytes": 1450549248,
+      "sampled_host_used_ram_peak_bytes": 27746750464,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9183.0,
+      "sampled_device_gpu_utilization_peak_percent": 93.0,
+      "torch_peak_allocated_bytes": 6232633344,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-multicolumn.json",
+      "text": "LEFT COLUMN\nAlpha 123\nBeta 456\nRIGHT COLUMN\nGamma 789\nDelta 012",
+      "elements": 6,
+      "tables": 0,
+      "image": {
+        "width": 1000,
+        "height": 600
+      },
+      "model_image": {
+        "width": 1008,
+        "height": 588
+      }
+    },
+    {
+      "label": "formula",
+      "images": [
+        "formula.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 3.344000000040978,
+      "response_bytes": 1476,
+      "input_sha256": [
+        "4841e3b69302c9838ab38a9c75f9e5561366f337ca9d60e6b29f41fe8b5c1975"
+      ],
+      "sampled_process_peak_rss_bytes": 1455579136,
+      "sampled_host_used_ram_peak_bytes": 27740491776,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9182.0,
+      "sampled_device_gpu_utilization_peak_percent": 83.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-formula.json",
+      "text": "Mathematics\n$$x^2 + y^2 = z^2$$\n$$E = mc^2$$",
+      "elements": 3,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    },
+    {
+      "label": "chart",
+      "images": [
+        "chart.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.0469999997876585,
+      "response_bytes": 1126,
+      "input_sha256": [
+        "7a57cb8a486d24b42d2558692a47a017bea6b5c70aa9f7d6705fefb3484f71ab"
+      ],
+      "sampled_process_peak_rss_bytes": 1462206464,
+      "sampled_host_used_ram_peak_bytes": 27668627456,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 9174.0,
+      "sampled_device_gpu_utilization_peak_percent": 92.0,
+      "torch_peak_allocated_bytes": 6188869632,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-chart.json",
+      "text": "Synthetic Sales Chart",
+      "elements": 2,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 500
+      },
+      "model_image": {
+        "width": 812,
+        "height": 504
+      }
+    },
+    {
+      "label": "corrupt",
+      "images": [
+        "corrupt.png"
+      ],
+      "batch_count": 1,
+      "http_status": 422,
+      "latency_seconds": 0.0,
+      "response_bytes": 160,
+      "input_sha256": [
+        "5824320a8242da4c119421f811c4c2893a5cf37c800b989073c15a39df7624e8"
+      ],
+      "sampled_process_peak_rss_bytes": null,
+      "sampled_host_used_ram_peak_bytes": null,
+      "sampled_cpu_percent_peak": null,
+      "sampled_device_used_vram_peak_mib": null,
+      "sampled_device_gpu_utilization_peak_percent": null,
+      "torch_peak_allocated_bytes": 6086879232,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-corrupt.json",
+      "error_code": "INVALID_IMAGE"
+    },
+    {
+      "label": "resolution_small-repeat1",
+      "images": [
+        "resolution_small.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.108999999705702,
+      "response_bytes": 827,
+      "input_sha256": [
+        "41b3f69c6852fe0650bf2e52905320fcd505899c8852c7b9dd82dc3fff1a2b1c"
+      ],
+      "sampled_process_peak_rss_bytes": 1449398272,
+      "sampled_host_used_ram_peak_bytes": 27683274752,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 9200.0,
+      "sampled_device_gpu_utilization_peak_percent": 75.0,
+      "torch_peak_allocated_bytes": 6117624320,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_small-repeat1.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 400,
+        "height": 200
+      },
+      "model_image": {
+        "width": 392,
+        "height": 196
+      }
+    },
+    {
+      "label": "resolution_small-repeat2",
+      "images": [
+        "resolution_small.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.2340000001713634,
+      "response_bytes": 827,
+      "input_sha256": [
+        "41b3f69c6852fe0650bf2e52905320fcd505899c8852c7b9dd82dc3fff1a2b1c"
+      ],
+      "sampled_process_peak_rss_bytes": 1449414656,
+      "sampled_host_used_ram_peak_bytes": 27695923200,
+      "sampled_cpu_percent_peak": 124.0,
+      "sampled_device_used_vram_peak_mib": 9188.0,
+      "sampled_device_gpu_utilization_peak_percent": 74.0,
+      "torch_peak_allocated_bytes": 6117624320,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_small-repeat2.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 400,
+        "height": 200
+      },
+      "model_image": {
+        "width": 392,
+        "height": 196
+      }
+    },
+    {
+      "label": "resolution_small-repeat3",
+      "images": [
+        "resolution_small.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.1409999998286366,
+      "response_bytes": 827,
+      "input_sha256": [
+        "41b3f69c6852fe0650bf2e52905320fcd505899c8852c7b9dd82dc3fff1a2b1c"
+      ],
+      "sampled_process_peak_rss_bytes": 1449422848,
+      "sampled_host_used_ram_peak_bytes": 27715358720,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 9189.0,
+      "sampled_device_gpu_utilization_peak_percent": 76.0,
+      "torch_peak_allocated_bytes": 6117624320,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_small-repeat3.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 400,
+        "height": 200
+      },
+      "model_image": {
+        "width": 392,
+        "height": 196
+      }
+    },
+    {
+      "label": "resolution_medium-repeat1",
+      "images": [
+        "resolution_medium.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.3590000001713634,
+      "response_bytes": 826,
+      "input_sha256": [
+        "0e558ec839b29bed8f7570ed89c79c1cce0fb4fd5c464b8eaa0a78f041ef5885"
+      ],
+      "sampled_process_peak_rss_bytes": 1455910912,
+      "sampled_host_used_ram_peak_bytes": 27732250624,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 9191.0,
+      "sampled_device_gpu_utilization_peak_percent": 76.0,
+      "torch_peak_allocated_bytes": 6167606784,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_medium-repeat1.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 400
+      },
+      "model_image": {
+        "width": 812,
+        "height": 392
+      }
+    },
+    {
+      "label": "resolution_medium-repeat2",
+      "images": [
+        "resolution_medium.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.328999999910593,
+      "response_bytes": 826,
+      "input_sha256": [
+        "0e558ec839b29bed8f7570ed89c79c1cce0fb4fd5c464b8eaa0a78f041ef5885"
+      ],
+      "sampled_process_peak_rss_bytes": 1450840064,
+      "sampled_host_used_ram_peak_bytes": 27727011840,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9195.0,
+      "sampled_device_gpu_utilization_peak_percent": 91.0,
+      "torch_peak_allocated_bytes": 6167606784,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_medium-repeat2.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 400
+      },
+      "model_image": {
+        "width": 812,
+        "height": 392
+      }
+    },
+    {
+      "label": "resolution_medium-repeat3",
+      "images": [
+        "resolution_medium.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.3119999999180436,
+      "response_bytes": 826,
+      "input_sha256": [
+        "0e558ec839b29bed8f7570ed89c79c1cce0fb4fd5c464b8eaa0a78f041ef5885"
+      ],
+      "sampled_process_peak_rss_bytes": 1454661632,
+      "sampled_host_used_ram_peak_bytes": 27627155456,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9163.0,
+      "sampled_device_gpu_utilization_peak_percent": 91.0,
+      "torch_peak_allocated_bytes": 6167606784,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_medium-repeat3.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 400
+      },
+      "model_image": {
+        "width": 812,
+        "height": 392
+      }
+    },
+    {
+      "label": "resolution_large-repeat1",
+      "images": [
+        "resolution_large.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.2030000002123415,
+      "response_bytes": 843,
+      "input_sha256": [
+        "0ef3b790fc3d5f15fd056b65082270d751f1b147f8ab85e51cb5c65522c6c51f"
+      ],
+      "sampled_process_peak_rss_bytes": 1465593856,
+      "sampled_host_used_ram_peak_bytes": 27649200128,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9159.0,
+      "sampled_device_gpu_utilization_peak_percent": 98.0,
+      "torch_peak_allocated_bytes": 6337415680,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_large-repeat1.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 1200,
+        "height": 800
+      },
+      "model_image": {
+        "width": 1204,
+        "height": 812
+      }
+    },
+    {
+      "label": "resolution_large-repeat2",
+      "images": [
+        "resolution_large.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.375,
+      "response_bytes": 843,
+      "input_sha256": [
+        "0ef3b790fc3d5f15fd056b65082270d751f1b147f8ab85e51cb5c65522c6c51f"
+      ],
+      "sampled_process_peak_rss_bytes": 1487433728,
+      "sampled_host_used_ram_peak_bytes": 27730698240,
+      "sampled_cpu_percent_peak": 148.8,
+      "sampled_device_used_vram_peak_mib": 9177.0,
+      "sampled_device_gpu_utilization_peak_percent": 97.0,
+      "torch_peak_allocated_bytes": 6337415680,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_large-repeat2.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 1200,
+        "height": 800
+      },
+      "model_image": {
+        "width": 1204,
+        "height": 812
+      }
+    },
+    {
+      "label": "resolution_large-repeat3",
+      "images": [
+        "resolution_large.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.3130000000819564,
+      "response_bytes": 843,
+      "input_sha256": [
+        "0ef3b790fc3d5f15fd056b65082270d751f1b147f8ab85e51cb5c65522c6c51f"
+      ],
+      "sampled_process_peak_rss_bytes": 1476759552,
+      "sampled_host_used_ram_peak_bytes": 27737112576,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 9177.0,
+      "sampled_device_gpu_utilization_peak_percent": 90.0,
+      "torch_peak_allocated_bytes": 6337415680,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-resolution_large-repeat3.json",
+      "text": "Benchmark 789",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 1200,
+        "height": 800
+      },
+      "model_image": {
+        "width": 1204,
+        "height": 812
+      }
+    },
+    {
+      "label": "batch1",
+      "images": [
+        "english.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 2.0469999997876585,
+      "response_bytes": 1024,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba"
+      ],
+      "sampled_process_peak_rss_bytes": 1450455040,
+      "sampled_host_used_ram_peak_bytes": 27648491520,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9176.0,
+      "sampled_device_gpu_utilization_peak_percent": 75.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-batch1.json",
+      "succeeded": 1,
+      "failed": 0,
+      "indices": [
+        0
+      ],
+      "exact_single_equivalence": true
+    },
+    {
+      "label": "batch2",
+      "images": [
+        "english.png",
+        "thai.png"
+      ],
+      "batch_count": 2,
+      "http_status": 200,
+      "latency_seconds": 5.342999999877065,
+      "response_bytes": 1927,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba",
+        "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f"
+      ],
+      "sampled_process_peak_rss_bytes": 1452916736,
+      "sampled_host_used_ram_peak_bytes": 27728216064,
+      "sampled_cpu_percent_peak": 126.0,
+      "sampled_device_used_vram_peak_mib": 9200.0,
+      "sampled_device_gpu_utilization_peak_percent": 58.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-batch2.json",
+      "succeeded": 2,
+      "failed": 0,
+      "indices": [
+        0,
+        1
+      ],
+      "exact_single_equivalence": true
+    },
+    {
+      "label": "batch4",
+      "images": [
+        "english.png",
+        "thai.png",
+        "mixed.png",
+        "crop.png"
+      ],
+      "batch_count": 4,
+      "http_status": 200,
+      "latency_seconds": 12.266000000294298,
+      "response_bytes": 3657,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba",
+        "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f",
+        "ea5fdd364f417edfe6ef6d30abe92a7098f8a8c7fd457aa9e04a3b0f12591d86",
+        "a8061b92f0d7e9671df363e7e4cb9962ea1331de8ab3fefaeb95f927c47f8ae7"
+      ],
+      "sampled_process_peak_rss_bytes": 1455288320,
+      "sampled_host_used_ram_peak_bytes": 27817467904,
+      "sampled_cpu_percent_peak": 124.0,
+      "sampled_device_used_vram_peak_mib": 9228.0,
+      "sampled_device_gpu_utilization_peak_percent": 67.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-batch4.json",
+      "succeeded": 4,
+      "failed": 0,
+      "indices": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "exact_single_equivalence": true
+    },
+    {
+      "label": "batch8",
+      "images": [
+        "english.png",
+        "thai.png",
+        "mixed.png",
+        "crop.png",
+        "english.png",
+        "thai.png",
+        "mixed.png",
+        "crop.png"
+      ],
+      "batch_count": 8,
+      "http_status": 200,
+      "latency_seconds": 12.703000000212342,
+      "response_bytes": 6980,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba",
+        "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f",
+        "ea5fdd364f417edfe6ef6d30abe92a7098f8a8c7fd457aa9e04a3b0f12591d86",
+        "a8061b92f0d7e9671df363e7e4cb9962ea1331de8ab3fefaeb95f927c47f8ae7",
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba",
+        "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f",
+        "ea5fdd364f417edfe6ef6d30abe92a7098f8a8c7fd457aa9e04a3b0f12591d86",
+        "a8061b92f0d7e9671df363e7e4cb9962ea1331de8ab3fefaeb95f927c47f8ae7"
+      ],
+      "sampled_process_peak_rss_bytes": 1450786816,
+      "sampled_host_used_ram_peak_bytes": 27947458560,
+      "sampled_cpu_percent_peak": 124.0,
+      "sampled_device_used_vram_peak_mib": 9225.0,
+      "sampled_device_gpu_utilization_peak_percent": 67.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-batch8.json",
+      "succeeded": 8,
+      "failed": 0,
+      "indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "exact_single_equivalence": true
+    },
+    {
+      "label": "batch-mixed-error",
+      "images": [
+        "english.png",
+        "corrupt.png",
+        "thai.png"
+      ],
+      "batch_count": 3,
+      "http_status": 200,
+      "latency_seconds": 2.4679999998770654,
+      "response_bytes": 2071,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba",
+        "5824320a8242da4c119421f811c4c2893a5cf37c800b989073c15a39df7624e8",
+        "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f"
+      ],
+      "sampled_process_peak_rss_bytes": 1450774528,
+      "sampled_host_used_ram_peak_bytes": 27271307264,
+      "sampled_cpu_percent_peak": 101.9,
+      "sampled_device_used_vram_peak_mib": 9152.0,
+      "sampled_device_gpu_utilization_peak_percent": 67.0,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-batch-mixed-error.json",
+      "succeeded": 2,
+      "failed": 1,
+      "indices": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "label": "real-deadline",
+      "images": [
+        "english.png"
+      ],
+      "batch_count": 1,
+      "http_status": 504,
+      "latency_seconds": 0.03200000012293458,
+      "response_bytes": 165,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba"
+      ],
+      "sampled_process_peak_rss_bytes": 1450774528,
+      "sampled_host_used_ram_peak_bytes": 27241873408,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": null,
+      "sampled_device_gpu_utilization_peak_percent": null,
+      "torch_peak_allocated_bytes": 6133586432,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-real-deadline.json",
+      "error_code": "INFERENCE_TIMEOUT"
+    },
+    {
+      "label": "recovery-after-timeout",
+      "images": [
+        "english.png"
+      ],
+      "batch_count": 1,
+      "http_status": 200,
+      "latency_seconds": 1.1570000001229346,
+      "response_bytes": 868,
+      "input_sha256": [
+        "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba"
+      ],
+      "sampled_process_peak_rss_bytes": 1457246208,
+      "sampled_host_used_ram_peak_bytes": 27239657472,
+      "sampled_cpu_percent_peak": 100.8,
+      "sampled_device_used_vram_peak_mib": 9151.0,
+      "sampled_device_gpu_utilization_peak_percent": 65.0,
+      "torch_peak_allocated_bytes": 6136029696,
+      "torch_peak_reserved_bytes": 6616514560,
+      "response_file": "response-recovery-after-timeout.json",
+      "text": "Document 123\nHello world",
+      "elements": 1,
+      "tables": 0,
+      "image": {
+        "width": 800,
+        "height": 220
+      },
+      "model_image": {
+        "width": 812,
+        "height": 224
+      }
+    }
+  ],
+  "deadline_busy_status": 429,
+  "status": "EXECUTED_REVIEW_PER_CASE",
+  "overall_resources": {
+    "sampled_process_peak_rss_bytes": 5021184000,
+    "sampled_host_used_ram_peak_bytes": 31398006784,
+    "sampled_cpu_percent_peak": 615.0,
+    "sampled_device_used_vram_peak_mib": 9228.0,
+    "sampled_device_gpu_utilization_peak_percent": 99.0
+  },
+  "cgroup_last_sample": null,
+  "server_stopped": true,
+  "source_canonical_lf_sha256": {
+    "app/__init__.py": "5fd8cf49767b2c071723e52f44932401f632b687b7c0a07e1c1b8cc45afa3be2",
+    "app/batch.py": "d8aa26552006d97a89963ee10ac8aa7bfef8bcab4d2a8cb02a1c648a7e8feb26",
+    "app/config.py": "ca7a17ee73cbb7b36f299a4eecef4a4dedd9fc0277178107d4d1025f2688f5d1",
+    "app/errors.py": "cd03da56f1d902d1254b9519580016783882de51271cd324161af73bf5dabf9c",
+    "app/inference.py": "db4635936b39a5a121a3509f5730632b50ee448aad851439f3c307d9848dfff7",
+    "app/integrity.py": "e3212ed894dc8cfe2236aa0150b0dca4029f16af9ca7a9842361ee1a360897ab",
+    "app/main.py": "3df7442eec074c04a2c5213808a9aa3e197d92097bd716edbf766695dc478998",
+    "app/prompt.py": "10c2e46688ae7b7988eb214eadb75fb57144ec88a89a4edd74951af04db19a4b",
+    "app/schemas.py": "b1c02a1a25b7e90d23befb16705cedc46c460a05fcab8a56d3780af3a5a183fe",
+    "app/security.py": "47458e4dbb751f29e649ef925c01c51362e0994aaa9075cddb51bf5d3420474b",
+    "model-manifest.json": "0ffa1deea4fb55a9715039046e7a31d46337ca589213abb2cc6b374be622abcf",
+    "requirements.txt": "9b433b32907e600da2b798a70bb48ee419e283b66eae3508ff7e7a12628ee76e",
+    "scripts/benchmark.py": "ac4b0078e51af7bd6c04b3c121484453a74a1b6b702b7be667952ad35aa4ba35"
+  },
+  "source_identity_note": "Original source_sha256 records actual bytes tested. Canonical LF hashes additionally match Git-normalized blobs. Only app/prompt.py and model-manifest.json physical line endings differed; prompt string and parsed model configuration are unchanged."
+}

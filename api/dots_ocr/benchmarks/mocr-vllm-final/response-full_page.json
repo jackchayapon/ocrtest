@@ -1,0 +1,240 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "# SYNTHETIC REPORT 2026\nSection 1: Document processing and evaluation.\nSection 2: Document processing and evaluation.\nSection 3: Document processing and evaluation.\nSection 4: Document processing and evaluation.\nSection 5: Document processing and evaluation.\nSection 6: Document processing and evaluation.\nSection 7: Document processing and evaluation.\nSection 8: Document processing and evaluation.\nSection 9: Document processing and evaluation.\nSection 10: Document processing and evaluation.",
+    "native_output": "[{\"bbox\": [39, 44, 306, 68], \"category\": \"Section-header\", \"text\": \"# SYNTHETIC REPORT 2026\"}, {\"bbox\": [39, 110, 420, 131], \"category\": \"Text\", \"text\": \"Section 1: Document processing and evaluation.\"}, {\"bbox\": [39, 186, 420, 207], \"category\": \"Text\", \"text\": \"Section 2: Document processing and evaluation.\"}, {\"bbox\": [39, 262, 420, 283], \"category\": \"Text\", \"text\": \"Section 3: Document processing and evaluation.\"}, {\"bbox\": [39, 337, 420, 358], \"category\": \"Text\", \"text\": \"Section 4: Document processing and evaluation.\"}, {\"bbox\": [39, 413, 420, 434], \"category\": \"Text\", \"text\": \"Section 5: Document processing and evaluation.\"}, {\"bbox\": [39, 488, 420, 509], \"category\": \"Text\", \"text\": \"Section 6: Document processing and evaluation.\"}, {\"bbox\": [39, 564, 420, 585], \"category\": \"Text\", \"text\": \"Section 7: Document processing and evaluation.\"}, {\"bbox\": [39, 640, 420, 661], \"category\": \"Text\", \"text\": \"Section 8: Document processing and evaluation.\"}, {\"bbox\": [39, 715, 420, 736], \"category\": \"Text\", \"text\": \"Section 9: Document processing and evaluation.\"}, {\"bbox\": [39, 791, 428, 812], \"category\": \"Text\", \"text\": \"Section 10: Document processing and evaluation.\"}]",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Section-header",
+        "text": "# SYNTHETIC REPORT 2026",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          44.0,
+          306.0,
+          68.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          52.38095238095238,
+          364.2857142857143,
+          80.95238095238095
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 1,
+        "category": "Text",
+        "text": "Section 1: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          110.0,
+          420.0,
+          131.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          130.95238095238096,
+          500.0,
+          155.95238095238096
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 2,
+        "category": "Text",
+        "text": "Section 2: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          186.0,
+          420.0,
+          207.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          221.42857142857142,
+          500.0,
+          246.42857142857142
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 3,
+        "category": "Text",
+        "text": "Section 3: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          262.0,
+          420.0,
+          283.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          311.9047619047619,
+          500.0,
+          336.9047619047619
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 4,
+        "category": "Text",
+        "text": "Section 4: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          337.0,
+          420.0,
+          358.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          401.1904761904762,
+          500.0,
+          426.1904761904762
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 5,
+        "category": "Text",
+        "text": "Section 5: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          413.0,
+          420.0,
+          434.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          491.6666666666667,
+          500.0,
+          516.6666666666666
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 6,
+        "category": "Text",
+        "text": "Section 6: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          488.0,
+          420.0,
+          509.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          580.952380952381,
+          500.0,
+          605.952380952381
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 7,
+        "category": "Text",
+        "text": "Section 7: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          564.0,
+          420.0,
+          585.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          671.4285714285714,
+          500.0,
+          696.4285714285714
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 8,
+        "category": "Text",
+        "text": "Section 8: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          640.0,
+          420.0,
+          661.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          761.9047619047619,
+          500.0,
+          786.9047619047619
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 9,
+        "category": "Text",
+        "text": "Section 9: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          715.0,
+          420.0,
+          736.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          851.1904761904761,
+          500.0,
+          876.1904761904761
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 10,
+        "category": "Text",
+        "text": "Section 10: Document processing and evaluation.",
+        "confidence": null,
+        "native_bbox": [
+          39.0,
+          791.0,
+          428.0,
+          812.0
+        ],
+        "bbox": [
+          46.42857142857143,
+          941.6666666666666,
+          509.5238095238095,
+          966.6666666666666
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [],
+    "image": {
+      "width": 1000,
+      "height": 1400
+    },
+    "model_image": {
+      "width": 840,
+      "height": 1176
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "c186b37db0964773a45350c8741e0850",
+    "model": "dots-studio/dots.mocr",
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "backend": "vllm",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 6738.417
+  }
+}

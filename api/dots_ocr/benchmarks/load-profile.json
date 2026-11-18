@@ -1,0 +1,36 @@
+{
+  "status": "REAL_MODEL_LOAD_PASS",
+  "measurements": [
+    {
+      "phase": "process_first_filesystem_cache_uncontrolled",
+      "seconds": 11.264999999664724,
+      "rss_after_load_bytes": 757338112,
+      "torch_peak_allocated_bytes": 6078359552,
+      "torch_peak_reserved_bytes": 6138363904
+    },
+    {
+      "phase": "cache_warm_explicit_reload",
+      "seconds": 7.140999999828637,
+      "rss_after_load_bytes": 760438784,
+      "torch_peak_allocated_bytes": 6078359552,
+      "torch_peak_reserved_bytes": 6138363904
+    }
+  ],
+  "true_disk_cold": "NOT_MEASURED: shared host caches were not flushed",
+  "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+  "app_source_sha256": {
+    "batch.py": "d8aa26552006d97a89963ee10ac8aa7bfef8bcab4d2a8cb02a1c648a7e8feb26",
+    "config.py": "ca7a17ee73cbb7b36f299a4eecef4a4dedd9fc0277178107d4d1025f2688f5d1",
+    "errors.py": "cd03da56f1d902d1254b9519580016783882de51271cd324161af73bf5dabf9c",
+    "inference.py": "db4635936b39a5a121a3509f5730632b50ee448aad851439f3c307d9848dfff7",
+    "integrity.py": "e3212ed894dc8cfe2236aa0150b0dca4029f16af9ca7a9842361ee1a360897ab",
+    "main.py": "3df7442eec074c04a2c5213808a9aa3e197d92097bd716edbf766695dc478998",
+    "prompt.py": "e5dbe7d6546d5a493ccb65eec161c3351eb041a812d12c61b1be75b3b17a82b7",
+    "schemas.py": "b1c02a1a25b7e90d23befb16705cedc46c460a05fcab8a56d3780af3a5a183fe",
+    "security.py": "47458e4dbb751f29e649ef925c01c51362e0994aaa9075cddb51bf5d3420474b",
+    "__init__.py": "5fd8cf49767b2c071723e52f44932401f632b687b7c0a07e1c1b8cc45afa3be2"
+  },
+  "snapshot_disk_bytes": 6090160451,
+  "venv_disk_bytes": 164673301,
+  "venv_limitation": "Native venv reuses system-site-packages (CUDA torch); footprint excludes shared dependencies. Docker image size is the reproducible full installation footprint."
+}

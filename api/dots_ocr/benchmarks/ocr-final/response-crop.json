@@ -1,0 +1,50 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "Document 123",
+    "native_output": "[{\"bbox\": [7, 15, 183, 37], \"category\": \"Text\", \"text\": \"Document 123\"}]<|endofassistant|>",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Text",
+        "text": "Document 123",
+        "confidence": null,
+        "native_bbox": [
+          7.0,
+          15.0,
+          183.0,
+          37.0
+        ],
+        "bbox": [
+          7.0588235294117645,
+          18.75,
+          184.53781512605042,
+          46.25
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [],
+    "image": {
+      "width": 480,
+      "height": 70
+    },
+    "model_image": {
+      "width": 476,
+      "height": 56
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "ec880d04a9ee4f5b8a786f7653bce9dd",
+    "model": "dots-studio/dots.ocr",
+    "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+    "backend": "transformers",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 1047.0
+  }
+}

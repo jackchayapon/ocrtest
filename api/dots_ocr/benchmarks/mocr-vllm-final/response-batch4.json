@@ -1,0 +1,267 @@
+{
+  "data": {
+    "results": [
+      {
+        "index": 0,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "Document 123\nHello world",
+          "native_output": "[{\"bbox\": [29, 44, 206, 67], \"category\": \"Text\", \"text\": \"Document 123\"}, {\"bbox\": [29, 87, 164, 109], \"category\": \"Text\", \"text\": \"Hello world\"}]",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "Document 123",
+              "confidence": null,
+              "native_bbox": [
+                29.0,
+                44.0,
+                206.0,
+                67.0
+              ],
+              "bbox": [
+                28.571428571428573,
+                43.214285714285715,
+                202.95566502463055,
+                65.80357142857143
+              ],
+              "geometry_status": "valid"
+            },
+            {
+              "index": 1,
+              "category": "Text",
+              "text": "Hello world",
+              "confidence": null,
+              "native_bbox": [
+                29.0,
+                87.0,
+                164.0,
+                109.0
+              ],
+              "bbox": [
+                28.571428571428573,
+                85.44642857142857,
+                161.57635467980296,
+                107.05357142857142
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 873.075
+      },
+      {
+        "index": 1,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "ภาษาไทย ทดสอบเอกสาร\nกรุงเทพมหานคร 123",
+          "native_output": "[{\"bbox\": [30, 41, 321, 71], \"category\": \"Text\", \"text\": \"ภาษาไทย ทดสอบเอกสาร\"}, {\"bbox\": [30, 87, 267, 112], \"category\": \"Text\", \"text\": \"กรุงเทพมหานคร 123\"}]",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "ภาษาไทย ทดสอบเอกสาร",
+              "confidence": null,
+              "native_bbox": [
+                30.0,
+                41.0,
+                321.0,
+                71.0
+              ],
+              "bbox": [
+                29.55665024630542,
+                40.26785714285714,
+                316.256157635468,
+                69.73214285714285
+              ],
+              "geometry_status": "valid"
+            },
+            {
+              "index": 1,
+              "category": "Text",
+              "text": "กรุงเทพมหานคร 123",
+              "confidence": null,
+              "native_bbox": [
+                30.0,
+                87.0,
+                267.0,
+                112.0
+              ],
+              "bbox": [
+                29.55665024630542,
+                85.44642857142857,
+                263.0541871921182,
+                110.0
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 1029.645
+      },
+      {
+        "index": 2,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "ใบแจ้งหนี้ Invoice 2026\nรวม Total 250 บาท",
+          "native_output": "[{\"bbox\": [28, 42, 303, 75], \"category\": \"Text\", \"text\": \"ใบแจ้งหนี้ Invoice 2026\"}, {\"bbox\": [28, 86, 253, 111], \"category\": \"Text\", \"text\": \"รวม Total 250 บาท\"}]",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Text",
+              "text": "ใบแจ้งหนี้ Invoice 2026",
+              "confidence": null,
+              "native_bbox": [
+                28.0,
+                42.0,
+                303.0,
+                75.0
+              ],
+              "bbox": [
+                27.586206896551726,
+                41.25,
+                298.5221674876847,
+                73.66071428571428
+              ],
+              "geometry_status": "valid"
+            },
+            {
+              "index": 1,
+              "category": "Text",
+              "text": "รวม Total 250 บาท",
+              "confidence": null,
+              "native_bbox": [
+                28.0,
+                86.0,
+                253.0,
+                111.0
+              ],
+              "bbox": [
+                27.586206896551726,
+                84.46428571428571,
+                249.26108374384236,
+                109.01785714285714
+              ],
+              "geometry_status": "valid"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 800,
+            "height": 220
+          },
+          "model_image": {
+            "width": 812,
+            "height": 224
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 1092.476
+      },
+      {
+        "index": 3,
+        "status": "success",
+        "result": {
+          "schema_version": "1.0",
+          "text": "Document 123\nHull, England, UK",
+          "native_output": "[{\"bbox\": [9, 15, 182, 42], \"category\": \"Page-header\", \"text\": \"Document 123\"}, {\"bbox\": [9, 63, 364, 91], \"category\": \"Page-header\", \"text\": \"Hull, England, UK\"}]",
+          "elements": [
+            {
+              "index": 0,
+              "category": "Page-header",
+              "text": "Document 123",
+              "confidence": null,
+              "native_bbox": [
+                9.0,
+                15.0,
+                182.0,
+                42.0
+              ],
+              "bbox": [
+                9.07563025210084,
+                18.75,
+                183.52941176470588,
+                52.5
+              ],
+              "geometry_status": "valid"
+            },
+            {
+              "index": 1,
+              "category": "Page-header",
+              "text": "Hull, England, UK",
+              "confidence": null,
+              "native_bbox": [
+                9.0,
+                63.0,
+                364.0,
+                91.0
+              ],
+              "bbox": null,
+              "geometry_status": "out_of_bounds"
+            }
+          ],
+          "tables": [],
+          "image": {
+            "width": 480,
+            "height": 70
+          },
+          "model_image": {
+            "width": 476,
+            "height": 56
+          },
+          "coordinate_frame": "input_image_pixels",
+          "reading_order": "model_sequence",
+          "confidence": null
+        },
+        "error": null,
+        "duration_ms": 922.398
+      }
+    ],
+    "count": 4,
+    "succeeded": 4,
+    "failed": 0,
+    "execution": "sequential_wrapper"
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "deca0c5ab3be497cbefc080d77eba75e",
+    "model": "dots-studio/dots.mocr",
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "backend": "vllm",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 3918.485
+  }
+}

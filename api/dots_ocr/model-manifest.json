@@ -1,0 +1,231 @@
+{
+  "dots-studio/dots.ocr": {
+    "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+    "directory": "DotsOCR",
+    "weight_bytes": 6078431736,
+    "files": {
+      ".gitattributes": {
+        "size": 1519,
+        "algorithm": "git-blob-sha1",
+        "hash": "a6344aac8c09253b3b630fb776ae94478aa0275b"
+      },
+      "NOTICE": {
+        "size": 80471,
+        "algorithm": "git-blob-sha1",
+        "hash": "4d433fabf5fc5d02cb6236e567341722c4f8331b"
+      },
+      "README.md": {
+        "size": 33567,
+        "algorithm": "git-blob-sha1",
+        "hash": "6ddfcf16d1d61060cd8699b37f196653139293d7"
+      },
+      "chat_template.json": {
+        "size": 1109,
+        "algorithm": "git-blob-sha1",
+        "hash": "87a662f7ffedeacec6a2bc7acfb60f638d7eb72d"
+      },
+      "config.json": {
+        "size": 1474,
+        "algorithm": "git-blob-sha1",
+        "hash": "7ea2c09f6a238715eeaa9e649bb2556fe204c59e"
+      },
+      "configuration_dots.py": {
+        "size": 3038,
+        "algorithm": "git-blob-sha1",
+        "hash": "f128b8a5c6190f89efafd75d1d0b0d72d9637d39"
+      },
+      "dots.ocr LICENSE AGREEMENT": {
+        "size": 15532,
+        "algorithm": "git-blob-sha1",
+        "hash": "69c62cc31e4eacdb4c9100b90a805f7d5d74210c"
+      },
+      "generation_config.json": {
+        "size": 74,
+        "algorithm": "git-blob-sha1",
+        "hash": "c6f6906647405a39703b00f42eafcc3e15b0fac7"
+      },
+      "merges.txt": {
+        "size": 1671839,
+        "algorithm": "git-blob-sha1",
+        "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+      },
+      "model-00001-of-00002.safetensors": {
+        "size": 4292758192,
+        "algorithm": "sha256",
+        "hash": "ea1d532184f3adf5cbcfcc00b2cf5b2abfa6fe182768a3ae63d441a9b5fc99ac"
+      },
+      "model-00002-of-00002.safetensors": {
+        "size": 1785673544,
+        "algorithm": "sha256",
+        "hash": "26ab1ec6c8b4e4116befbd59af42159f1dbcb0ad0c045a15e890bb2f6e8b0dae"
+      },
+      "model.safetensors.index.json": {
+        "size": 52250,
+        "algorithm": "git-blob-sha1",
+        "hash": "8a62c0793d30c8ab47418a5198485939ff4acb35"
+      },
+      "modeling_dots_ocr.py": {
+        "size": 4981,
+        "algorithm": "git-blob-sha1",
+        "hash": "79d1c2561c0fba50fbba002e332d992432ed570a"
+      },
+      "modeling_dots_ocr_vllm.py": {
+        "size": 17510,
+        "algorithm": "git-blob-sha1",
+        "hash": "a8ba8d066620dc811695feaf7936039052b4da5f"
+      },
+      "modeling_dots_vision.py": {
+        "size": 20040,
+        "algorithm": "git-blob-sha1",
+        "hash": "42a570e49f6649f37bb31c2e3da247044419987b"
+      },
+      "preprocessor_config.json": {
+        "size": 432,
+        "algorithm": "git-blob-sha1",
+        "hash": "c5e511aefbe5e8e927ff02410fcaee3d31fabe66"
+      },
+      "special_tokens_map.json": {
+        "size": 494,
+        "algorithm": "git-blob-sha1",
+        "hash": "ec36c2f94529d5711c1b4ce135b723bdfe85ee77"
+      },
+      "tokenizer.json": {
+        "size": 7036028,
+        "algorithm": "git-blob-sha1",
+        "hash": "54a3cca8cde7c075fa20b941ceeb28eb4e7acc4d"
+      },
+      "tokenizer_config.json": {
+        "size": 9310,
+        "algorithm": "git-blob-sha1",
+        "hash": "a7055e5dbff6ce5c1b594ecbf9c2a9e9e83199bd"
+      },
+      "vocab.json": {
+        "size": 2776833,
+        "algorithm": "git-blob-sha1",
+        "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+      }
+    }
+  },
+  "dots-studio/dots.mocr": {
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "directory": "DotsMOCR",
+    "weight_bytes": 6078431736,
+    "files": {
+      ".eval_results/mdpbench.yaml": {
+        "size": 5005,
+        "algorithm": "git-blob-sha1",
+        "hash": "b5675ee8279ea32bc5e67a738f35910078b4f373"
+      },
+      ".eval_results/olmocrbench.yaml": {
+        "size": 1737,
+        "algorithm": "git-blob-sha1",
+        "hash": "69ce872c02a248cf78416eea1a9a971e979dfaaa"
+      },
+      ".eval_results/parsebench-2.yaml": {
+        "size": 2094,
+        "algorithm": "git-blob-sha1",
+        "hash": "54819f6f387af6cbad1e708442b8cf19f3c5d3ff"
+      },
+      ".eval_results/parsebench.yaml": {
+        "size": 1576,
+        "algorithm": "git-blob-sha1",
+        "hash": "2c2bcd2837efd489130f6d6ebc2c90c75681de25"
+      },
+      ".gitattributes": {
+        "size": 1519,
+        "algorithm": "git-blob-sha1",
+        "hash": "a6344aac8c09253b3b630fb776ae94478aa0275b"
+      },
+      "NOTICE": {
+        "size": 24331,
+        "algorithm": "git-blob-sha1",
+        "hash": "6f361ffa751c712090d001fbfa9b2c90d8b9a731"
+      },
+      "README.md": {
+        "size": 25262,
+        "algorithm": "git-blob-sha1",
+        "hash": "c97c02178df022b96dbdb0952017ba1a8a94b3a2"
+      },
+      "chat_template.json": {
+        "size": 1147,
+        "algorithm": "git-blob-sha1",
+        "hash": "9a8d9e3ab174f79a45b159aa6aad219d09f5aff5"
+      },
+      "config.json": {
+        "size": 1474,
+        "algorithm": "git-blob-sha1",
+        "hash": "7ea2c09f6a238715eeaa9e649bb2556fe204c59e"
+      },
+      "configuration_dots.py": {
+        "size": 3150,
+        "algorithm": "git-blob-sha1",
+        "hash": "f17e4c10a09b43bb3aa7103752a2fbd0df45cb22"
+      },
+      "dots.mocr LICENSE AGREEMENT": {
+        "size": 15538,
+        "algorithm": "git-blob-sha1",
+        "hash": "b62768778a215a0330150a31ab84d5ddb348c23d"
+      },
+      "generation_config.json": {
+        "size": 86,
+        "algorithm": "git-blob-sha1",
+        "hash": "8d91aa0aef643754fce3171ac732b551881aff36"
+      },
+      "merges.txt": {
+        "size": 1671839,
+        "algorithm": "git-blob-sha1",
+        "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+      },
+      "model-00001-of-00002.safetensors": {
+        "size": 4998547840,
+        "algorithm": "sha256",
+        "hash": "d8f4bc75340279da003609fe93f2eb02cc1a77087f5dfb6ba46c0980e1b4da81"
+      },
+      "model-00002-of-00002.safetensors": {
+        "size": 1079883896,
+        "algorithm": "sha256",
+        "hash": "0101b36fe6620ba135d4bb8efbbf275fc27b4363b10b7f632c058c0955f3dc4d"
+      },
+      "model.safetensors.index.json": {
+        "size": 52287,
+        "algorithm": "git-blob-sha1",
+        "hash": "3bcdf80be0e91f552d1e814bec332e269804ecdc"
+      },
+      "modeling_dots_ocr.py": {
+        "size": 4981,
+        "algorithm": "git-blob-sha1",
+        "hash": "79d1c2561c0fba50fbba002e332d992432ed570a"
+      },
+      "modeling_dots_vision.py": {
+        "size": 14890,
+        "algorithm": "git-blob-sha1",
+        "hash": "225320ece059983ea3bc471e4aaf94f959edb574"
+      },
+      "preprocessor_config.json": {
+        "size": 432,
+        "algorithm": "git-blob-sha1",
+        "hash": "c5e511aefbe5e8e927ff02410fcaee3d31fabe66"
+      },
+      "special_tokens_map.json": {
+        "size": 494,
+        "algorithm": "git-blob-sha1",
+        "hash": "ec36c2f94529d5711c1b4ce135b723bdfe85ee77"
+      },
+      "tokenizer.json": {
+        "size": 7036028,
+        "algorithm": "git-blob-sha1",
+        "hash": "54a3cca8cde7c075fa20b941ceeb28eb4e7acc4d"
+      },
+      "tokenizer_config.json": {
+        "size": 9310,
+        "algorithm": "git-blob-sha1",
+        "hash": "a7055e5dbff6ce5c1b594ecbf9c2a9e9e83199bd"
+      },
+      "vocab.json": {
+        "size": 2776833,
+        "algorithm": "git-blob-sha1",
+        "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+      }
+    }
+  }
+}

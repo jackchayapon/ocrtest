@@ -1,0 +1,188 @@
+[
+  {
+    "name": "english",
+    "file": "english.png",
+    "category": "english",
+    "expected_text": "Document 123\nHello world",
+    "width": 800,
+    "height": 220,
+    "sha256": "cedc36512fd9ed5d97e87f88f6bed15daaf906a2fe4c8cd60d9bb6fbfe9eb7ba"
+  },
+  {
+    "name": "thai",
+    "file": "thai.png",
+    "category": "thai",
+    "expected_text": "ภาษาไทย ทดสอบเอกสาร\nกรุงเทพมหานคร 123",
+    "width": 800,
+    "height": 220,
+    "sha256": "d4b0bdccb38ebcc0b9be890aaf58dcbf9e8dbbb50210fee1c15649da61b40a6f"
+  },
+  {
+    "name": "mixed",
+    "file": "mixed.png",
+    "category": "mixed",
+    "expected_text": "ใบแจ้งหนี้ Invoice 2026\nรวม Total 250 บาท",
+    "width": 800,
+    "height": 220,
+    "sha256": "ea5fdd364f417edfe6ef6d30abe92a7098f8a8c7fd457aa9e04a3b0f12591d86"
+  },
+  {
+    "name": "english_jpeg",
+    "file": "english_jpeg.jpeg",
+    "category": "english",
+    "expected_text": "Document 123\nHello world",
+    "width": 800,
+    "height": 220,
+    "sha256": "e8fb6c5d9e194d4040ec1e9a418b97255f9a7e43cecf6ae8c82295f15d83ed70"
+  },
+  {
+    "name": "english_webp",
+    "file": "english_webp.webp",
+    "category": "english",
+    "expected_text": "Document 123\nHello world",
+    "width": 800,
+    "height": 220,
+    "sha256": "c7dc23624b2016dd23b02651f7d9e9349d253043b3bdc30ab077c37246c984bf"
+  },
+  {
+    "name": "crop",
+    "file": "crop.png",
+    "category": "crop",
+    "expected_text": "Document 123",
+    "width": 480,
+    "height": 70,
+    "sha256": "a8061b92f0d7e9671df363e7e4cb9962ea1331de8ab3fefaeb95f927c47f8ae7"
+  },
+  {
+    "name": "rotated",
+    "file": "rotated.png",
+    "category": "rotated_90",
+    "expected_text": "Document 123\nHello world",
+    "width": 220,
+    "height": 800,
+    "sha256": "01dc44e948af9643d41320a5cfc06296447c960366e9b15b72ddb600457b1716"
+  },
+  {
+    "name": "skewed",
+    "file": "skewed.png",
+    "category": "skewed_6_degrees",
+    "expected_text": "Document 123\nHello world",
+    "width": 820,
+    "height": 304,
+    "sha256": "777f4f16881fb0c37a746c66edfe41b266657105d15fbad0c2dfd9d4bdd7cd5d"
+  },
+  {
+    "name": "blurred",
+    "file": "blurred.png",
+    "category": "blur_low_resolution",
+    "expected_text": "Document 123\nHello world",
+    "width": 400,
+    "height": 110,
+    "sha256": "45afedc321b6ba7c4f539af837ccb45dbaf4f0ebad897d86c916eea5c97daab0"
+  },
+  {
+    "name": "blank",
+    "file": "blank.png",
+    "category": "blank",
+    "expected_text": "",
+    "width": 800,
+    "height": 220,
+    "sha256": "7ddb4edf05030226e4ca3a5b07956f1103a38d1157175050c791e5599ff716bf"
+  },
+  {
+    "name": "resolution_small",
+    "file": "resolution_small.png",
+    "category": "resolution",
+    "expected_text": "Benchmark 789",
+    "width": 400,
+    "height": 200,
+    "sha256": "41b3f69c6852fe0650bf2e52905320fcd505899c8852c7b9dd82dc3fff1a2b1c"
+  },
+  {
+    "name": "resolution_medium",
+    "file": "resolution_medium.png",
+    "category": "resolution",
+    "expected_text": "Benchmark 789",
+    "width": 800,
+    "height": 400,
+    "sha256": "0e558ec839b29bed8f7570ed89c79c1cce0fb4fd5c464b8eaa0a78f041ef5885"
+  },
+  {
+    "name": "resolution_large",
+    "file": "resolution_large.png",
+    "category": "resolution",
+    "expected_text": "Benchmark 789",
+    "width": 1200,
+    "height": 800,
+    "sha256": "0ef3b790fc3d5f15fd056b65082270d751f1b147f8ab85e51cb5c65522c6c51f"
+  },
+  {
+    "name": "full_page",
+    "file": "full_page.png",
+    "category": "full_page",
+    "expected_text": "SYNTHETIC REPORT 2026",
+    "width": 1000,
+    "height": 1400,
+    "sha256": "db9611026554c9da7bce7638ded160911488214f37b6f296e5f17cf5b25b4439"
+  },
+  {
+    "name": "table",
+    "file": "table.png",
+    "category": "table",
+    "expected_text": "Notebook",
+    "width": 800,
+    "height": 450,
+    "sha256": "b6dbdd56d34c69d0e2cf6623f24b2e89330fe5eea567d876af5b400262b0f5c7"
+  },
+  {
+    "name": "complex_table",
+    "file": "complex_table.png",
+    "category": "complex_table",
+    "expected_text": "Merged heading",
+    "width": 800,
+    "height": 450,
+    "sha256": "7b3900bf23d94494eaf54c42d46be9a5895699c5756fe1646511d4a33e3ff092"
+  },
+  {
+    "name": "invoice",
+    "file": "invoice.png",
+    "category": "invoice",
+    "expected_text": "INVOICE 42",
+    "width": 800,
+    "height": 350,
+    "sha256": "9ebb5d7971bc5fba4b2d8ed2f251e91c32dccceff242faa281f2634cf0bd1e93"
+  },
+  {
+    "name": "multicolumn",
+    "file": "multicolumn.png",
+    "category": "multicolumn",
+    "expected_text": "LEFT COLUMN",
+    "width": 1000,
+    "height": 600,
+    "sha256": "1d444c5785f5dfbacb7cefe19852684c006466ea1514a6941c1d71b92fd78d9e"
+  },
+  {
+    "name": "formula",
+    "file": "formula.png",
+    "category": "formula",
+    "expected_text": "x",
+    "width": 800,
+    "height": 220,
+    "sha256": "4841e3b69302c9838ab38a9c75f9e5561366f337ca9d60e6b29f41fe8b5c1975"
+  },
+  {
+    "name": "chart",
+    "file": "chart.png",
+    "category": "chart",
+    "expected_text": "Synthetic Sales Chart",
+    "width": 800,
+    "height": 500,
+    "sha256": "7a57cb8a486d24b42d2558692a47a017bea6b5c70aa9f7d6705fefb3484f71ab"
+  },
+  {
+    "name": "corrupt",
+    "file": "corrupt.png",
+    "category": "corrupted",
+    "expected_error": "INVALID_IMAGE"
+  }
+]

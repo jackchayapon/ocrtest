@@ -1,0 +1,13 @@
+﻿{
+    "observed_at":  "2026-11-19T02:01:01.6427781+07:00",
+    "cpu":  "13th Gen Intel(R) Core(TM) i7-13700K",
+    "physical_cores":  16,
+    "logical_cores":  24,
+    "os":  "Microsoft Windows 10 Pro",
+    "os_version":  "10.0.19045",
+    "ram_total_bytes":  34111770624,
+    "ram_available_bytes":  8216489984,
+    "gpu_csv":  "NVIDIA GeForce RTX 4070, 581.80, 12282, 9304",
+    "disk_free_bytes":  55566209024,
+    "shared_machine":  true
+}
