@@ -15,6 +15,7 @@ import LargeDialog from "./LargeDialog";
 import SourceCropPreview from "./SourceCropPreview";
 import type {ROI} from "@/types";
 import {isFullImageCase,textLines} from "@/lib/full-image-lines";
+import {lineConfidences} from "@/lib/line-confidence";
 
 const pct=(n:number|null|undefined)=>n==null?"—":`${(n*100).toFixed(2)}%`;
 type Props={fields:GlobalField[];saved:TestCase;runs:PipelineRun[];mode:EvaluationMode;documentGT:string;onMode:(mode:EvaluationMode)=>void;onEdit:()=>void;busy:boolean};
@@ -28,6 +29,7 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
  const visibleRuns=runs.filter(run=>!hiddenPipelines.includes(run.pipeline_id));
  const whole=mode==="whole_document";
  const lines=!whole&&isFullImageCase(saved);
+ const confidenceByRun=new Map(lines?runs.map(run=>[run.id,lineConfidences(run)]):[]);
  const gtLines=textLines(documentGT);
  const rows=whole?[{id:"document",name:"Whole Field",gt:documentGT,dirty:documentGT!==(saved.ground_truth_raw??""),line:-1}]:lines?Array.from({length:Math.max(gtLines.length,...runs.map(run=>textLines(run.final_text??'').length))},(_,index)=>({id:`line-${index}`,name:`Field ${String(index+1).padStart(2,'0')}`,gt:gtLines[index]??'',dirty:documentGT!==(saved.ground_truth_raw??''),line:index})):[...fields].sort((a,b)=>a.field_index-b.field_index).map(f=>({id:f.id,name:`Field ${String(f.field_index).padStart(2,"0")}`,gt:f.ground_truth_raw??"",dirty:(f.ground_truth_raw??"")!==(saved.global_fields?.find(s=>s.id===f.id)?.ground_truth_raw??""),line:-1}));
  return <section aria-label="Evaluation Results" className="panel min-w-0">
@@ -89,7 +91,7 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
       const evaluation=row.dirty||failed?null:whole?run.document_evaluation:lines?run.document_evaluation?.line_evaluations?.[row.line]:field?.evaluation;
       return <td key={run.id} data-testid={`global-metrics-${run.pipeline_id}`} className="border-b border-r border-slate-200 p-3 align-top">
        <section aria-label="Metrics" data-testid={evaluation?"global-evaluation":"not-evaluated"} className="my-4 rounded-lg bg-slate-50 p-3">
-        <dl className="grid grid-cols-2 gap-2">{[["Confidence",pct(whole?run.confidence:field?.confidence)],["CER",pct(evaluation?.cer)],["WER",pct(evaluation?.wer)],["Exact Match",evaluation?(evaluation.exact_match?"✓ Yes":"✕ No"):"—"]].map(([label,value])=><div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
+        <dl className="grid grid-cols-2 gap-2">{[["Confidence",pct(whole?run.confidence:lines?confidenceByRun.get(run.id)?.[row.line]:field?.confidence)],["CER",pct(evaluation?.cer)],["WER",pct(evaluation?.wer)],["Exact Match",evaluation?(evaluation.exact_match?"✓ Yes":"✕ No"):"—"]].map(([label,value])=><div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
         {!evaluation&&<p className="mt-2 text-xs text-slate-500">ยังไม่ประเมิน — กลับไปกรอก GT แล้วยืนยันเพื่อคำนวณ</p>}
        </section>
        {!lines&&<CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation} onOpenDetails={()=>setOverlay({run,fieldId:whole||lines?null:row.id,kind:"stats"})}
