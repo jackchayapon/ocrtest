@@ -115,9 +115,9 @@ export default function DocumentViewer({
   const previewSource=usePreviewSource(imageUrl);
   const [panMode, setPanMode] = useState(false);
   const [showBoxes, setShowBoxes] = useState(true);
-  const [showAllFields, setShowAllFields] = useState(true);
+  const showAllFields = true;
   const [showFieldLabels,setShowFieldLabels]=useState(true);
-  const [showSelectedField,setShowSelectedField]=useState(true);
+  const showSelectedField = true;
   const [draftRoi, setDraftRoi] = useState<ROI | null>(null);
   const [pointerCoordinates, setPointerCoordinates] = useState<Point | null>(
     null,
@@ -399,8 +399,7 @@ export default function DocumentViewer({
             <Crop size={16} />
           </button>}
           <span className="mx-1 h-5 w-px bg-slate-200" />
-          {showGlobalFieldToggle && !!globalFields?.length && <button type="button" aria-label="แสดงกรอบ Global ทั้งหมด" aria-pressed={showAllFields} title="ซ่อนกรอบ Global อื่น โดยยังแสดง Field ที่เลือก" className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-slate-700 hover:bg-slate-100" onClick={()=>setShowAllFields(v=>!v)}><ScanLine size={16}/>{showAllFields?"ซ่อนกรอบ Global อื่น":"แสดงกรอบ Global ทั้งหมด"}</button>}
-          {!!globalFields?.length&&<><button type="button" className="text-xs px-2 py-1" aria-label="แสดงชื่อ Field" aria-pressed={showFieldLabels} onClick={()=>setShowFieldLabels(v=>!v)}>ชื่อ Field</button><button type="button" className="text-xs px-2 py-1" aria-label="แสดง Field ที่เลือก" aria-pressed={showSelectedField} onClick={()=>setShowSelectedField(v=>!v)}>Field ที่เลือก</button></>}
+          {showGlobalFieldToggle && !!globalFields?.length && <button type="button" aria-label="ซ่อนกรอบ Global อื่น" aria-pressed={!showFieldLabels} title={showFieldLabels ? "ซ่อนชื่อ Field ทั้งหมด โดยยังแสดงกรอบ" : "แสดงชื่อ Field ทั้งหมด"} className="flex items-center gap-2 rounded-lg px-2 py-1 text-xs text-slate-700 hover:bg-slate-100" onClick={()=>setShowFieldLabels(v=>!v)}><ScanLine size={16}/>ซ่อนกรอบ Global อื่น</button>}
           {!!boxes.length && <button
             type="button"
             aria-label={reviewMode ? "แสดงกรอบ DET ทั้งหมด" : showBoxes ? t("Hide OCR boxes") : t("Show OCR boxes")}
