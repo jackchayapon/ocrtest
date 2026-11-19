@@ -13,7 +13,7 @@ export type Category = { id: string; code: string; display_name: string };
 export type Metrics = { cer: number | null; wer: number | null; exact_match: boolean };
 export type OCRBox = { bbox: [number, number, number, number]; polygon?: [number, number][] | null; crop_bbox?: [number, number, number, number] | null; crop_polygon?: [number, number][] | null; text: string; confidence: number | null; det_confidence?: number | null; rec_confidence?: number | null };
 export type PipelineRun = {
-  document_evaluation?: (FieldComparison & {prediction: string; mode: "whole_document"; evaluated_at: string}) | null;
+  document_evaluation?: (FieldComparison & {prediction: string; mode: "whole_document"; evaluated_at: string; line_evaluations?: FieldComparison[]}) | null;
   id: string; pipeline_id: string; pipeline_name: string; status: "success" | "error";
   raw_text: string | null; final_text: string | null; text: string | null; normalized_text: string | null;
   confidence: number | null; processing_time_ms: number | null; boxes: OCRBox[];

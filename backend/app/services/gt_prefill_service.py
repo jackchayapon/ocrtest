@@ -4,8 +4,8 @@ from urllib.parse import parse_qsl, urlsplit
 from app.db.models import OCRModel, PipelineConfig
 from app.services.metrics_service import normalize_text
 
-DETECTION = "/api/v1/text-detection-batches?version=6&model=thai_ft_v2"
-RECOGNITION = "/api/v1/text-recognition-batches?version=6&model=thai_ft_v1"
+DETECTION = "/api/v1/text-detection-batches?version=6&model=thai_ft_v3"
+RECOGNITION = "/api/v1/text-recognition-batches?version=5&model=thai_ft_v6"
 
 
 def pristine_gt(case):
@@ -27,8 +27,8 @@ def prefill_pipeline(configs):
     # Transient configuration: no registry entry or PipelineRun is persisted.
     return PipelineConfig(
         pipeline_id="system_gt_prefill", name="GT draft assistance", source="custom", execution_mode="det_rec", enabled=True,
-        det_model=OCRModel(name="DET v6 thai_ft_v2", kind="det", source="custom", version="6", weight="thai_ft_v2", batch_path=DETECTION, single_path=""),
-        rec_model=OCRModel(name="REC v6 thai_ft_v1", kind="rec", source="custom", version="6", weight="thai_ft_v1", batch_path=RECOGNITION, single_path=""),
+        det_model=OCRModel(name="DET v6 thai_ft_v3", kind="det", source="custom", version="6", weight="thai_ft_v3", batch_path=DETECTION, single_path=""),
+        rec_model=OCRModel(name="REC v5 thai_ft_v6", kind="rec", source="custom", version="5", weight="thai_ft_v6", batch_path=RECOGNITION, single_path=""),
     )
 
 

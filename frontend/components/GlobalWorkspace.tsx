@@ -16,6 +16,8 @@ import SafeDebugPanel from "./SafeDebugPanel";
 import {acknowledgeJob} from "@/lib/job-navigation";
 import GlobalGroundTruthForm from "./GlobalGroundTruthForm";
 import GlobalFieldEvaluation from "./GlobalFieldEvaluation";
+import FullImageLineFields from "./FullImageLineFields";
+import {isFullImageCase} from "@/lib/full-image-lines";
 const DocumentViewer=dynamic(()=>import("./DocumentViewer"),{ssr:false});
 const fieldName=(f:GlobalField)=>`Field ${String(f.field_index).padStart(2,"0")}`;
 
@@ -23,10 +25,13 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  const router=useRouter(),[saved,setSaved]=useState(initialCase),[fields,setFields]=useState(initialCase.global_fields??[]);
  const [activeId,setActiveId]=useState<string|null>(stage==="layout"?null:((stage==="ground-truth"?fields.find(f=>f.confirmed_at)?.id:undefined)??fields[0]?.id??null));
  const [drawing,setDrawing]=useState(false);
+ const fullImageCase=isFullImageCase(saved);
+ const [layoutMode,setLayoutMode]=useState<"regions"|"full_image">("regions");
+ const fullImageMode=stage==="layout"&&layoutMode==="full_image";
  const [configs,setConfigs]=useState<PipelineConfig[]>([]),[pipelineIds,setPipelineIds]=useState<string[]>([]);
  const [workload,setWorkload]=useState({max_job_fields:0,max_job_pipelines:0,max_job_units:0});
  const [configState,setConfigState]=useState<"loading"|"ready"|"error">("loading"),[configRetry,setConfigRetry]=useState(0);
- const [mode,setMode]=useState<EvaluationMode>(saved.evaluation_mode??"per_field"),[documentGT,setDocumentGT]=useState(saved.ground_truth_raw??"");
+ const [mode,setMode]=useState<EvaluationMode>(fullImageCase?"whole_document":saved.evaluation_mode??"per_field"),[documentGT,setDocumentGT]=useState(saved.ground_truth_raw??"");
  const [lineCounts,setLineCounts]=useState(()=>fieldLineCounts(fields));
  const [busy,setBusy]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState(false);
  const [saveMessage,setSaveMessage]=useState("");
@@ -61,7 +66,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
    if(documentGT!==(saved.ground_truth_raw??""))c=await api.saveGroundTruth(c.id,documentGT,false);
    if(c.evaluation_mode!==mode)c=await api.setEvaluationMode(c.id,mode);
   }adopt(c);
-  if(calculate){adopt(await api.evaluateGlobal(c.id,"auto",fields.map(f=>f.id),true));setNotice(true);setComparison(true);}
+  if(calculate){adopt(await api.evaluateGlobal(c.id,"auto",fields.map(f=>f.id),true));setNotice(true);if(fullImageCase)setMode("whole_document");setComparison(true);}
   else setSaveMessage("บันทึก GT ฉบับร่างแล้ว — ยังไม่ได้คำนวณผลประเมิน");
  });}
  const allowed=stage==="layout"||stage==="pipelines"&&locked||(stage==="ground-truth")&&hasRuns;
@@ -72,13 +77,14 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  const layoutDirty=JSON.stringify(fields)!==JSON.stringify(saved.global_fields??[]);
  async function saveLayout(confirmed:boolean){
   if(configState!=="ready")throw new Error("กรุณารอขีดจำกัดจากเซิร์ฟเวอร์ก่อนบันทึก");
-  if(fields.length>workload.max_job_fields)throw new Error(`เลือกได้สูงสุด ${workload.max_job_fields} Fields`);
+  const submittedFields:GlobalField[]=fullImageMode?[{id:crypto.randomUUID(),field_index:1,roi:{x1:0,y1:0,x2:doc.width,y2:doc.height},source:"manual",ground_truth_raw:null,confirmed_at:null}]:fields;
+  if(submittedFields.length>workload.max_job_fields)throw new Error(`เลือกได้สูงสุด ${workload.max_job_fields} Fields`);
   if(hasRuns||saved.layout_locked_at){
-   if(!layoutDirty)return saved;
+   if(!layoutDirty&&!fullImageMode)return saved;
    const revision=await api.createTestCase({workflow:"global",document_id:doc.id,page_number:doc.page_number,roi:null,ground_truth_raw:null,category_codes:saved.categories.map(c=>c.code)});
-   return api.saveGlobalLayout(revision.id,fields.map(f=>({...f,id:crypto.randomUUID()})),confirmed);
+   return api.saveGlobalLayout(revision.id,submittedFields.map(f=>({...f,id:crypto.randomUUID()})),confirmed);
   }
-  return api.saveGlobalLayout(saved.id,fields,confirmed);
+  return api.saveGlobalLayout(saved.id,submittedFields,confirmed);
  }
  const fieldList=<div className="max-h-[min(50vh,28rem)] space-y-2 overflow-y-auto overscroll-contain p-1 [scrollbar-gutter:stable]" tabIndex={0} role="region" aria-label="Global Fields">{fields.map(f=><div key={f.id} ref={node=>{if(node)fieldRows.current.set(f.id,node);else fieldRows.current.delete(f.id);}} className={`flex items-center gap-2 rounded-lg border p-2 ${f.id===activeId?"border-indigo-400 bg-indigo-50":"border-slate-200"}`}>
  <button type="button" data-testid="global-field-nav" disabled={busy} className="flex-1 text-left text-sm" aria-pressed={f.id===activeId} onClick={()=>selectField(f.id)}>{fieldName(f)}{f.confirmed_at?" ✓":""}</button>
@@ -98,20 +104,23 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  <GlobalFieldEvaluation key={saved.id} fields={fields} saved={saved} runs={latestRuns} mode={mode} documentGT={documentGT} busy={busy} onMode={setMode} onEdit={()=>{setComparison(false);setNotice(false);}}/>
  </>:<div className="grid gap-5 lg:grid-cols-2">
  <section data-testid="preview-column" className={`relative min-w-0 ${stage==="layout"?"lg:min-h-[560px]":"lg:sticky lg:top-4 lg:h-[min(76dvh,760px)] lg:min-h-[560px] lg:self-start"}`}><div className="lg:absolute lg:inset-0">
- <DocumentViewer missingGTFieldIds={stage==="ground-truth"?fields.filter(f=>!f.ground_truth_raw?.trim()).map(f=>f.id):[]} errorFieldIds={fields.filter(f=>latestRuns.some(r=>r.fields?.some(p=>p.global_field_id===f.id&&p.status==="error"))).map(f=>f.id)} fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy)setActiveId(null);}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fields} selectedGlobalFieldId={activeId} showRoiDelete={false} onSelectGlobalField={selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!locked&&!busy}/>
+ <DocumentViewer missingGTFieldIds={stage==="ground-truth"?fields.filter(f=>!f.ground_truth_raw?.trim()).map(f=>f.id):[]} errorFieldIds={fields.filter(f=>latestRuns.some(r=>r.fields?.some(p=>p.global_field_id===f.id&&p.status==="error"))).map(f=>f.id)} fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy)setActiveId(null);}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={fullImageMode?null:active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fullImageMode?[]:fields} selectedGlobalFieldId={fullImageMode?null:activeId} showRoiDelete={false} onSelectGlobalField={selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!fullImageMode&&!locked&&!busy}/>
  </div></section><section data-testid="controls-column" className="min-w-0 space-y-4">
  {stage==="layout"&&<div className="panel panel-body space-y-4 lg:h-full"><h2>จัดการ Global Fields</h2>
+ <fieldset disabled={busy} className="space-y-2"><legend className="text-sm font-medium">รูปแบบการส่งภาพ</legend><div className="flex flex-wrap gap-4">{([ ["regions","วาดกรอบ"], ["full_image","ส่งรูปเต็ม"] ] as const).map(([value,label])=><label key={value} className="flex items-center gap-2"><input type="radio" name="layout-mode" value={value} checked={layoutMode===value} onChange={()=>{setLayoutMode(value);setDrawing(false);setSaveMessage("");}}/>{label}</label>)}</div></fieldset>
+ {fullImageMode?<p className="notice-banner">ใช้ภาพเต็มของหน้านี้ โดยไม่ส่งกรอบที่วาดไว้ กรอบเดิมจะกลับมาเมื่อเลือกโหมดวาดกรอบ กดยืนยันเพื่อใช้ภาพเต็มและไปเลือก Pipeline</p>:<>
  <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy||configState!=="ready"} onClick={()=>void act(async()=>{if(configState!=="ready")return;const regions=(await api.getAutoROIs(doc.id,"text-line",doc.page_number)).regions;const additions=regions.filter(r=>!fields.some(f=>JSON.stringify(f.roi)===JSON.stringify(r.roi)));if(fields.length+additions.length>workload.max_job_fields)throw new Error(`เลือกได้สูงสุด ${workload.max_job_fields} Fields`);setFields(old=>previewFieldOrder([...old,...additions.map(r=>({id:crypto.randomUUID(),field_index:0,roi:r.roi,source:"auto" as const,ground_truth_raw:null,confirmed_at:null}))]));})}>Auto Layout</button><button className="button secondary" disabled={busy||configState!=="ready"||fields.length>=workload.max_job_fields} onClick={()=>setDrawing(true)}>เพิ่มกรอบ Manual</button></div>
  <p className="text-sm text-slate-600">Auto Layout ค้นหาข้อความและเพิ่มกรอบ ROI อัตโนมัติ · Manual ใช้ลากวาดกรอบเอง วาดต่อได้หลายกรอบจนกว่าจะเปลี่ยนเครื่องมือ</p>
  <p className="text-xs text-slate-500">เครื่องมือรูปมือใช้ลากเลื่อนภาพเมื่อซูมหรือภาพใหญ่กว่าพื้นที่พรีวิว โดยไม่แก้ไขกรอบ</p>
  {fieldList}
  <p className="text-xs text-slate-500">ทุก Field ในรายการจะถูกนำไปใช้ กด × ท้าย Field ที่ไม่ต้องการเพื่อนำออก</p>
+ </>}
  <p className="text-xs text-slate-500">{layoutDirty?"มีการแก้ไขที่ยังไม่ได้บันทึก · ":""}บันทึกฉบับร่างเพื่อแก้ต่อ หรือยืนยัน ROI เพื่อบันทึกและไปเลือก Pipeline ย้อนกลับมาแก้กรอบได้เสมอ</p>
  {hasRuns&&<p className="text-xs text-amber-800">หากแก้กรอบแล้วบันทึก จะสร้างชุดแก้ไขสำหรับรัน OCR ใหม่ โดยเก็บ GT ติดกับ Field เดิมแม้ลำดับเปลี่ยน กรอบใหม่เริ่มว่าง และผลประเมินเดิมยังอยู่ในประวัติ</p>}
- <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy||configState!=="ready"||!layoutDirty} onClick={()=>void act(async()=>{const c=await saveLayout(false);adopt(c);if(c.id!==saved.id)router.replace(workflowUrl(c.id,"layout"));setSaveMessage("บันทึก Layout ฉบับร่างแล้ว — ยังแก้ไขกรอบได้");})}>บันทึก Layout ฉบับร่าง</button><button className="button primary" disabled={busy||configState!=="ready"||!fields.length} onClick={()=>void act(async()=>{const c=await saveLayout(true);adopt(c);router.push(workflowUrl(c.id,"pipelines"));})}>ยืนยัน ROI</button></div>
+ <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy||configState!=="ready"||!layoutDirty||fullImageMode} onClick={()=>void act(async()=>{const c=await saveLayout(false);adopt(c);if(c.id!==saved.id)router.replace(workflowUrl(c.id,"layout"));setSaveMessage("บันทึก Layout ฉบับร่างแล้ว — ยังแก้ไขกรอบได้");})}>บันทึก Layout ฉบับร่าง</button><button className="button primary" disabled={busy||configState!=="ready"||(!fullImageMode&&!fields.length)} onClick={()=>void act(async()=>{const c=await saveLayout(true);adopt(c);router.push(workflowUrl(c.id,"pipelines"));})}>ยืนยัน ROI</button></div>
  </div>}
  {stage==="pipelines"&&<section className="panel panel-body space-y-4 lg:h-full"><h2>เลือก Pipelines</h2><p>ทุก Pipeline จะใช้ Global Field ชุดเดียวกัน</p><div data-testid="pipeline-options" aria-busy={busy} className={`space-y-3 transition-opacity ${busy?"opacity-50":"opacity-100"}`}>{configs.map(p=><label key={p.pipeline_id} className="flex gap-2"><input type="checkbox" aria-label={`เลือก ${pipelineLabel(p.pipeline_id,p.name)}`} disabled={busy||!p.enabled||(!pipelineIds.includes(p.pipeline_id)&&pipelineIds.length>=workload.max_job_pipelines)} checked={pipelineIds.includes(p.pipeline_id)} onChange={e=>setPipelineIds(old=>e.target.checked?(old.length<workload.max_job_pipelines?[...old,p.pipeline_id]:old):old.filter(id=>id!==p.pipeline_id))}/>{pipelineLabel(p.pipeline_id,p.name)}{!p.enabled&&" (ปิดอยู่)"}</label>)}</div><OCRJobRunner caseId={saved.id} pipelines={pipelineIds} names={Object.fromEntries(configs.map(p=>[p.pipeline_id,p.name]))} onBusy={setBusy} resultsUrl={workflowUrl(saved.id,"ground-truth")} onCompleted={job=>router.push(workflowUrl(saved.id,"ground-truth")+(job.status==="partial_success"?"?partial=1&edit=1":"?edit=1"))}/></section>}
- {stage==="ground-truth"&&<GlobalGroundTruthForm activeFieldId={activeId} focusRequest={focusRequest} mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onNavigateField={selectPreviewField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>}
+ {stage==="ground-truth"&&(fullImageCase?<FullImageLineFields mode={mode} onMode={setMode} text={documentGT} runs={latestRuns} busy={busy} onChange={changeDocument} onSave={calculate=>void saveGT(calculate)}/>:<GlobalGroundTruthForm activeFieldId={activeId} focusRequest={focusRequest} mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onNavigateField={selectPreviewField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>)}
  </section></div>}</>}
  </div>;
 }

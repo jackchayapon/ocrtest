@@ -278,6 +278,15 @@ class GlobalLayoutService:
                     ],
                     "evaluated_at": stamp.isoformat(),
                 }
+                width = case.page_width or case.document.width
+                height = case.page_height or case.document.height
+                if (len(case.global_fields) == 1 and case.global_fields[0].roi
+                        == {"x1": 0, "y1": 0, "x2": width, "y2": height}):
+                    from app.services.line_evaluation import line_evaluations
+                    run.document_evaluation = {
+                        **run.document_evaluation,
+                        "line_evaluations": line_evaluations(prediction, case.ground_truth_raw),
+                    }
             case.document_gt_confirmed_at = stamp
         else:
             selected = [self.field(case, str(field_id)) for field_id in data.global_field_ids]

@@ -121,6 +121,10 @@ def run_json(record, detail=False, *, summary=False):
         data["document_evaluation"] = {**record.document_evaluation,
             **compare_field(prediction, case.ground_truth_raw or ""),
             "prediction": prediction, "ground_truth_raw": case.ground_truth_raw}
+        if "line_evaluations" in record.document_evaluation:
+            from app.services.line_evaluation import line_evaluations
+            data["document_evaluation"]["line_evaluations"] = line_evaluations(
+                prediction, case.ground_truth_raw, detail=True)
     metrics = {item.text_kind: metrics_json(item) for item in record.metric_records}
     return {
         **data,
