@@ -22,6 +22,8 @@ export async function mockUX(page:Page,count=2,options:{groundTruth?:boolean;con
   if(path.endsWith('/ocr-jobs/ux-job/results')){state.resultReads++;return route.fulfill({json:{test_case_id:record.id,runs:state.resultsReady?runs:[]}});}
   if(path.endsWith('/global-fields')&&request.method()==='PUT'){record.global_fields=request.postDataJSON().fields;return route.fulfill({json:record});}
   if(path.endsWith('/global-ground-truth')){state.gtPuts++;return route.fulfill({json:record});}
+  if(path.endsWith('/full-image-alignment'))return route.fulfill({json:{references:record.ground_truth_raw.split('\n').map((text,i)=>({id:`gt-${i}`,text,roi:null})),geometry_available:false}});
+  if(path.endsWith('/alignment-review'))return route.fulfill({json:{ready:true,pipelines:record.runs.map(r=>({run_id:r.id,pipeline_id:r.pipeline_id,ready:true,reason:'matched',mismatch:0,missing:0,extra:0,ambiguous:0}))}});
   if(path.endsWith('/error-summary')){
    state.insights.push(url.toString());const f=fields.find(f=>f.id===url.searchParams.get('field_id'))??fields[0];
    const stats={character_edits:1,substitution:0,deletion:1,insertion:0,characters:[{character:'้',display:'◌้',name:'ไม้โท',code_point:'U+0E49',total:1,substitution:0,deletion:1,insertion:0}],confusion_pairs:[{expected:'้',predicted:'',count:1}]};

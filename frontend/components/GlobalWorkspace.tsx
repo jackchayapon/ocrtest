@@ -17,6 +17,11 @@ import {acknowledgeJob} from "@/lib/job-navigation";
 import GlobalGroundTruthForm from "./GlobalGroundTruthForm";
 import GlobalFieldEvaluation from "./GlobalFieldEvaluation";
 import FullImageLineFields from "./FullImageLineFields";
+import FullImageAlignment from './FullImageAlignment';
+import LargeDialog from './LargeDialog';
+import {CalculationPrompt,EvaluationLoading} from './EvaluationFeedback';
+import type {SpatialReference} from '@/types/spatial-comparison';
+import type {DocumentViewControls} from './DocumentViewer';
 import {isFullImageCase} from "@/lib/full-image-lines";
 const DocumentViewer=dynamic(()=>import("./DocumentViewer"),{ssr:false});
 const fieldName=(f:GlobalField)=>`Field ${String(f.field_index).padStart(2,"0")}`;
@@ -26,6 +31,16 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  const [activeId,setActiveId]=useState<string|null>(stage==="layout"?null:((stage==="ground-truth"?fields.find(f=>f.confirmed_at)?.id:undefined)??fields[0]?.id??null));
  const [drawing,setDrawing]=useState(false);
  const fullImageCase=isFullImageCase(saved);
+ const [gtReferences,setGTReferences]=useState<SpatialReference[]>([]),[gtReferenceError,setGTReferenceError]=useState('');
+ const [gtIndex,setGTIndex]=useState(-1);
+ const gtViewControls=useRef<DocumentViewControls|null>(null);
+ const fullImageGT=stage==='ground-truth'&&fullImageCase;
+ useEffect(()=>{if(!fullImageGT)return;let cancelled=false;api.getFullImageReferences(saved.id).then(data=>{if(!Array.isArray(data.references))throw new Error('Invalid GT references');if(!cancelled){setGTReferences(data.references);setGTReferenceError('');}}).catch(()=>{if(!cancelled)setGTReferenceError('โหลดพิกัด GT ไม่สำเร็จ กรุณาเปิดหน้าใหม่เพื่อลองอีกครั้ง');});return()=>{cancelled=true;};},[saved.id,fullImageGT]);
+ function selectGTReference(index:number){if(busy)return;setGTIndex(index);}
+ const [alignmentOpen,setAlignmentOpen]=useState(false),[alignmentDirty,setAlignmentDirty]=useState(false);
+ const [alignmentStart,setAlignmentStart]=useState<string|undefined>(),[pendingCalculation,setPendingCalculation]=useState(false);
+ const [calculationPrompt,setCalculationPrompt]=useState(false);
+ const [evaluationProgress,setEvaluationProgress]=useState<{completed:number;total:number;label:string;started:number}|null>(null);
  const [layoutMode,setLayoutMode]=useState<"regions"|"full_image">("regions");
  const fullImageMode=stage==="layout"&&layoutMode==="full_image";
  const [configs,setConfigs]=useState<PipelineConfig[]>([]),[pipelineIds,setPipelineIds]=useState<string[]>([]);
@@ -58,6 +73,8 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  function changeDocument(text:string,counts=lineCounts){setDocumentGT(text.replace(/\r\n?/g,"\n"));setFields(splitDocumentGT(text,fields,counts));setLineCounts(counts);setNotice(false);setSaveMessage("");}
  function changeField(field:GlobalField){const next=fields.map(f=>f.id===field.id?field:f);setFields(next);setDocumentGT(joinFieldGT(next));setLineCounts(fieldLineCounts(next));setNotice(false);setSaveMessage("");}
  async function saveGT(calculate:boolean){if(calculate&&!completeGT(fields,documentGT)){setError("กรุณากรอก GT ให้ครบทุก Field และตรวจการแบ่งข้อความก่อนคำนวณ");return;}await act(async()=>{
+  if(calculate){setCalculationPrompt(false);setEvaluationProgress({completed:0,total:fullImageCase?3:2,label:'กำลังบันทึก Ground Truth',started:Date.now()});}
+  try{
   let c=saved;const changes=fields.filter(f=>f.ground_truth_raw!==saved.global_fields?.find(s=>s.id===f.id)?.ground_truth_raw);
   try{c=await api.saveGlobalGTBatch(c.id,changes,documentGT,mode);}catch(e){
    if(!(e instanceof api.APIError)||!e.routeMissing)throw e;
@@ -66,8 +83,13 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
    if(documentGT!==(saved.ground_truth_raw??""))c=await api.saveGroundTruth(c.id,documentGT,false);
    if(c.evaluation_mode!==mode)c=await api.setEvaluationMode(c.id,mode);
   }adopt(c);
-  if(calculate){adopt(await api.evaluateGlobal(c.id,"auto",fields.map(f=>f.id),true));setNotice(true);if(fullImageCase)setMode("whole_document");setComparison(true);}
+  if(calculate){
+   setEvaluationProgress(p=>p?{...p,completed:1,label:fullImageCase?'กำลังตรวจตำแหน่งทุก Pipeline':'กำลังเปรียบเทียบข้อความและคำนวณ CER/WER'}:p);
+   if(fullImageCase){const review=await api.getAlignmentReview(c.id);if(!review.ready){setAlignmentStart(review.pipelines.find(p=>!p.ready)?.run_id);setPendingCalculation(true);setAlignmentOpen(true);setSaveMessage("บันทึก GT แล้ว กรุณาแก้ Pipeline สีแดงหรือยืนยันช่องว่างก่อนคำนวณ");return;}setEvaluationProgress(p=>p?{...p,completed:2,label:'กำลังเปรียบเทียบข้อความและคำนวณ CER/WER'}:p);}
+   adopt(await api.evaluateGlobal(c.id,"auto",fields.map(f=>f.id),true,fullImageCase));setAlignmentOpen(false);setPendingCalculation(false);setNotice(true);if(fullImageCase)setMode("whole_document");setComparison(true);
+  }
   else setSaveMessage("บันทึก GT ฉบับร่างแล้ว — ยังไม่ได้คำนวณผลประเมิน");
+  }finally{if(calculate)setEvaluationProgress(null);}
  });}
  const allowed=stage==="layout"||stage==="pipelines"&&locked||(stage==="ground-truth")&&hasRuns;
  useEffect(()=>{
@@ -90,6 +112,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  <button type="button" data-testid="global-field-nav" disabled={busy} className="flex-1 text-left text-sm" aria-pressed={f.id===activeId} onClick={()=>selectField(f.id)}>{fieldName(f)}{f.confirmed_at?" ✓":""}</button>
  {!locked&&<button type="button" className="rounded-md p-2 text-slate-500 hover:bg-red-50 hover:text-red-700 disabled:opacity-40" disabled={busy} aria-label={`ลบ ${fieldName(f)}`} title={`ลบ ${fieldName(f)}`} onClick={()=>deleteField(f.id)}><X size={16}/></button>}
  </div>)}{!fields.length&&<p className="text-sm text-slate-500">ยังไม่มี Field — ใช้ Auto Layout หรือเพิ่มกรอบ Manual</p>}</div>;
+ const gtInspection=<section className="space-y-2 rounded-lg border border-sky-200 bg-sky-50 p-4" aria-label="ตรวจสอบกรอบ DET"><h3 className="font-semibold">ตรวจสอบกรอบ DET ของแต่ละ Pipeline</h3><p className="text-sm text-slate-600">ตรวจตำแหน่งและลำดับ Field เทียบกับ GT ก่อนคำนวณคะแนน</p><button className="button secondary" disabled={busy} onClick={()=>setAlignmentOpen(true)}>ตรวจและจัดตำแหน่ง GT เทียบ DET แต่ละ Pipeline</button>{gtReferenceError&&<p role="alert">{gtReferenceError}</p>}{!gtReferenceError&&gtReferences.length>0&&!gtReferences.some(r=>r.roi)&&<p className="text-sm">เอกสารนี้ไม่มีพิกัด GT ที่บันทึกไว้ จึงแสดงเฉพาะข้อความ</p>}</section>;
  return <div className="page-stack" data-testid={`workflow-${stage}`}>
  <PageHeader title={stageTitles[stages.indexOf(stage)]} description={`${doc.filename} · ${doc.document_type_name||"ไม่ระบุประเภท"} · หน้า ${doc.page_number??1}`} actions={<Link href="/history" className="button secondary">ประวัติ</Link>}/>
  <WorkflowSteps stage={stage} saved={saved} uploadUrl={`/?document=${doc.id}${doc.document_type==="pdf"?`&page=${doc.page_number??1}`:""}`} busy={busy}/>
@@ -98,13 +121,29 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  {stage==="ground-truth"&&!comparison&&!saved.document_gt_confirmed_at&&!fields.some(f=>f.confirmed_at)&&saved.gt_prefill&&["ready","partial","unavailable","pending"].includes(saved.gt_prefill.status)&&<p role="status" className="notice-banner" data-testid="gt-prefill-notice">{saved.gt_prefill.status==="ready"||saved.gt_prefill.status==="partial"?"เติม GT ฉบับร่างจาก Custom DET v6 (thai_ft_v2) + REC v6 (thai_ft_v1) แล้ว กรุณาตรวจและแก้ไขก่อนยืนยันคำนวณ":"ยังไม่มีข้อความตั้งต้นจาก OCR กรุณากรอก GT ด้วยตนเอง"}{saved.gt_prefill.status==="partial"&&" · บาง Field ยังไม่มีข้อความ กรุณากรอกให้ครบ"}</p>}
  {stage==="ground-truth"&&(searchParams.get("partial")==="1"||latestRuns.some(r=>r.status==="error"))&&<p role="alert" className="rounded-lg border border-amber-400 bg-amber-50 p-3">OCR สำเร็จบางส่วน — มี Field/Pipeline ที่ล้มเหลว ผลที่สำเร็จยังใช้กรอก GT ได้ ตรวจรายละเอียดข้อผิดพลาดก่อนประเมิน</p>}
  {stage==="ground-truth"&&<SafeDebugPanel/>}
+ {alignmentOpen&&<LargeDialog title="จัดตำแหน่ง Ground Truth สำหรับรูปเต็ม" onClose={()=>{if(!alignmentDirty&&!busy)setAlignmentOpen(false);}}>
+  <FullImageAlignment saved={saved} runs={latestRuns} text={documentGT} busy={busy} onDirty={setAlignmentDirty} initialRunId={alignmentStart}
+   onConfirm={async(runId,references,overrides,textOnly)=>{
+    setBusy(true);try{
+     const text=documentGT;
+     const updated=fields.map(f=>({...f,ground_truth_raw:text}));
+     const draft=await api.saveGlobalGTBatch(saved.id,updated,text,mode);
+     adopt(draft);setDocumentGT(text);
+     adopt(await api.saveFullImageAlignment(saved.id,{run_id:runId,references,overrides,confirmed_gt:true,text_only:textOnly}));
+     if(pendingCalculation){const review=await api.getAlignmentReview(saved.id);if(review.ready)setCalculationPrompt(true);}
+    }finally{setBusy(false);}
+   }} onClear={async runId=>{setBusy(true);try{adopt(await api.clearFullImageAlignment(saved.id,runId));}finally{setBusy(false);}}}/>
+  {pendingCalculation&&<button className="button primary mt-4" disabled={busy||alignmentDirty} onClick={()=>void act(async()=>{const review=await api.getAlignmentReview(saved.id);if(review.ready)setCalculationPrompt(true);else{setAlignmentStart(review.pipelines.find(p=>!p.ready)?.run_id);setError('ยังมี Pipeline ที่ต้องตรวจหรือยืนยัน');}})}>ตรวจสถานะเพื่อไปคำนวณ</button>}
+ </LargeDialog>}
+ {calculationPrompt&&<CalculationPrompt onBack={()=>setCalculationPrompt(false)} onCalculate={()=>void saveGT(true)}/>}
+ {evaluationProgress&&<EvaluationLoading {...evaluationProgress}/>}
  {!allowed?<section className="panel panel-body"><p>กรุณาทำขั้นตอนก่อนหน้าให้เสร็จก่อน</p><Link className="button primary" href={workflowUrl(saved.id,locked?"pipelines":"layout")}>กลับไปขั้นตอนก่อนหน้า</Link></section>:<>
  {stage==="ground-truth"&&comparison?<>
  {notice&&<p role="status" className="notice-banner">คำนวณแล้ว — ผลประเมินอยู่ในตาราง</p>}
  <GlobalFieldEvaluation key={saved.id} fields={fields} saved={saved} runs={latestRuns} mode={mode} documentGT={documentGT} busy={busy} onMode={setMode} onEdit={()=>{setComparison(false);setNotice(false);}}/>
  </>:<div className="grid gap-5 lg:grid-cols-2">
  <section data-testid="preview-column" className={`relative min-w-0 ${stage==="layout"?"lg:min-h-[560px]":"lg:sticky lg:top-4 lg:h-[min(76dvh,760px)] lg:min-h-[560px] lg:self-start"}`}><div className="lg:absolute lg:inset-0">
- <DocumentViewer missingGTFieldIds={stage==="ground-truth"?fields.filter(f=>!f.ground_truth_raw?.trim()).map(f=>f.id):[]} errorFieldIds={fields.filter(f=>latestRuns.some(r=>r.fields?.some(p=>p.global_field_id===f.id&&p.status==="error"))).map(f=>f.id)} fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy)setActiveId(null);}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={fullImageMode?null:active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fullImageMode?[]:fields} selectedGlobalFieldId={fullImageMode?null:activeId} showRoiDelete={false} onSelectGlobalField={selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!fullImageMode&&!locked&&!busy}/>
+ <DocumentViewer controlsRef={gtViewControls} globalFieldColor={fullImageGT?"rgba(14,116,144,0.4)":undefined} missingGTFieldIds={stage==="ground-truth"?fields.filter(f=>!f.ground_truth_raw?.trim()).map(f=>f.id):[]} errorFieldIds={fields.filter(f=>latestRuns.some(r=>r.fields?.some(p=>p.global_field_id===f.id&&p.status==="error"))).map(f=>f.id)} fillParent showGlobalFieldToggle={stage!=="pipelines"} onClearSelection={()=>{if(!busy){setActiveId(null);setGTIndex(-1);}}} reviewMode={stage==="ground-truth"} imageUrl={api.assetUrl(doc.image_url)} width={doc.width} height={doc.height} roi={fullImageGT?gtReferences[gtIndex]?.roi??null:fullImageMode?null:active?.roi??null} onRoiChange={edit} onManualRoi={r=>add(r,"manual")} globalFields={fullImageGT?gtReferences.flatMap((r,i)=>r.roi?[{id:r.id,field_index:i+1,roi:r.roi}]:[]):fullImageMode?[]:fields} selectedGlobalFieldId={fullImageGT?gtReferences[gtIndex]?.id??null:fullImageMode?null:activeId} showRoiDelete={false} onSelectGlobalField={fullImageGT?id=>{if(busy)return;setMode("per_field");setGTIndex(gtReferences.findIndex(r=>r.id===id));}:selectPreviewField} boxes={[]} selectedBoxId={null} onSelectBox={()=>{}} regionMode={drawing} onRegionModeChange={setDrawing} allowRoi={stage==="layout"&&!fullImageMode&&!locked&&!busy}/>
  </div></section><section data-testid="controls-column" className="min-w-0 space-y-4">
  {stage==="layout"&&<div className="panel panel-body space-y-4 lg:h-full"><h2>จัดการ Global Fields</h2>
  <fieldset disabled={busy} className="space-y-2"><legend className="text-sm font-medium">รูปแบบการส่งภาพ</legend><div className="flex flex-wrap gap-4">{([ ["regions","วาดกรอบ"], ["full_image","ส่งรูปเต็ม"] ] as const).map(([value,label])=><label key={value} className="flex items-center gap-2"><input type="radio" name="layout-mode" value={value} checked={layoutMode===value} onChange={()=>{setLayoutMode(value);setDrawing(false);setSaveMessage("");}}/>{label}</label>)}</div></fieldset>
@@ -120,7 +159,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  <div className="flex flex-wrap gap-2"><button className="button secondary" disabled={busy||configState!=="ready"||!layoutDirty||fullImageMode} onClick={()=>void act(async()=>{const c=await saveLayout(false);adopt(c);if(c.id!==saved.id)router.replace(workflowUrl(c.id,"layout"));setSaveMessage("บันทึก Layout ฉบับร่างแล้ว — ยังแก้ไขกรอบได้");})}>บันทึก Layout ฉบับร่าง</button><button className="button primary" disabled={busy||configState!=="ready"||(!fullImageMode&&!fields.length)} onClick={()=>void act(async()=>{const c=await saveLayout(true);adopt(c);router.push(workflowUrl(c.id,"pipelines"));})}>ยืนยัน ROI</button></div>
  </div>}
  {stage==="pipelines"&&<section className="panel panel-body space-y-4 lg:h-full"><h2>เลือก Pipelines</h2><p>ทุก Pipeline จะใช้ Global Field ชุดเดียวกัน</p><div data-testid="pipeline-options" aria-busy={busy} className={`space-y-3 transition-opacity ${busy?"opacity-50":"opacity-100"}`}>{configs.map(p=><label key={p.pipeline_id} className="flex gap-2"><input type="checkbox" aria-label={`เลือก ${pipelineLabel(p.pipeline_id,p.name)}`} disabled={busy||!p.enabled||(!pipelineIds.includes(p.pipeline_id)&&pipelineIds.length>=workload.max_job_pipelines)} checked={pipelineIds.includes(p.pipeline_id)} onChange={e=>setPipelineIds(old=>e.target.checked?(old.length<workload.max_job_pipelines?[...old,p.pipeline_id]:old):old.filter(id=>id!==p.pipeline_id))}/>{pipelineLabel(p.pipeline_id,p.name)}{!p.enabled&&" (ปิดอยู่)"}</label>)}</div><OCRJobRunner caseId={saved.id} pipelines={pipelineIds} names={Object.fromEntries(configs.map(p=>[p.pipeline_id,p.name]))} onBusy={setBusy} resultsUrl={workflowUrl(saved.id,"ground-truth")} onCompleted={job=>router.push(workflowUrl(saved.id,"ground-truth")+(job.status==="partial_success"?"?partial=1&edit=1":"?edit=1"))}/></section>}
- {stage==="ground-truth"&&(fullImageCase?<FullImageLineFields mode={mode} onMode={setMode} text={documentGT} runs={latestRuns} busy={busy} onChange={changeDocument} onSave={calculate=>void saveGT(calculate)}/>:<GlobalGroundTruthForm activeFieldId={activeId} focusRequest={focusRequest} mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onNavigateField={selectPreviewField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>)}
+ {stage==="ground-truth"&&(fullImageCase?<FullImageLineFields inspection={gtInspection} selectedIndex={gtIndex} onSelectField={selectGTReference} referenceRois={gtReferences.map(r=>r.roi)} mode={mode} onMode={setMode} text={documentGT} runs={latestRuns} busy={busy} onChange={changeDocument} onSave={calculate=>void saveGT(calculate)}/>:<GlobalGroundTruthForm activeFieldId={activeId} focusRequest={focusRequest} mode={mode} fields={fields} documentGT={documentGT} lineCounts={lineCounts} onLineCounts={counts=>changeDocument(documentGT,counts)} busy={busy} onActivateField={selectField} onNavigateField={selectPreviewField} onMode={m=>{setMode(m);setNotice(false);setSaveMessage("");}} onDocument={changeDocument} onField={changeField} onSave={calculate=>void saveGT(calculate)}/>)}
  </section></div>}</>}
  </div>;
 }

@@ -1,0 +1,22 @@
+.panel {
+  display: grid;
+  place-items: center;
+  height: clamp(140px, 24vh, 240px);
+  margin: 24px 0 8px;
+  border-radius: 20px;
+  background: #b19bf5;
+  overflow: hidden;
+}
+.hand { width: min(65%, 250px); height: 85%; overflow: visible; }
+.finger { animation: tap 1.4s ease-in-out infinite; }
+.finger:nth-child(2) { animation-delay: .12s; }
+.finger:nth-child(3) { animation-delay: .24s; }
+.finger:nth-child(4) { animation-delay: .36s; }
+.thumb { animation: tap 1.4s .48s ease-in-out infinite; }
+@keyframes tap {
+  0%, 55%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-14px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .finger, .thumb { animation: none; }
+}

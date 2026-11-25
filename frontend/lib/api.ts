@@ -4,6 +4,11 @@ import type { Category, CategoryAnalytics, Document, EvaluationMode, GlobalField
 
 export const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000").replace(/\/$/, "");
 
+export const saveFullImageAlignment=(id:string,data:{run_id:string;references:import('@/types/spatial-comparison').SpatialReference[];overrides:import('@/types/spatial-comparison').SpatialOverride[];confirmed_gt:boolean;text_only?:boolean})=>request<TestCase>(`/test-cases/${id}/full-image-alignment`,{method:'PUT',body:JSON.stringify(data)});
+export const getAlignmentReview=(id:string)=>request<import('@/types/spatial-comparison').AlignmentReview>(`/test-cases/${id}/alignment-review`);
+export const clearFullImageAlignment=(id:string,runId:string)=>request<TestCase>(`/test-cases/${id}/full-image-alignment/${runId}`,{method:'DELETE'});
+export const getFullImageReferences=(id:string)=>request<{references:import('@/types/spatial-comparison').SpatialReference[];geometry_available:boolean}>(`/test-cases/${id}/full-image-alignment`);
+
 export function assetUrl(path: string): string {
   return path.startsWith("http") ? path : `${API_BASE_URL}${path}`;
 }
@@ -72,6 +77,7 @@ export const testConnection = (id: string) => request<{ status: string; message:
 export const uploadDocument = (file: File, documentTypeId?: string,signal?:AbortSignal) => { const form = new FormData(); form.set("file", file); if(documentTypeId)form.set("document_type_id",documentTypeId); return request<Document>("/documents", { method: "POST", body: form,signal }); };
 export const createTestCase = (input: TestCaseInput) => request<TestCase>("/test-cases", { method: "POST", body: JSON.stringify(input) });
 export const getTestCase = (id: string) => request<TestCase>(`/test-cases/${id}`);
+export const compareSpatial = (id:string, data:{run_id:string;references:import('@/types/spatial-comparison').SpatialReference[];overrides:import('@/types/spatial-comparison').SpatialOverride[];confirmed_gt:boolean}) => request<import('@/types/spatial-comparison').SpatialResult>(`/test-cases/${id}/spatial-comparison`,{method:'POST',body:JSON.stringify(data)});
 export const deleteTestCase = (id: string) => request<void>(`/test-cases/${id}`, { method: "DELETE" });
 
 export type AppLog = { id: string; created_at: string; level: string; event_type: string; message: string; page_number: number | null; pipeline_id: string | null; pipeline_name: string | null; document_name: string | null; document_id: string | null; test_case_id: string | null; test_case_exists: boolean; outcome: string; request_id: string | null; gateway_request_id: string | null; metadata: { error_code?: string; duration_ms?: number; count?: number } };
@@ -150,7 +156,7 @@ export async function loadSample(): Promise<File> {
 export const saveGlobalLayout = (id: string, fields: import("@/types").GlobalField[], confirmed: boolean) => request<TestCase>(`/test-cases/${id}/global-fields`, {method: "PUT", body: JSON.stringify({fields: fields.map(({id,field_index,roi,source,ground_truth_raw})=>({id,field_index,roi,source,ground_truth_raw})),confirmed})});
 export const saveGlobalGT = (caseId: string, field: import("@/types").GlobalField) => request<TestCase>(`/test-cases/${caseId}/global-fields/${field.id}/ground-truth`, {method:"PUT",body:JSON.stringify({ground_truth_raw:field.ground_truth_raw ?? ""})});
 export const setEvaluationMode = (caseId: string, mode: import("@/types").EvaluationMode) => request<TestCase>(`/test-cases/${caseId}/evaluation-mode`, {method:"PUT",body:JSON.stringify({mode})});
-export const evaluateGlobal = (caseId: string, mode: import("@/types").EvaluationMode | "auto", global_field_ids: string[] = [], require_complete_gt = false) => request<TestCase>(`/test-cases/${caseId}/evaluate`, {method:"POST",body:JSON.stringify({mode,global_field_ids,require_complete_gt})});
+export const evaluateGlobal = (caseId: string, mode: import("@/types").EvaluationMode | "auto", global_field_ids: string[] = [], require_complete_gt = false, require_spatial_review = false) => request<TestCase>(`/test-cases/${caseId}/evaluate`, {method:"POST",body:JSON.stringify({mode,global_field_ids,require_complete_gt,require_spatial_review})});
 
 export const getDocumentTypes = () => request<import("@/types").DocumentType[]>("/document-types");
 export const createDocumentType = (name: string) => request<import("@/types").DocumentType>("/document-types", {method:"POST", body:JSON.stringify({name})});

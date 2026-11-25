@@ -1,7 +1,7 @@
 "use client";
 import { t } from "@/lib/i18n/th";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, type Ref } from "react";
 import { Group, Image as KonvaImage, Layer, Rect, Stage } from "react-konva";
 import type Konva from "konva";
 import {
@@ -19,18 +19,26 @@ import {
 import type { AutoROISuggestion, ROI, ViewerBox } from "@/types";
 import AutoROIOverlay from "./AutoROIOverlay";
 import FieldLabel from "./FieldLabel";
+import ReviewFieldLayers from "./ReviewFieldLayers";
 import BoundingBoxLayer from "./BoundingBoxLayer";
 import TestRegionLayer from "./TestRegionLayer";
 import {usePreviewSource} from "@/lib/use-preview-source";
 
 export interface DocumentViewerProps {
+  sharedView?: SharedDocumentView | null;
+  onSharedViewChange?: (view: SharedDocumentView) => void;
+  controlsRef?: Ref<DocumentViewControls>;
+  hideToolbar?: boolean;
+  combinedNavigation?: boolean;
+  fieldLabelsVisible?: boolean;
   fillParent?: boolean;
   reviewMode?: boolean;
   globalFieldColor?: string;
   compactReference?: boolean;
-  globalFields?: {id: string; field_index: number; roi: ROI}[];
+  globalFields?: {id: string; field_index: number; roi: ROI; placeholder?: boolean}[];
   missingGTFieldIds?: string[];
   errorFieldIds?: string[];
+  mismatchFieldIds?: string[];
   selectedGlobalFieldId?: string | null;
   selectedGlobalFieldIds?: string[];
   showRoiDelete?: boolean;
@@ -58,12 +66,20 @@ export interface DocumentViewerProps {
 
 type Point = { x: number; y: number };
 type View = Point & { scale: number };
+export type SharedDocumentView = {scale:number;centerX:number;centerY:number};
+export type DocumentViewControls = {zoomIn:()=>void;zoomOut:()=>void;actualSize:()=>void;fit:()=>void;focus:(region:ROI)=>void};
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 const MIN_ZOOM = 0.005;
 const MAX_ZOOM = 8;
 
 export default function DocumentViewer({
+  sharedView,
+  onSharedViewChange,
+  controlsRef,
+  hideToolbar = false,
+  combinedNavigation = true,
+  fieldLabelsVisible,
   fillParent = false,
   reviewMode = false,
   globalFieldColor,
@@ -88,6 +104,7 @@ export default function DocumentViewer({
   globalFields,
   missingGTFieldIds = [],
   errorFieldIds = [],
+  mismatchFieldIds = [],
   selectedGlobalFieldId,
   selectedGlobalFieldIds = [],
   showRoiDelete = true,
@@ -101,6 +118,7 @@ export default function DocumentViewer({
   const draftRoiRef = useRef<ROI | null>(null);
   const panStartRef = useRef<{ pointer: Point; view: View } | null>(null);
   const [viewport, setViewport] = useState({ width: 600, height: 580 });
+  const [viewportReady,setViewportReady]=useState(false);
   const [storedView, setStoredView] = useState<{
     source: string;
     view: View;
@@ -116,12 +134,11 @@ export default function DocumentViewer({
   const [panMode, setPanMode] = useState(false);
   const [showBoxes, setShowBoxes] = useState(true);
   const showAllFields = true;
-  const [showFieldLabels,setShowFieldLabels]=useState(true);
+  const [localFieldLabels,setShowFieldLabels]=useState(true);
+  const showFieldLabels=fieldLabelsVisible??localFieldLabels;
   const showSelectedField = true;
   const [draftRoi, setDraftRoi] = useState<ROI | null>(null);
-  const [pointerCoordinates, setPointerCoordinates] = useState<Point | null>(
-    null,
-  );
+  const pointerReadout = useRef<HTMLSpanElement>(null);
   const image = loadedImage?.url === imageUrl ? loadedImage.image : undefined;
   const failed = failedUrl === imageUrl||!!previewSource.error;
   const selectedBox = boxes.find((box) => box.id === selectedBoxId);
@@ -157,10 +174,17 @@ export default function DocumentViewer({
     [width, height, viewport],
   );
 
-  const view = storedView?.source === viewSource ? constrainView(storedView.view) : fittedView;
-  useEffect(()=>{if(storedView)try{sessionStorage.setItem(`ocrlab-view:${storedView.source}`,JSON.stringify(storedView));}catch{/* Optional browser state; in-page controls still work. */}},[storedView]);
+  const view = onSharedViewChange ? sharedView ? constrainView({scale:sharedView.scale,x:viewport.width/2-sharedView.centerX*sharedView.scale,y:viewport.height/2-sharedView.centerY*sharedView.scale}) : fittedView : storedView?.source === viewSource ? constrainView(storedView.view) : fittedView;
+  useEffect(()=>{if(storedView&&!onSharedViewChange)try{sessionStorage.setItem(`ocrlab-view:${storedView.source}`,JSON.stringify(storedView));}catch{/* Optional browser state; in-page controls still work. */}},[storedView,onSharedViewChange]);
+  useEffect(()=>{if(viewportReady&&controlsRef&&onSharedViewChange&&!sharedView)onSharedViewChange({scale:fittedView.scale,centerX:width/2,centerY:height/2});},[viewportReady,controlsRef,onSharedViewChange,sharedView,fittedView.scale,width,height]);
   const setView = useCallback(
     (next: View | ((current: View) => View)) => {
+      if(onSharedViewChange){
+        const current=sharedView?constrainView({scale:sharedView.scale,x:viewport.width/2-sharedView.centerX*sharedView.scale,y:viewport.height/2-sharedView.centerY*sharedView.scale}):fittedView;
+        const resolved=constrainView(typeof next==='function'?next(current):next);
+        onSharedViewChange({scale:resolved.scale,centerX:(viewport.width/2-resolved.x)/resolved.scale,centerY:(viewport.height/2-resolved.y)/resolved.scale});
+        return;
+      }
       setStoredView((current) => ({
         source: viewSource,
         view:
@@ -169,7 +193,7 @@ export default function DocumentViewer({
             : next,
       }));
     },
-    [viewSource, fittedView, constrainView],
+    [viewSource, fittedView, constrainView,onSharedViewChange,sharedView,viewport],
   );
 
   useEffect(() => {
@@ -181,6 +205,7 @@ export default function DocumentViewer({
         height: Math.max(320, Math.floor(entry.contentRect.height)),
       };
       setViewport(old=>old.width===next.width&&old.height===next.height?old:next);
+      setViewportReady(true);
     });
     observer.observe(element);
     return () => observer.disconnect();
@@ -212,9 +237,10 @@ export default function DocumentViewer({
   }, [imageUrl, previewSource.src]);
 
   const fitView = useCallback(() => {
+    if(onSharedViewChange){onSharedViewChange({scale:fittedView.scale,centerX:width/2,centerY:height/2});return;}
     try{sessionStorage.removeItem(`ocrlab-view:${viewSource}`);}catch{/* optional browser state */}
     setStoredView(null);
-  }, [viewSource]);
+  }, [viewSource,onSharedViewChange,fittedView.scale,width,height]);
 
   const zoomAt = useCallback(
     (factor: number, point?: Point) => {
@@ -240,6 +266,10 @@ export default function DocumentViewer({
     const scale = clamp(Math.min((viewport.width-96)/(roi.x2-roi.x1), (viewport.height-96)/(roi.y2-roi.y1)), MIN_ZOOM, MAX_ZOOM);
     setView({scale, x:viewport.width/2-(roi.x1+roi.x2)*scale/2, y:viewport.height/2-(roi.y1+roi.y2)*scale/2});
   }, [roi, viewport, setView]);
+  useImperativeHandle(controlsRef,()=>({zoomIn:()=>zoomAt(1.25),zoomOut:()=>zoomAt(1/1.25),actualSize:()=>zoomAt(1/view.scale),fit:fitView,focus:(region)=>{
+    const scale=clamp(Math.min((viewport.width-96)/(region.x2-region.x1),(viewport.height-96)/(region.y2-region.y1)),MIN_ZOOM,MAX_ZOOM);
+    setView({scale,x:viewport.width/2-(region.x1+region.x2)*scale/2,y:viewport.height/2-(region.y1+region.y2)*scale/2});
+  }}),[zoomAt,view.scale,fitView,viewport,setView]);
 
   const getOriginalPoint = (): Point | null => {
     const position = stageRef.current?.getPointerPosition();
@@ -273,8 +303,9 @@ export default function DocumentViewer({
       };
       setDraftRoi(draftRoiRef.current);
       onSelectBox(null);
-    } else if (panMode) {
+    } else if (panMode || combinedNavigation && (event.target === event.target.getStage() || event.target.name() === "document-image")) {
       panStartRef.current = { pointer, view };
+      if(combinedNavigation){onSelectBox(null);onClearSelection?.();}
     } else if (
       event.target === event.target.getStage() ||
       event.target.name() === "document-image"
@@ -288,11 +319,10 @@ export default function DocumentViewer({
     const point = getOriginalPoint();
     const pointer = stageRef.current?.getPointerPosition();
     if (!point || !pointer) return;
-    setPointerCoordinates(
-      point.x >= 0 && point.y >= 0 && point.x <= width && point.y <= height
-        ? { x: Math.round(point.x), y: Math.round(point.y) }
-        : null,
-    );
+    // Pointer readout must not rerender the image and every DET label on hover.
+    if(pointerReadout.current)pointerReadout.current.textContent=
+      point.x>=0&&point.y>=0&&point.x<=width&&point.y<=height
+        ? `x ${Math.round(point.x)} · y ${Math.round(point.y)}` : 'x — · y —';
     if (drawStartRef.current) {
       const start = drawStartRef.current;
       const x = clamp(Math.round(point.x), 0, width);
@@ -352,7 +382,7 @@ export default function DocumentViewer({
       data-view-y={view.y}
       data-view-scale={view.scale}
     >
-      <div className="flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-2">
+      {!hideToolbar&&<div className="flex min-h-14 flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-3 py-2">
         <div
           className="flex flex-wrap items-center gap-1"
           role="toolbar"
@@ -360,8 +390,8 @@ export default function DocumentViewer({
         >
           <button
             type="button"
-            aria-label={reviewMode ? "เลือกกรอบ Field" : t("Select and edit region")}
-            title={reviewMode ? "เลือกกรอบ Field" : t("Select and edit region")}
+            aria-label={combinedNavigation ? "เลือกกรอบและเลื่อนเอกสาร" : reviewMode ? "เลือกกรอบ Field" : t("Select and edit region")}
+            title={combinedNavigation ? "คลิกกรอบเพื่อเลือก · ลากพื้นที่ว่างเพื่อเลื่อนเอกสาร" : reviewMode ? "เลือกกรอบ Field" : t("Select and edit region")}
             aria-pressed={!panMode && !regionMode}
             className={toolClass(!panMode && !regionMode)}
             onClick={() => {
@@ -371,7 +401,7 @@ export default function DocumentViewer({
           >
             <MousePointer2 size={16} />
           </button>
-          <button
+          {!combinedNavigation&&<button
             type="button"
             aria-label={t("Pan document")}
             title={t("Pan document")}
@@ -383,7 +413,7 @@ export default function DocumentViewer({
             }}
           >
             <Hand size={16} />
-          </button>
+          </button>}
           {allowRoi && <button
             type="button"
             disabled={!allowRoi}
@@ -484,7 +514,7 @@ export default function DocumentViewer({
             <RotateCcw size={15} />
           </button>}
         </div>
-      </div>
+      </div>}
 
       <div
         ref={containerRef}
@@ -565,7 +595,7 @@ export default function DocumentViewer({
           onTouchEnd={finishInteraction}
           onMouseLeave={() => {
             finishInteraction();
-            setPointerCoordinates(null);
+            if(pointerReadout.current)pointerReadout.current.textContent='x — · y —';
           }}
           onWheel={(event) => {
             if (drawStartRef.current || panStartRef.current) return;
@@ -610,12 +640,7 @@ export default function DocumentViewer({
                   width={width}
                   height={height}
                 />
-                {globalFields?.filter(f => (reviewMode || f.id !== selectedGlobalFieldId)&&(f.id!==selectedGlobalFieldId||showSelectedField)).map(field => reviewMode ? (
-                  <Group key={field.id} name="global-layout-field" onClick={()=>onSelectGlobalField?.(field.id)} onTap={()=>onSelectGlobalField?.(field.id)} listening={!panMode}>
-                    <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={field.id===selectedGlobalFieldId?"#6d28d9":showAllFields?(missingGTFieldIds.includes(field.id)?"#dc2626":errorFieldIds.includes(field.id)?"#b45309":globalFieldColor??"#2563eb"):undefined} strokeWidth={field.id===selectedGlobalFieldId?2:1.25} strokeScaleEnabled={false} dash={errorFieldIds.includes(field.id)?[5/view.scale,3/view.scale]:undefined} fill={field.id===selectedGlobalFieldId?"rgba(109,40,217,0.12)":"rgba(0,0,0,0)"}/>
-                    {showFieldLabels&&(showAllFields||field.id===selectedGlobalFieldId)&&<FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}${field.id===selectedGlobalFieldId?" •":""}${missingGTFieldIds.includes(field.id)?" · ไม่มี GT":""}${errorFieldIds.includes(field.id)?" · OCR error":""}`} color={field.id===selectedGlobalFieldId?"#6d28d9":missingGTFieldIds.includes(field.id)?"#dc2626":errorFieldIds.includes(field.id)?"#b45309":globalFieldColor??"#2563eb"}/>}
-                  </Group>
-                ) : (
+                {!reviewMode&&globalFields?.filter(f=>f.id!==selectedGlobalFieldId).map(field => (
                   <Group key={field.id} name="global-layout-field" onClick={() => onSelectGlobalField?.(field.id)} onTap={() => onSelectGlobalField?.(field.id)} listening={!regionMode && !panMode}>
                     <Rect x={field.roi.x1} y={field.roi.y1} width={field.roi.x2-field.roi.x1} height={field.roi.y2-field.roi.y1} stroke={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "#7c3aed" : "#2563eb") : undefined} strokeWidth={selectedGlobalFieldIds.includes(field.id)?2:1.25} strokeScaleEnabled={false} fill={showAllFields ? (selectedGlobalFieldIds.includes(field.id) ? "rgba(124,58,237,0.18)" : "rgba(37,99,235,0.04)") : "rgba(0,0,0,0)"} />
                     {showAllFields && showFieldLabels && <FieldLabel x={field.roi.x1} y={field.roi.y1} scale={view.scale} text={`Field ${String(field.field_index).padStart(2,"0")}`} color="#1d4ed8" />}
@@ -666,6 +691,7 @@ export default function DocumentViewer({
               </Group>
             )}
           </Layer>
+          {image&&reviewMode&&<ReviewFieldLayers fields={globalFields??[]} x={view.x} y={view.y} scale={view.scale} selected={selectedGlobalFieldId} showFields={showAllFields} showLabels={showFieldLabels} interactive={!panMode} color={globalFieldColor} missing={missingGTFieldIds} errors={errorFieldIds} mismatches={mismatchFieldIds} onSelect={onSelectGlobalField}/>}
         </Stage>
         {regionMode && (
           <div className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-slate-900 px-4 py-2 text-xs font-medium text-white shadow-lg">
@@ -689,12 +715,10 @@ export default function DocumentViewer({
       </div>
 
       <div className="grid min-h-10 shrink-0 gap-1 border-t border-slate-200 bg-white px-3 py-2 text-[10px] text-slate-400">
-        {reviewMode&&<span className="w-full text-xs text-slate-500">{globalFields?.find(f=>f.id===selectedGlobalFieldId)?`Field ${String(globalFields.find(f=>f.id===selectedGlobalFieldId)!.field_index).padStart(2,"0")} · `:""}ลากด้วยเครื่องมือมือเพื่อเลื่อน · Ctrl + ล้อเมาส์เพื่อซูม · ปุ่มลูกศรเลื่อนภาพ · 0 พอดีหน้าจอ</span>}
+        {reviewMode&&<span className="h-12 w-full overflow-y-auto text-xs text-slate-500">{globalFields?.find(f=>f.id===selectedGlobalFieldId)?`Field ${String(globalFields.find(f=>f.id===selectedGlobalFieldId)!.field_index).padStart(2,"0")} · `:""}{combinedNavigation?`ลากพื้นที่ว่างเพื่อเลื่อน${onSharedViewChange?'ทั้งสองภาพ':'เอกสาร'} · คลิกกรอบเพื่อเลือก Field`:'ลากด้วยเครื่องมือมือเพื่อเลื่อน'} · Ctrl + ล้อเมาส์เพื่อซูม · ปุ่มลูกศรเลื่อนภาพ · 0 พอดีหน้าจอ</span>}
         <span className="min-w-0 overflow-x-auto whitespace-nowrap font-mono">
           {width.toLocaleString()} × {height.toLocaleString()} px
-          <span className="ml-3 inline-block w-[20ch] tabular-nums">
-            x {pointerCoordinates?.x ?? "—"} · y {pointerCoordinates?.y ?? "—"}
-          </span>
+          <span ref={pointerReadout} className="ml-3 inline-block w-[20ch] tabular-nums">x — · y —</span>
         </span>
         {roi ? (
           <span className="min-w-0 overflow-x-auto whitespace-nowrap font-mono text-indigo-500" aria-live="polite">
