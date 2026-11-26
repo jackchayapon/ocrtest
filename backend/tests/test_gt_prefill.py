@@ -1,7 +1,8 @@
 import httpx
 import pytest
+from urllib.parse import parse_qsl, urlsplit
 
-from app.services.gt_prefill_service import prefill_pipeline
+from app.services.gt_prefill_service import prefill_pipeline, DETECTION, RECOGNITION
 from tests.test_benchmark_pipeline import parts
 from tests.test_global_layout import layout
 from tests.upstream_fixture import response as upstream
@@ -10,11 +11,11 @@ from tests.upstream_fixture import response as upstream
 def batch_response(request):
     count = sum(key == "images" for key, _ in parts(request))
     if request.url.path.endswith("text-detection-batches"):
-        assert dict(request.url.params) == {"version": "6", "model": "thai_ft_v2"}
+        assert dict(request.url.params) == dict(parse_qsl(urlsplit(DETECTION).query))
         items = [{"dt_polys": [[[2, 3], [30, 3], [30, 18], [2, 18]]], "dt_scores": [.95]} for _ in range(count)]
         return httpx.Response(200, json={"data": {"contract_version": "leaf-inference-v1", "kind": "text_detection_batch", "count": count, "result": {"results": items}}, "meta": {}})
     if request.url.path.endswith("text-recognition-batches"):
-        assert dict(request.url.params) == {"version": "6", "model": "thai_ft_v1"}
+        assert dict(request.url.params) == dict(parse_qsl(urlsplit(RECOGNITION).query))
         return httpx.Response(200, json={"data": {"count": count, "results": [{"text": f"draft {i}\nsecond line", "confidence": .9} for i in range(count)]}, "meta": {}})
     return upstream(request)
 
@@ -39,6 +40,7 @@ def test_prefill_uses_exact_batches_and_stays_unconfirmed_without_extra_result(c
     assert [r["pipeline_id"] for r in result.json()["runs"]] == [pipeline]
     saved = client.get(root).json()
     assert saved["gt_prefill"]["status"] == "ready"
+    assert all(saved["gt_prefill"]["reference_boxes"][f["id"]] for f in fields)
     assert saved["ground_truth_raw"] == "draft 0\nsecond line\ndraft 1\nsecond line"
     assert [f["id"] for f in saved["global_fields"]] == [f["id"] for f in fields]
     assert all(f["confirmed_at"] is None for f in saved["global_fields"])

@@ -79,6 +79,7 @@ class Document(Base):
 
 
 class TestCase(Base):
+    full_image_alignment: Mapped[dict | None] = mapped_column(JSON_TYPE, nullable=True)
     __tablename__ = "test_cases"
     id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=new_id)
     document_id: Mapped[str] = mapped_column(ForeignKey("documents.id"), index=True)

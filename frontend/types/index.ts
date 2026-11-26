@@ -13,7 +13,7 @@ export type Category = { id: string; code: string; display_name: string };
 export type Metrics = { cer: number | null; wer: number | null; exact_match: boolean };
 export type OCRBox = { bbox: [number, number, number, number]; polygon?: [number, number][] | null; crop_bbox?: [number, number, number, number] | null; crop_polygon?: [number, number][] | null; text: string; confidence: number | null; det_confidence?: number | null; rec_confidence?: number | null };
 export type PipelineRun = {
-  document_evaluation?: (FieldComparison & {prediction: string; mode: "whole_document"; evaluated_at: string}) | null;
+  document_evaluation?: (FieldComparison & {prediction: string; alignment_applied?: boolean; ground_truth_raw?: string; line_confidences?: (number|null)[]|null; mode: "whole_document"; evaluated_at: string; line_evaluations?: FieldComparison[]}) | null;
   id: string; pipeline_id: string; pipeline_name: string; status: "success" | "error";
   raw_text: string | null; final_text: string | null; text: string | null; normalized_text: string | null;
   confidence: number | null; processing_time_ms: number | null; boxes: OCRBox[];
@@ -31,6 +31,7 @@ export type PipelineRun = {
   model_info?: { detector?: string | null; recognizer?: string | null; service?: string | null; gateway_model?: string | null };
 };
 export type TestCase = { has_ground_truth?: boolean; history_status?: string;
+  full_image_alignment?: Record<string,import('./spatial-comparison').SavedAlignment> | null;
   evaluation_mode?: EvaluationMode; document_gt_confirmed_at?: string | null;
   gt_prefill?: {status:"pending"|"ready"|"partial"|"unavailable"|"skipped";field_ids?:string[]} | null;
   workflow?: "legacy" | "global"; global_fields?: GlobalField[]; layout_confirmed_at?: string | null; layout_locked_at?: string | null;

@@ -149,7 +149,7 @@ def test_text_geometry_offsets_order_and_generic(settings):
         {"text": "left", "confidence": None, "box": [[1, 1], [30, 1], [30, 10], [1, 10]]}]}}
     original = deepcopy(payload)
     text, score, boxes, _ = normalize_external(payload, Provider(**REGISTRATION), crop, {"x1": 10, "y1": 20})
-    assert text == "right\nleft" and score is None and boxes[0]["polygon"][0] == [50, 21]
+    assert text == "right\nleft" and score == pytest.approx(.9) and boxes[0]["polygon"][0] == [50, 21]
     assert boxes[1]["confidence"] is None and payload == original
     generic = Provider(name="Generic", endpoint="https://ocr.example/ocr", response_adapter="text_json", text_path="result.text")
     assert normalize_external({"result": {"text": "ไทย"}}, generic, crop, None)[:3] == ("ไทย", None, [])
@@ -289,13 +289,13 @@ def sample_crop(settings):
         return ImageService(settings).canonical_crop(image, {"x1": 10, "y1": 20, "x2": 90, "y2": 80})
 
 
-def test_single_and_gateway_envelopes_preserve_text_geometry_and_null_confidence(settings):
+def test_single_and_gateway_envelopes_preserve_text_geometry_and_average_confidence(settings):
     crop, provider, roi = sample_crop(settings), Provider(**REGISTRATION), {"x1": 10, "y1": 20}
     for service in ("openthai2-ocr-text", "model-api-gateway"):
         payload = openthai_envelope(openthai_data(), service)
         original = deepcopy(payload)
         text, score, boxes, meta = normalize_external(payload, provider, crop, roi)
-        assert text == EXACT_TEXT and score is None and payload == original
+        assert text == EXACT_TEXT and score == pytest.approx(.95) and payload == original
         assert meta["service"] == service
         assert boxes[0]["text"] == "right" and boxes[0]["confidence"] == 0.95
         assert boxes[0]["crop_polygon"][0] == [40, 1] and boxes[0]["polygon"][0] == [50, 21]
@@ -307,7 +307,7 @@ def test_one_image_batch_envelope_uses_matching_item_once(settings):
     crop, provider = sample_crop(settings), Provider(**REGISTRATION)
     payload = batch_envelope(openthai_data())
     text, score, boxes, _ = normalize_external(payload, provider, crop, {"x1": 10, "y1": 20})
-    assert text == EXACT_TEXT and score is None
+    assert text == EXACT_TEXT and score == pytest.approx(.95)
     assert [box["polygon"][0] for box in boxes] == [[50, 21], [11, 21]]
     assert boxes[0]["crop_bbox"] == [40, 1, 70, 10]
 
@@ -377,7 +377,7 @@ def test_sync_run_keeps_model_order_and_labels_it(client, document, external):
     run = response.json()["runs"][0]
     field = run["fields"][0]
     assert run["final_text"] == field["ocr_text"] == EXACT_TEXT
-    assert run["confidence"] is None and field["confidence"] is None
+    assert run["confidence"] == pytest.approx(.95) and field["confidence"] == pytest.approx(.95)
     assert field["diagnostics"]["ordering"] == "model_reading_order"
     boxes = field["diagnostics"]["boxes"]
     assert [box["text"] for box in boxes] == ["right", "left"]
@@ -396,8 +396,8 @@ def test_batch_result_persists_exact_text_boxes_and_replay(client, document, ext
     results = client.get(f"/api/ocr-jobs/{job['job_id']}/results").json()
     run = results["runs"][0]
     field = run["fields"][0]
-    assert run["status"] == "success" and run["final_text"] == EXACT_TEXT and run["confidence"] is None
-    assert field["status"] == "success" and field["ocr_text"] == EXACT_TEXT and field["confidence"] is None
+    assert run["status"] == "success" and run["final_text"] == EXACT_TEXT and run["confidence"] == pytest.approx(.95)
+    assert field["status"] == "success" and field["ocr_text"] == EXACT_TEXT and field["confidence"] == pytest.approx(.95)
     boxes = field["diagnostics"]["boxes"]
     assert [box["text"] for box in boxes] == ["right", "left"]
     assert boxes[0]["polygon"][0] == [50, 21]
@@ -431,3 +431,19 @@ def test_failed_batch_item_stays_failed_without_manufactured_text(client, docume
     assert "INVALID_IMAGE" in field["diagnostics"]["error_message"]
     assert submit(client, case, [pipeline_id], "openthai-batch-failure")["job_id"] == job["job_id"]
     assert len(calls) == 1
+
+
+@pytest.mark.parametrize("scores,aggregate,expected", [
+    ([.8, 1.0, None], None, .9),
+    ([0, 1.0], None, .5),
+    ([None, -1, 2, True, "invalid"], None, None),
+    ([], None, None),
+    ([.8, 1.0], .7, .7),
+])
+def test_openthai_confidence_uses_valid_recognition_scores(settings, scores, aggregate, expected):
+    payload = {"data": {"text": "sample", "confidence": aggregate,
+                        "lines": [{"text": "sample", "confidence": score} for score in scores]}}
+    original = deepcopy(payload)
+    _, score, boxes, _ = normalize_external(payload, Provider(**REGISTRATION), sample_crop(settings), None)
+    assert score == (pytest.approx(expected) if expected is not None else None)
+    assert boxes == [] and payload == original

@@ -22,6 +22,7 @@ from app.schemas.contracts import (
     TestCaseUpdate,
 )
 from app.schemas.evaluation_export import ExcelEvaluationSelection
+from app.schemas.spatial_comparison import SpatialComparison
 from app.services.evaluation_insights_service import EvaluationInsightsService
 from app.services.excel_evaluation_service import ExcelEvaluationService
 from app.services.field_service import FieldService
@@ -29,8 +30,53 @@ from app.services.global_layout_service import GlobalLayoutService
 from app.services.json_response import bounded_json_response
 from app.services.ocr_jobs import ensure_not_running, has_active_jobs
 from app.services.serializers import field_json, run_json, test_case_json
+from app.services.spatial_comparison import compare_spatial
 
 router = APIRouter(prefix="/test-cases")
+
+
+@router.post("/{case_id}/spatial-comparison")
+def spatial_comparison(case_id: UUID, data: SpatialComparison, repository: RepoDep):
+    return bounded_json_response(compare_spatial(repository.test_case(str(case_id)), data))
+
+
+@router.put("/{case_id}/full-image-alignment")
+def confirm_alignment(case_id: UUID, data: SpatialComparison, repository: RepoDep):
+    from app.services.full_image_alignment import save_alignment, initial_references
+    case = repository.test_case(str(case_id), for_update=True)
+    ensure_not_running(repository.session, case.id)
+    expected = initial_references(case, repository.session)["references"]
+    if [r.model_dump() for r in data.references] != expected:
+        raise AppError("GT is fixed. Reload the check and swap Pipeline Field IDs only", 409)
+    save_alignment(case, data)
+    return bounded_json_response(test_case_json(repository.save(case), detail=True))
+
+
+@router.get("/{case_id}/full-image-alignment")
+def alignment_references(case_id: UUID, repository: RepoDep):
+    from app.services.full_image_alignment import initial_references
+    return bounded_json_response(initial_references(repository.test_case(str(case_id)), repository.session))
+
+
+@router.get("/{case_id}/alignment-review")
+def alignment_review(case_id: UUID, repository: RepoDep):
+    from app.services.full_image_alignment import review_alignments
+    return bounded_json_response(review_alignments(repository.test_case(str(case_id)), repository.session))
+
+
+@router.delete("/{case_id}/full-image-alignment/{run_id}")
+def clear_alignment(case_id: UUID, run_id: UUID, repository: RepoDep):
+    case = repository.test_case(str(case_id), for_update=True)
+    ensure_not_running(repository.session, case.id)
+    case.full_image_alignment = {k: v for k, v in (case.full_image_alignment or {}).items() if k != str(run_id)}
+    for run in case.runs:
+        if str(run.id) == str(run_id):
+            run.document_evaluation = None
+            run.metric_records.clear()
+            for field in run.fields:
+                field.evaluation = None
+                field.confirmed_at = None
+    return bounded_json_response(test_case_json(repository.save(case), detail=True))
 
 
 @router.post("/bulk-delete")

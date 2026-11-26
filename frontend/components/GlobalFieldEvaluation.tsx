@@ -14,6 +14,8 @@ import {runTimingText} from "@/lib/run-timing";
 import LargeDialog from "./LargeDialog";
 import SourceCropPreview from "./SourceCropPreview";
 import type {ROI} from "@/types";
+import {isFullImageCase,textLines} from "@/lib/full-image-lines";
+import {lineConfidences} from "@/lib/line-confidence";
 
 const pct=(n:number|null|undefined)=>n==null?"—":`${(n*100).toFixed(2)}%`;
 type Props={fields:GlobalField[];saved:TestCase;runs:PipelineRun[];mode:EvaluationMode;documentGT:string;onMode:(mode:EvaluationMode)=>void;onEdit:()=>void;busy:boolean};
@@ -26,26 +28,29 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
  const [analysisPipelines,setAnalysisPipelines]=useState<Record<string,AnalysisMode>>({});
  const visibleRuns=runs.filter(run=>!hiddenPipelines.includes(run.pipeline_id));
  const whole=mode==="whole_document";
- const rows=whole?[{id:"document",name:"Whole Field",gt:documentGT,dirty:documentGT!==(saved.ground_truth_raw??"")}]:[...fields].sort((a,b)=>a.field_index-b.field_index).map(f=>({id:f.id,name:`Field ${String(f.field_index).padStart(2,"0")}`,gt:f.ground_truth_raw??"",dirty:(f.ground_truth_raw??"")!==(saved.global_fields?.find(s=>s.id===f.id)?.ground_truth_raw??"")}));
+ const lines=!whole&&isFullImageCase(saved);
+ const confidenceByRun=new Map(lines?runs.map(run=>[run.id,lineConfidences(run)]):[]);
+ const gtLines=textLines(documentGT);
+ const rows=whole?[{id:"document",name:"Whole Field",gt:documentGT,dirty:documentGT!==(saved.ground_truth_raw??""),line:-1}]:lines?Array.from({length:Math.max(gtLines.length,...runs.map(run=>textLines(run.document_evaluation?.prediction??run.final_text??'').length))},(_,index)=>({id:`line-${index}`,name:`Field ${String(index+1).padStart(2,'0')}`,gt:gtLines[index]??'',dirty:documentGT!==(saved.ground_truth_raw??''),line:index})):[...fields].sort((a,b)=>a.field_index-b.field_index).map(f=>({id:f.id,name:`Field ${String(f.field_index).padStart(2,"0")}`,gt:f.ground_truth_raw??"",dirty:(f.ground_truth_raw??"")!==(saved.global_fields?.find(s=>s.id===f.id)?.ground_truth_raw??""),line:-1}));
  return <section aria-label="Evaluation Results" className="panel min-w-0">
   <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 p-5">
-   <div><h2>ผลประเมินและเปรียบเทียบ</h2><p className="mt-1 text-sm text-slate-500">ข้อความจริงตรึงด้านซ้าย · เลื่อนแนวนอนเพื่อเทียบ Pipeline และเลื่อนลงเพื่อดูทุก Field</p></div>
+   <div className="w-full"><div className="flex items-center justify-between gap-4"><h2>ผลประเมินและเปรียบเทียบ</h2><button className="button secondary ml-auto shrink-0" disabled={busy} onClick={onEdit}>กลับไปแก้ Ground Truth</button></div><p className="mt-1 text-sm text-slate-500">ข้อความจริงตรึงด้านซ้าย · เลื่อนแนวนอนเพื่อเทียบ Pipeline และเลื่อนลงเพื่อดูทุก Field</p></div>
    {exportError&&<p role="alert">{exportError}</p>}
    <div className="w-full space-y-1 text-xs text-slate-600" aria-label="เวลาประมวลผล">
     {visibleRuns.map(run=><p key={run.id} data-testid="run-timing">{pipelineLabel(run.pipeline_id,run.pipeline_name)}: {runTimingText(run)}</p>)}
     <p>เวลาที่ผ่านไปจริงรวมเวลารอคิวระหว่างกลุ่ม Fields ส่วนเวลา Gateway เป็นเวลาที่แบ่งตาม batch</p>
    </div>
-   <button className="button secondary" disabled={busy} onClick={onEdit}>กลับไปแก้ Ground Truth</button>
    <div className="flex w-full flex-wrap items-center gap-2" aria-label="Evaluation mode">{(["whole_document","per_field"] as const).map(m=><button key={m} disabled={busy} aria-pressed={m===mode} className={`button ${mode===m?"primary":"secondary"}`} onClick={()=>onMode(m)}>{m==="whole_document"?"Whole Field":"Sub-fields"}</button>)}<PipelineVisibilityFilter runs={runs} hidden={hiddenPipelines} onApply={setHiddenPipelines}/><details className="relative ml-auto shrink-0" data-testid="export-menu" onKeyDown={e=>{if(e.key==="Escape"){e.currentTarget.open=false;e.currentTarget.querySelector("summary")?.focus();}}}>
 <summary className="button primary cursor-pointer list-none">{exporting?"กำลังสร้างรายงาน…":"ส่งออก Excel ▾"}</summary>
 <div className="absolute right-0 top-full z-40 mt-2 flex w-72 max-w-[85vw] flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+   {lines&&<p className="text-xs text-slate-600">รายงานส่งออกใช้ผลรวม Whole Field ของภาพเต็ม</p>}
    <button className="button primary" disabled={busy||exporting||!visibleRuns.length||rows.some(r=>r.dirty)||visibleRuns.some(run=>whole?run.status==="success"&&!run.document_evaluation:fields.some(f=>{const prediction=run.fields?.find(p=>p.global_field_id===f.id);return prediction?.status==="success"&&!prediction.evaluation;}))} onClick={async()=>{
     setExporting(true);setExportError("");
-    try{await exportEvaluationExcel(saved.id,{mode,pipeline_ids:visibleRuns.map(r=>r.pipeline_id),run_ids:visibleRuns.map(r=>r.id),field_ids:whole?[]:rows.map(r=>r.id),revision:saved.updated_at});}
+    try{await exportEvaluationExcel(saved.id,{mode:lines?"whole_document":mode,pipeline_ids:visibleRuns.map(r=>r.pipeline_id),run_ids:visibleRuns.map(r=>r.id),field_ids:whole||lines?[]:rows.map(r=>r.id),revision:saved.updated_at});}
     catch(e){setExportError(e instanceof Error?e.message:"ส่งออก Excel ไม่สำเร็จ");}
     finally{setExporting(false);}
    }}>เอกสารนี้ — Excel (.xlsx)</button>
-   <button className="button secondary" disabled={busy||exporting||rows.some(r=>r.dirty)} onClick={async()=>{setExporting(true);setExportError("");try{await exportEvaluationReport(saved.id,mode);}catch(e){setExportError(e instanceof Error?e.message:"ส่งออกรายงานไม่สำเร็จ");}finally{setExporting(false);}}}>{exporting?"กำลังสร้างรายงาน…":"ส่งออกรายงาน ZIP (ทุก Pipeline)"}</button>
+   <button className="button secondary" disabled={busy||exporting||rows.some(r=>r.dirty)} onClick={async()=>{setExporting(true);setExportError("");try{await exportEvaluationReport(saved.id,lines?"whole_document":mode);}catch(e){setExportError(e instanceof Error?e.message:"ส่งออกรายงานไม่สำเร็จ");}finally{setExporting(false);}}}>{exporting?"กำลังสร้างรายงาน…":"ส่งออกรายงาน ZIP (ทุก Pipeline)"}</button>
 </div></details></div>
   </div>
   {!!runs.length&&!visibleRuns.length&&<p className="p-4 text-sm text-slate-500">เลือก Pipeline เพื่อแสดงผลเปรียบเทียบ</p>}
@@ -62,16 +67,19 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
      </th>
      {visibleRuns.map(run=>{
       const field=run.fields?.find(f=>f.global_field_id===row.id);
-      const failed=whole?run.status==="error":field?.status==="error";
-      const evaluation=row.dirty||failed?null:whole?run.document_evaluation:field?.evaluation;
+      const failed=whole||lines?run.status==="error":field?.status==="error";
+      const evaluation=row.dirty||failed?null:whole?run.document_evaluation:lines?run.document_evaluation?.line_evaluations?.[row.line]:field?.evaluation;
       const analysis=analysisPipelines[run.pipeline_id]??evaluationDefault;
+      const runGT=run.document_evaluation?.ground_truth_raw??documentGT;
+      const reference=whole?runGT:lines?textLines(runGT)[row.line]??'':row.gt;
       return <td key={run.id} data-testid={`global-result-${run.pipeline_id}`} className="border-b border-r border-slate-200 p-3 align-top">
        <section aria-label="Extracted Text" data-testid="prediction-pane" tabIndex={0} className={`space-y-2 pr-2 ${whole?"min-h-64":"min-h-32"}`}>
        <h3 className="text-sm font-semibold text-slate-500" title={analysis.highlight?"สีเขียว: ถูก · กดสีแดงเพื่อดูข้อความที่ผิด เกิน หรือขาด":undefined}>ข้อความที่ OCR อ่านได้{analysis.highlight&&<span className="ml-2 text-xs font-normal text-green-700">HIGHLIGHT</span>}</h3>
-       <button type="button" className="text-xs text-sky-800 underline" aria-label={`รายละเอียด ${row.name} ${pipelineLabel(run.pipeline_id,run.pipeline_name)}`} onClick={()=>setExpanded({run,fieldId:whole?null:row.id})}>เปิดภาพและรายละเอียดผล</button>
+       <button type="button" className="text-xs text-sky-800 underline" aria-label={`รายละเอียด ${row.name} ${pipelineLabel(run.pipeline_id,run.pipeline_name)}`} onClick={()=>setExpanded({run,fieldId:whole||lines?null:row.id})}>เปิดภาพและรายละเอียดผล</button>
        {failed&&<p role="alert" className="mb-3 text-amber-800">บริการ OCR ยังไม่พร้อมใช้งาน</p>}
-       {!whole&&!field&&!failed&&<p className="mb-3 text-slate-500">ไม่มีผลลัพธ์สำหรับ Field นี้</p>}
-       {analysis.highlight&&evaluation?<InteractiveErrorText evaluation={evaluation} groundTruth={row.gt}/>:<p data-testid="global-prediction" className="whitespace-pre-wrap break-words leading-relaxed">{(whole?run.final_text:field?.ocr_text)||"(ไม่พบข้อความ)"}</p>}
+       {!whole&&!lines&&!field&&!failed&&<p className="mb-3 text-slate-500">ไม่มีผลลัพธ์สำหรับ Field นี้</p>}
+       {reference!==row.gt&&<div className="rounded bg-sky-50 p-2"><p className="text-xs text-sky-800">GT ตามลำดับที่ยืนยันสำหรับ Pipeline นี้</p><p className="whitespace-pre-wrap">{reference}</p></div>}
+       {analysis.highlight&&evaluation&&"spans" in evaluation?<InteractiveErrorText evaluation={evaluation} groundTruth={reference}/>:<p data-testid="global-prediction" className="whitespace-pre-wrap break-words leading-relaxed">{(whole?(run.document_evaluation?.prediction??run.final_text):lines?textLines(run.document_evaluation?.prediction??run.final_text??"")[row.line]:field?.ocr_text)||"(ไม่พบข้อความ)"}</p>}
 
        </section>
 
@@ -81,16 +89,16 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
      <td className="sticky left-0 z-10 border-b border-r border-sky-200 bg-sky-50 p-3 align-top text-xs text-slate-500">CER / WER</td>
      {visibleRuns.map(run=>{
       const field=run.fields?.find(f=>f.global_field_id===row.id);
-      const failed=whole?run.status==="error":field?.status==="error";
-      const evaluation=row.dirty||failed?null:whole?run.document_evaluation:field?.evaluation;
+      const failed=whole||lines?run.status==="error":field?.status==="error";
+      const evaluation=row.dirty||failed?null:whole?run.document_evaluation:lines?run.document_evaluation?.line_evaluations?.[row.line]:field?.evaluation;
       return <td key={run.id} data-testid={`global-metrics-${run.pipeline_id}`} className="border-b border-r border-slate-200 p-3 align-top">
        <section aria-label="Metrics" data-testid={evaluation?"global-evaluation":"not-evaluated"} className="my-4 rounded-lg bg-slate-50 p-3">
-        <dl className="grid grid-cols-2 gap-2">{[["Confidence",pct(whole?run.confidence:field?.confidence)],["CER",pct(evaluation?.cer)],["WER",pct(evaluation?.wer)],["Exact Match",evaluation?(evaluation.exact_match?"✓ Yes":"✕ No"):"—"]].map(([label,value])=><div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
+        <dl className="grid grid-cols-2 gap-2">{[["Confidence",pct(whole?run.confidence:lines?(run.document_evaluation?.alignment_applied?(run.document_evaluation.line_confidences?.[row.line]??null):confidenceByRun.get(run.id)?.[row.line]):field?.confidence)],["CER",pct(evaluation?.cer)],["WER",pct(evaluation?.wer)],["Exact Match",evaluation?(evaluation.exact_match?"✓ Yes":"✕ No"):"—"]].map(([label,value])=><div key={label}><dt className="text-xs text-slate-500">{label}</dt><dd className="font-semibold">{value}</dd></div>)}</dl>
         {!evaluation&&<p className="mt-2 text-xs text-slate-500">ยังไม่ประเมิน — กลับไปกรอก GT แล้วยืนยันเพื่อคำนวณ</p>}
        </section>
-       <CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation} onOpenDetails={()=>setOverlay({run,fieldId:whole?null:row.id,kind:"stats"})}
-        unavailable={row.dirty?"แก้ไข GT แล้ว — ต้องยืนยันคำนวณใหม่":failed?"Pipeline ประมวลผลไม่สำเร็จ":!evaluation?"ยังไม่มี GT ที่ยืนยันหรือผลประเมินล้าสมัย":undefined}/>
-       <button type="button" className="mt-3 text-sm text-sky-800 underline" onClick={()=>setOverlay({run,fieldId:whole?null:row.id,kind:"crop"})}>ดูภาพต้นฉบับ (Field Crop)</button>
+       {!lines&&<CharacterErrorSummary key={JSON.stringify([run.id,row.id,mode,evaluation,row.gt])} caseId={saved.id} pipelineId={run.pipeline_id} fieldId={whole?undefined:row.id} mode={mode} evaluation={evaluation} onOpenDetails={()=>setOverlay({run,fieldId:whole||lines?null:row.id,kind:"stats"})}
+        unavailable={row.dirty?"แก้ไข GT แล้ว — ต้องยืนยันคำนวณใหม่":failed?"Pipeline ประมวลผลไม่สำเร็จ":!evaluation?"ยังไม่มี GT ที่ยืนยันหรือผลประเมินล้าสมัย":undefined}/>}
+       <button type="button" className="mt-3 text-sm text-sky-800 underline" onClick={()=>setOverlay({run,fieldId:whole||lines?null:row.id,kind:"crop"})}>ดูภาพต้นฉบับ (Field Crop)</button>
       </td>;
      })}
     </tr></tbody>)}
@@ -100,7 +108,7 @@ export default function GlobalFieldEvaluation({fields,saved,runs,mode,documentGT
   {!runs.length&&<p className="p-5 text-slate-500">ยังไม่มีผลลัพธ์ Pipeline</p>}
  {expanded&&<PipelineResultPreview run={expanded.run} fieldId={expanded.fieldId} saved={saved} fields={fields} documentGT={documentGT} onClose={()=>setExpanded(null)}/>}
  {overlay&&<LargeDialog title={`${pipelineLabel(overlay.run.pipeline_id,overlay.run.pipeline_name)} · ${overlay.index!=null?`Field ${String(overlay.index).padStart(2,"0")}`:overlay.fieldId?`Field ${String(fields.find(f=>f.id===overlay.fieldId)?.field_index??"").padStart(2,"0")}`:"ทุก Field"} · ${overlay.kind==="stats"?"สถิติอักขระ":"ภาพต้นฉบับ"}`} onClose={()=>{setAnalysisPipelines(old=>({...old,[overlay.run.pipeline_id]:{...(old[overlay.run.pipeline_id]??evaluationDefault),details:false}}));setOverlay(null);}} back={overlay.back?()=>setOverlay({...overlay,kind:"stats",back:false}):undefined}>
-  {overlay.kind==="stats"?<CharacterErrorSummary embedded caseId={saved.id} pipelineId={overlay.run.pipeline_id} fieldId={overlay.fieldId??undefined} mode={mode} evaluation={overlay.fieldId?overlay.run.fields?.find(f=>f.global_field_id===overlay.fieldId)?.evaluation:overlay.run.document_evaluation} onCrop={(roi,index)=>setOverlay({...overlay,kind:"crop",roi,index,back:true})}/>:<SourceCropPreview documentId={saved.document.id} page={saved.document.page_number} roi={overlay.roi??fields.find(f=>f.id===overlay.fieldId)?.roi??{x1:0,y1:0,x2:saved.document.width,y2:saved.document.height}}/>}
+  {overlay.kind==="stats"?<CharacterErrorSummary embedded caseId={saved.id} pipelineId={overlay.run.pipeline_id} fieldId={overlay.fieldId??undefined} mode={lines?"whole_document":mode} evaluation={overlay.fieldId?overlay.run.fields?.find(f=>f.global_field_id===overlay.fieldId)?.evaluation:overlay.run.document_evaluation} onCrop={(roi,index)=>setOverlay({...overlay,kind:"crop",roi,index,back:true})}/>:<SourceCropPreview documentId={saved.document.id} page={saved.document.page_number} roi={overlay.roi??fields.find(f=>f.id===overlay.fieldId)?.roi??{x1:0,y1:0,x2:saved.document.width,y2:saved.document.height}}/>}
  </LargeDialog>}
  </section>;
 }

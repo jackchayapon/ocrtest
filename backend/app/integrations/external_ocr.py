@@ -21,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 from app.core.config import MAX_DETECTION_REGIONS
 from app.core.errors import AppError
 from app.integrations.model_gateway import GatewayError, verified_tls_context
-from app.pipelines.normalizers import bounded_text, confidence, geometry
+from app.pipelines.normalizers import average, bounded_text, confidence, geometry
 
 logger = logging.getLogger(__name__)
 
@@ -348,5 +348,9 @@ def normalize_external(payload, provider, crop, roi):
             if mapped is None:
                 raise GatewayError("External geometry is invalid", "EXTERNAL_INVALID_RESPONSE")
             boxes.append(mapped)
+        # Match DET/REC aggregation: mean valid recognition scores, never DET scores.
+        # Keep an explicit provider aggregate when supplied, as other normalizers do.
+        if score is None:
+            score = average(line.get("confidence") for line in lines)
     # Keep provider reading order and full text, including multi-column pages.
     return text, score, boxes, meta

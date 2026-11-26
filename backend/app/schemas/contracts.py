@@ -101,6 +101,7 @@ class GlobalEvaluation(EvaluationMode):
     mode: Literal["whole_document", "per_field", "auto"] = "auto"
     global_field_ids: list[UUID] = Field(default_factory=list, max_length=MAX_JOB_FIELDS)
     require_complete_gt: bool = False
+    require_spatial_review: bool = False
 
     @model_validator(mode="after")
     def valid_selection(self):

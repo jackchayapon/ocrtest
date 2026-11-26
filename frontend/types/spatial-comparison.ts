@@ -1,0 +1,10 @@
+import type {Metrics,ROI} from '@/types';
+export type SpatialReference={id:string;roi:ROI|null;text:string};
+export type SavedAlignment={fixed_gt?:boolean;padding_version?:number;references:SpatialReference[];overrides:SpatialOverride[];ground_truth_raw:string;source_ground_truth:string;confirmed_at:string;prediction:string};
+export type SpatialOverride={box_id:string;reference_id:string|null};
+export type AlignmentCheck={run_id:string;pipeline_id:string;ready:boolean;reason:string;mismatch:number;missing:number;extra:number;ambiguous:number};
+export type AlignmentReview={ready:boolean;pipelines:AlignmentCheck[]};
+export type SpatialResult={run_id:string;geometry_available:boolean;gt_confirmed:boolean;order_complete:boolean;order_source:string;missing:number;extra:number;ambiguous:number;stored_order_metrics:Metrics|null;spatial_metrics:Metrics|null;
+ rows:{id:string;order:number;ground_truth:string;prediction:string;model_orders:number[];status:string;metrics:Metrics|null}[];
+ matches:{id:string;bbox:[number,number,number,number];text:string;order:number;reference_id:string|null;status:string;candidates:{reference_id:string;overlap:number}[]}[];
+ inversions:{first:string;second:string;first_order:number;second_order:number}[]};
