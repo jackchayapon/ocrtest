@@ -73,7 +73,7 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
  function changeDocument(text:string,counts=lineCounts){setDocumentGT(text.replace(/\r\n?/g,"\n"));setFields(splitDocumentGT(text,fields,counts));setLineCounts(counts);setNotice(false);setSaveMessage("");}
  function changeField(field:GlobalField){const next=fields.map(f=>f.id===field.id?field:f);setFields(next);setDocumentGT(joinFieldGT(next));setLineCounts(fieldLineCounts(next));setNotice(false);setSaveMessage("");}
  async function saveGT(calculate:boolean){if(calculate&&!completeGT(fields,documentGT)){setError("กรุณากรอก GT ให้ครบทุก Field และตรวจการแบ่งข้อความก่อนคำนวณ");return;}await act(async()=>{
-  if(calculate){setCalculationPrompt(false);setEvaluationProgress({completed:0,total:fullImageCase?3:2,label:'กำลังบันทึก Ground Truth',started:Date.now()});}
+  if(calculate){setCalculationPrompt(false);setSaveMessage('กำลังบันทึก GT และตรวจความพร้อมก่อนคำนวณ…');}
   try{
   let c=saved;const changes=fields.filter(f=>f.ground_truth_raw!==saved.global_fields?.find(s=>s.id===f.id)?.ground_truth_raw);
   try{c=await api.saveGlobalGTBatch(c.id,changes,documentGT,mode);}catch(e){
@@ -84,12 +84,13 @@ export default function GlobalWorkspace({initialCase,stage}:{initialCase:TestCas
    if(c.evaluation_mode!==mode)c=await api.setEvaluationMode(c.id,mode);
   }adopt(c);
   if(calculate){
-   setEvaluationProgress(p=>p?{...p,completed:1,label:fullImageCase?'กำลังตรวจตำแหน่งทุก Pipeline':'กำลังเปรียบเทียบข้อความและคำนวณ CER/WER'}:p);
-   if(fullImageCase){const review=await api.getAlignmentReview(c.id);if(!review.ready){setAlignmentStart(review.pipelines.find(p=>!p.ready)?.run_id);setPendingCalculation(true);setAlignmentOpen(true);setSaveMessage("บันทึก GT แล้ว กรุณาแก้ Pipeline สีแดงหรือยืนยันช่องว่างก่อนคำนวณ");return;}setEvaluationProgress(p=>p?{...p,completed:2,label:'กำลังเปรียบเทียบข้อความและคำนวณ CER/WER'}:p);}
+   if(fullImageCase){const review=await api.getAlignmentReview(c.id);if(!review.ready){setAlignmentStart(review.pipelines.find(p=>!p.ready)?.run_id);setPendingCalculation(true);setAlignmentOpen(true);setSaveMessage("บันทึก GT แล้ว กรุณาแก้ Pipeline สีแดงหรือยืนยันช่องว่างก่อนคำนวณ");return;}}
+   setSaveMessage('');
+   setEvaluationProgress({completed:fullImageCase?2:1,total:fullImageCase?3:2,label:'กำลังเปรียบเทียบข้อความและคำนวณ CER/WER',started:Date.now()});
    adopt(await api.evaluateGlobal(c.id,"auto",fields.map(f=>f.id),true,fullImageCase));setAlignmentOpen(false);setPendingCalculation(false);setNotice(true);if(fullImageCase)setMode("whole_document");setComparison(true);
   }
   else setSaveMessage("บันทึก GT ฉบับร่างแล้ว — ยังไม่ได้คำนวณผลประเมิน");
-  }finally{if(calculate)setEvaluationProgress(null);}
+  }catch(e){if(calculate)setSaveMessage('');throw e;}finally{if(calculate)setEvaluationProgress(null);}
  });}
  const allowed=stage==="layout"||stage==="pipelines"&&locked||(stage==="ground-truth")&&hasRuns;
  useEffect(()=>{

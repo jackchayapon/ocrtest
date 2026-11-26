@@ -4,7 +4,7 @@ from urllib.parse import parse_qsl, urlsplit
 from app.db.models import OCRModel, PipelineConfig
 from app.services.metrics_service import normalize_text
 
-DETECTION = "/api/v1/text-detection-batches?version=6&model=thai_ft_v3"
+DETECTION = "/api/v1/text-detection-batches?version=6&model=thai_ft_v1"
 RECOGNITION = "/api/v1/text-recognition-batches?version=5&model=thai_ft_v6"
 
 
@@ -27,7 +27,7 @@ def prefill_pipeline(configs):
     # Transient configuration: no registry entry or PipelineRun is persisted.
     return PipelineConfig(
         pipeline_id="system_gt_prefill", name="GT draft assistance", source="custom", execution_mode="det_rec", enabled=True,
-        det_model=OCRModel(name="DET v6 thai_ft_v3", kind="det", source="custom", version="6", weight="thai_ft_v3", batch_path=DETECTION, single_path=""),
+        det_model=OCRModel(name="DET v6 thai_ft_v1", kind="det", source="custom", version="6", weight="thai_ft_v1", batch_path=DETECTION, single_path=""),
         rec_model=OCRModel(name="REC v5 thai_ft_v6", kind="rec", source="custom", version="5", weight="thai_ft_v6", batch_path=RECOGNITION, single_path=""),
     )
 
@@ -38,6 +38,7 @@ def apply_prefill(case, results, reading_lines):
         case.gt_prefill = {**case.gt_prefill, "status": "skipped"}
         return
     filled = []
+    reference_boxes = {}
     for field in sorted(case.global_fields, key=lambda f: f.field_index):
         result = results.get(field.id)
         if result is not None and result.status == "success":
@@ -46,7 +47,8 @@ def apply_prefill(case, results, reading_lines):
                 field.ground_truth_raw = text
                 field.ground_truth_normalized = normalize_text(text)
                 filled.append(field.id)
+                reference_boxes[field.id] = [{"bbox": b.get("bbox"), "text": b.get("text", "")} for b in result.boxes or []]
     if filled:
         case.ground_truth_raw = "\n".join(f.ground_truth_raw or "" for f in sorted(case.global_fields, key=lambda f: f.field_index))
         case.ground_truth_normalized = normalize_text(case.ground_truth_raw)
-    case.gt_prefill = {**case.gt_prefill, "status": "ready" if len(filled) == len(case.global_fields) else "partial" if filled else "unavailable", "field_ids": filled}
+    case.gt_prefill = {**case.gt_prefill, "status": "ready" if len(filled) == len(case.global_fields) else "partial" if filled else "unavailable", "field_ids": filled, "reference_boxes": reference_boxes}

@@ -7,7 +7,7 @@ from app.services.global_order import canonical_document_text
 def field_json(field, detail=False, *, summary=False):
     evaluation = field.evaluation
     if detail and evaluation:
-        evaluation = {**evaluation, **compare_field(field.ocr_text or "", field.ground_truth_raw or "")}
+        evaluation = {**evaluation, **compare_field(evaluation.get("prediction", field.ocr_text or ""), field.ground_truth_raw or "")}
     return {"id": field.id, "pipeline_run_id": field.pipeline_run_id,
             "global_field_id": field.global_field_id, "status": field.status,
             "diagnostics": None if summary else field.diagnostics,
@@ -117,14 +117,15 @@ def run_json(record, detail=False, *, summary=False):
     data["raw_text"] = record.raw_text if record.raw_text is not None else record.final_text
     if detail and record.document_evaluation:
         case = record.test_case
-        prediction = canonical_document_text(case.global_fields, record.fields)
+        prediction = record.document_evaluation.get("prediction", canonical_document_text(case.global_fields, record.fields))
+        reference = record.document_evaluation.get("ground_truth_raw", case.ground_truth_raw or "")
         data["document_evaluation"] = {**record.document_evaluation,
-            **compare_field(prediction, case.ground_truth_raw or ""),
-            "prediction": prediction, "ground_truth_raw": case.ground_truth_raw}
+            **compare_field(prediction, reference),
+            "prediction": prediction, "ground_truth_raw": reference}
         if "line_evaluations" in record.document_evaluation:
             from app.services.line_evaluation import line_evaluations
             data["document_evaluation"]["line_evaluations"] = line_evaluations(
-                prediction, case.ground_truth_raw, detail=True)
+                prediction, reference, detail=True)
     metrics = {item.text_kind: metrics_json(item) for item in record.metric_records}
     return {
         **data,
@@ -176,6 +177,7 @@ def test_case_json(record, detail=False, *, summary=False):
         "layout_locked_at": timestamp(record.layout_locked_at) if record.layout_locked_at else None,
         "global_fields": [global_field_json(field) for field in record.global_fields],
         "ground_truth_raw": record.ground_truth_raw,
+        "full_image_alignment": None if summary else record.full_image_alignment,
         "ground_truth_normalized": record.ground_truth_normalized,
         "status": record.status,
         "history_status": history_status(record),

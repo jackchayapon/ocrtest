@@ -25,6 +25,7 @@ from app.services.gt_prefill_service import (
     pristine_gt,
 )
 from app.services.metrics_service import normalize_text
+from app.services.full_image_alignment import aligned_prediction, aligned_reference
 from app.services.pipeline_manager import PipelineManager
 
 logger = logging.getLogger(__name__)
@@ -221,6 +222,10 @@ class GlobalLayoutService:
 
     def evaluate(self, case_id, data, *, persist=True):
         case = self.case(case_id)
+        if data.require_spatial_review:
+            from app.services.full_image_alignment import review_alignments
+            if not review_alignments(case, self.session)["ready"]:
+                raise AppError("กรุณาตรวจและยืนยันตำแหน่ง Pipeline ให้ครบก่อนคำนวณ", 409)
         if data.require_complete_gt:
             fields = sorted(case.global_fields, key=lambda f: f.field_index)
             if not fields or any(not (f.ground_truth_raw or "").strip() for f in fields):
@@ -269,9 +274,15 @@ class GlobalLayoutService:
                     "Run OCR successfully for the complete layout before calculating", 409
                 )
             for run in valid:
-                prediction = canonical_document_text(case.global_fields, run.fields)
+                original_prediction = canonical_document_text(case.global_fields, run.fields)
+                prediction = aligned_prediction(case, run, original_prediction)
+                reference = aligned_reference(case, run, case.ground_truth_raw)
                 run.document_evaluation = {
-                    **compact_comparison(prediction, case.ground_truth_raw),
+                    **compact_comparison(prediction, reference),
+                    "prediction": prediction,
+                    "ground_truth_raw": reference,
+                    "alignment_applied": str(run.id) in (case.full_image_alignment or {}),
+                    "line_confidences": (case.full_image_alignment or {}).get(str(run.id), {}).get("line_confidences"),
                     "mode": "whole_document",
                     "global_field_ids": [
                         f.id for f in sorted(case.global_fields, key=lambda f: f.field_index)
@@ -285,7 +296,7 @@ class GlobalLayoutService:
                     from app.services.line_evaluation import line_evaluations
                     run.document_evaluation = {
                         **run.document_evaluation,
-                        "line_evaluations": line_evaluations(prediction, case.ground_truth_raw),
+                        "line_evaluations": line_evaluations(prediction, reference),
                     }
             case.document_gt_confirmed_at = stamp
         else:
@@ -310,11 +321,13 @@ class GlobalLayoutService:
                 )
             for field in selected:
                 for run, prediction in matches[field.id]:
-                    prediction.ground_truth_raw = field.ground_truth_raw
-                    prediction.ground_truth_normalized = field.ground_truth_normalized
+                    prediction.ground_truth_raw = aligned_reference(case, run, field.ground_truth_raw)
+                    prediction.ground_truth_normalized = normalize_text(prediction.ground_truth_raw)
                     prediction.confirmed_at = stamp
                     prediction.evaluation = {
-                        **compact_comparison(prediction.ocr_text, field.ground_truth_raw),
+                        **compact_comparison(aligned_prediction(case, run, prediction.ocr_text), prediction.ground_truth_raw),
+                        "prediction": aligned_prediction(case, run, prediction.ocr_text),
+                        "source_ground_truth": field.ground_truth_raw,
                         "mode": "per_field",
                         "global_field_id": field.id,
                         "evaluated_at": stamp.isoformat(),

@@ -57,9 +57,10 @@ class IncrementalGlobalJob:
         return session.scalar(select(OCRJob.prefill_results[field_id]).where(OCRJob.id == self.job_id))
 
     def save_prefill(self, session, field_id, result):
-        # Keep canonical text, not raw responses/polygons. Patch just this JSON
+        # Keep canonical text and compact GT geometry, not raw responses/polygons. Patch just this JSON
         # entry server-side: no O(n²) download/re-encoding of all earlier drafts.
-        payload = {"status": result.status, "final_text": "\n".join(reading_lines(result)), "boxes": []}
+        payload = {"status": result.status, "final_text": "\n".join(reading_lines(result)),
+                   "boxes": [{"bbox": b.get("bbox"), "text": b.get("text", "")} for b in stored_boxes(result)]}
         if session.bind.dialect.name == "postgresql":
             value = func.jsonb_set(OCRJob.prefill_results, array([field_id]), cast(payload, JSONB), True)
         else:

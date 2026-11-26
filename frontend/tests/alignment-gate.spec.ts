@@ -49,7 +49,9 @@ test('calculate checks all pipelines and opens the red pipeline before evaluatin
  const refs=['A','B'].map((text,i)=>({id:`gt-${i}`,text,roi:{x1:10,y1:10+i*40,x2:100,y2:30+i*40}}));
  for(const r of record.runs){r.final_text='A\nB';r.fields[0].diagnostics={boxes:[{bbox:[10,10,100,30],text:'A'},{bbox:[10,50,100,70],text:'B'}]};}
  let fixed=false,evaluations=0;
- await page.route('**/api/test-cases/ux-case/alignment-review',route=>route.fulfill({json:{ready:fixed,pipelines:record.runs.map((r,i)=>({run_id:r.id,pipeline_id:r.pipeline_id,ready:i!==1||fixed,reason:i!==1||fixed?'matched':'mismatch',mismatch:i===1&&!fixed?2:0,missing:0,extra:0,ambiguous:0}))}}));
+ let releaseReview!:()=>void;
+ const reviewGate=new Promise<void>(resolve=>{releaseReview=resolve;});
+ await page.route('**/api/test-cases/ux-case/alignment-review',async route=>{await reviewGate;await route.fulfill({json:{ready:fixed,pipelines:record.runs.map((r,i)=>({run_id:r.id,pipeline_id:r.pipeline_id,ready:i!==1||fixed,reason:i!==1||fixed?'matched':'mismatch',mismatch:i===1&&!fixed?2:0,missing:0,extra:0,ambiguous:0}))}});});
  await page.route('**/api/test-cases/ux-case/full-image-alignment',async route=>{
   if(route.request().method()==='GET')return route.fulfill({json:{references:refs,geometry_available:true}});
   fixed=true;await route.fulfill({json:{...record,updated_at:'2026-11-25T00:00:00Z'}});
@@ -62,6 +64,10 @@ test('calculate checks all pipelines and opens the red pipeline before evaluatin
  await page.route('**/api/test-cases/ux-case/evaluate',async route=>{evaluations++;expect(route.request().postDataJSON().require_spatial_review).toBe(true);await route.fulfill({json:record});});
  await page.goto('/workflow/ux-case/ground-truth?edit=1');
  await page.getByRole('button',{name:'ยืนยันเพื่อคำนวณ',exact:true}).click();
+ await expect(page.getByText('กำลังบันทึก GT และตรวจความพร้อมก่อนคำนวณ…',{exact:true})).toBeVisible();
+ await expect(page.getByRole('dialog',{name:'กำลังเตรียมและคำนวณ CER/WER',exact:true})).toHaveCount(0);
+ expect(evaluations).toBe(0);
+ releaseReview();
  const dialog=page.getByRole('dialog',{name:'จัดตำแหน่ง Ground Truth สำหรับรูปเต็ม',exact:true});await expect(dialog).toBeVisible();
  expect(evaluations).toBe(0);
  await expect(dialog.getByLabel('Pipeline จัดตำแหน่ง')).toHaveValue(record.runs[1].id);

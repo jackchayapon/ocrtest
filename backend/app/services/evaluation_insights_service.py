@@ -230,6 +230,8 @@ class EvaluationInsightsService:
                     )
                     confirmed = case["document_gt_confirmed_at"] and complete
                     snapshot = run["document_evaluation"]
+                    if snapshot and snapshot.get("alignment_applied"):
+                        prediction = snapshot["prediction"]
                 else:
                     prediction = run["final_text"] or ""
                     confirmed = (
@@ -239,7 +241,7 @@ class EvaluationInsightsService:
                 scopes.append(
                     self.scope(
                         prediction,
-                        case["ground_truth_raw"],
+                        (snapshot or {}).get("ground_truth_raw", case["ground_truth_raw"]),
                         snapshot,
                         confirmed,
                         run["status"],
@@ -253,18 +255,21 @@ class EvaluationInsightsService:
                     )
                 )
                 if case["workflow"] == "global":
-                    attribute_source_fields(scopes[-1], globals_, fields, case["ground_truth_raw"])
+                    source_fields = [{**f, "ocr_text": (f["evaluation"] or {}).get("prediction", f["ocr_text"])} for f in fields]
+                    reference = (snapshot or {}).get("ground_truth_raw", case["ground_truth_raw"])
+                    source_globals = [{**g, "ground_truth_raw": reference} for g in globals_] if snapshot and snapshot.get("alignment_applied") else globals_
+                    attribute_source_fields(scopes[-1], source_globals, source_fields, reference)
             else:
                 for f in fields:
                     g = globals_by_id.get(f["global_field_id"])
                     gt = g["ground_truth_raw"] if g else f["ground_truth_raw"]
                     confirmed = f["confirmed_at"] and (not g or g["confirmed_at"])
                     fresh = not g or normalize_text(gt or "") == normalize_text(
-                        f["ground_truth_raw"] or ""
+                        (f["evaluation"] or {}).get("source_ground_truth", f["ground_truth_raw"]) or ""
                     )
                     scope = self.scope(
-                        f["ocr_text"],
-                        gt,
+                        (f["evaluation"] or {}).get("prediction", f["ocr_text"]),
+                        f["ground_truth_raw"] if f["evaluation"] and "source_ground_truth" in f["evaluation"] else gt,
                         f["evaluation"],
                         confirmed and fresh,
                         f["status"],
