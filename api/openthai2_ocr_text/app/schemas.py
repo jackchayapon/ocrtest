@@ -1,7 +1,7 @@
 import math
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, FiniteFloat
 
 
 class Line(BaseModel):
@@ -9,7 +9,7 @@ class Line(BaseModel):
     text: str = Field(max_length=32768)
     confidence: float | None = Field(default=None, ge=0, le=1)
     row: int = Field(ge=0)
-    box: list[tuple[float, float]] = Field(min_length=4, max_length=4)
+    box: list[tuple[FiniteFloat, FiniteFloat]] = Field(min_length=4, max_length=4)
 
 
 class OCRData(BaseModel):
@@ -19,7 +19,7 @@ class OCRData(BaseModel):
     geometry_available: bool
     image: dict[str, int]
     rotation: Literal[0, 90, 180, 270] = 0
-    text_angle: float = 0
+    text_angle: FiniteFloat = 0
 
 
 class BatchError(BaseModel):
