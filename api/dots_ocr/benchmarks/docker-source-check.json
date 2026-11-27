@@ -1,0 +1,12 @@
+[
+  {
+    "image": "ocrlab-dots:cpu-test",
+    "matched_files": 11,
+    "mismatches": []
+  },
+  {
+    "image": "ocrlab-dots:vllm-test",
+    "matched_files": 11,
+    "mismatches": []
+  }
+]

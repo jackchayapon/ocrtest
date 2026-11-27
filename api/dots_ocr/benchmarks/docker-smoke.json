@@ -1,0 +1,11 @@
+{
+  "health_http": 200,
+  "unauthenticated_http": 401,
+  "readiness_http_without_weights": 503,
+  "missing_model_error": "MODEL_NOT_READY",
+  "source_files_matched": 11,
+  "source_mismatches": [],
+  "container_exit_code": 0,
+  "oom_killed": false,
+  "scope": "CPU Docker build/start/auth/fail-closed/source match, not CPU model inference"
+}

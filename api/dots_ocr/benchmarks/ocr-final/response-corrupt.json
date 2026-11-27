@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "INVALID_IMAGE",
+    "message": "The uploaded image cannot be decoded."
+  },
+  "meta": {
+    "request_id": "b8b2c949598d4ba7b71ceb657062f011",
+    "api_version": "v1"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "Document 123\nHello world",
+    "native_output": "[{\"bbox\": [43, 605, 73, 781], \"category\": \"Text\", \"text\": \"Document 123\"}, {\"bbox\": [84, 645, 111, 781], \"category\": \"Text\", \"text\": \"Hello world\"}]",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Text",
+        "text": "Document 123",
+        "confidence": null,
+        "native_bbox": [
+          43.0,
+          605.0,
+          73.0,
+          781.0
+        ],
+        "bbox": [
+          42.232142857142854,
+          596.0591133004926,
+          71.69642857142857,
+          769.4581280788177
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 1,
+        "category": "Text",
+        "text": "Hello world",
+        "confidence": null,
+        "native_bbox": [
+          84.0,
+          645.0,
+          111.0,
+          781.0
+        ],
+        "bbox": [
+          82.5,
+          635.4679802955665,
+          109.01785714285714,
+          769.4581280788177
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [],
+    "image": {
+      "width": 220,
+      "height": 800
+    },
+    "model_image": {
+      "width": 224,
+      "height": 812
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "0161531f5166430a9117cc815c07b93f",
+    "model": "dots-studio/dots.mocr",
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "backend": "vllm",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 1053.355
+  }
+}

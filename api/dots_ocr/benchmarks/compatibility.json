@@ -1,0 +1,11 @@
+{
+  "status": "BLOCKED",
+  "model": "dots-studio/dots.mocr",
+  "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+  "runtime": "native Windows/Transformers4.51.3",
+  "inference_requests": 0,
+  "failure_category": "TypeError",
+  "stage": "processor loading",
+  "reason": "Qwen2_5_VLProcessor.__init__() got multiple values for chat_template",
+  "alternative": "REAL MODEL PASS in separate Linux/vLLM profile; no model code modification"
+}

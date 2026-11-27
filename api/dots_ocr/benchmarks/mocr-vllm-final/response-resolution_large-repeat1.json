@@ -1,0 +1,50 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "Benchmark 789",
+    "native_output": "[{\"bbox\": [27, 37, 216, 68], \"category\": \"Text\", \"text\": \"Benchmark 789\"}]",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Text",
+        "text": "Benchmark 789",
+        "confidence": null,
+        "native_bbox": [
+          27.0,
+          37.0,
+          216.0,
+          68.0
+        ],
+        "bbox": [
+          26.910299003322258,
+          36.45320197044335,
+          215.28239202657807,
+          66.99507389162562
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [],
+    "image": {
+      "width": 1200,
+      "height": 800
+    },
+    "model_image": {
+      "width": 1204,
+      "height": 812
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "96a72e348ab6455a97734b490d10559d",
+    "model": "dots-studio/dots.mocr",
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "backend": "vllm",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 531.416
+  }
+}

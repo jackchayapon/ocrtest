@@ -1,0 +1,10 @@
+{
+  "error": {
+    "code": "INFERENCE_TIMEOUT",
+    "message": "Model inference exceeded its deadline."
+  },
+  "meta": {
+    "request_id": "0298e49c1c9940728b5a11b36db84344",
+    "api_version": "v1"
+  }
+}

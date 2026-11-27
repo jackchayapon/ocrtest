@@ -1,0 +1,45 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "",
+    "native_output": "[{\"bbox\": [0, 0, 1036, 1034], \"category\": \"Picture\"}]<|endofassistant|>",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Picture",
+        "text": null,
+        "confidence": null,
+        "native_bbox": [
+          0.0,
+          0.0,
+          1036.0,
+          1034.0
+        ],
+        "bbox": null,
+        "geometry_status": "out_of_bounds"
+      }
+    ],
+    "tables": [],
+    "image": {
+      "width": 800,
+      "height": 220
+    },
+    "model_image": {
+      "width": 812,
+      "height": 224
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "df319effc3ba4075a9b8f22768ffb552",
+    "model": "dots-studio/dots.ocr",
+    "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+    "backend": "transformers",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 1000.0
+  }
+}

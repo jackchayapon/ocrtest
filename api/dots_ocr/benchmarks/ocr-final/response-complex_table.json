@@ -1,0 +1,52 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "<table><thead><tr><th>Merged heading</th><th></th><th>Price</th></tr></thead><tbody><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></tbody></table>",
+    "native_output": "[{\"bbox\": [28, 27, 761, 390], \"category\": \"Table\", \"text\": \"<table><thead><tr><th>Merged heading</th><th></th><th>Price</th></tr></thead><tbody><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></tbody></table>\"}]<|endofassistant|>",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Table",
+        "text": "<table><thead><tr><th>Merged heading</th><th></th><th>Price</th></tr></thead><tbody><tr><td>Notebook</td><td>2</td><td>100</td></tr><tr><td>Pen</td><td>3</td><td>50</td></tr><tr><td>Total</td><td>5</td><td>150</td></tr></tbody></table>",
+        "confidence": null,
+        "native_bbox": [
+          28.0,
+          27.0,
+          761.0,
+          390.0
+        ],
+        "bbox": [
+          27.586206896551726,
+          27.120535714285715,
+          749.7536945812808,
+          391.74107142857144
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [
+      0
+    ],
+    "image": {
+      "width": 800,
+      "height": 450
+    },
+    "model_image": {
+      "width": 812,
+      "height": 448
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "2198ca9bb67f4f628021c1985f9ff79a",
+    "model": "dots-studio/dots.ocr",
+    "revision": "c0111ce6bc07803dbc267932ffef0ae3a51dc951",
+    "backend": "transformers",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 4156.0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "child_exit_code": 0,
+  "container_exit_code": 0,
+  "oom_killed": false,
+  "limits": {
+    "memory_bytes": 6442450944,
+    "cpu": 4,
+    "swap_bytes": 0
+  }
+}

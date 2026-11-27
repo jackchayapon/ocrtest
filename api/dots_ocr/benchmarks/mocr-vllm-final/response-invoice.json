@@ -1,0 +1,107 @@
+{
+  "data": {
+    "schema_version": "1.0",
+    "text": "INVOICE 42\nNotebook 2 x 50 = 100\nTax 7\nTOTAL 107",
+    "native_output": "[{\"bbox\": [29, 42, 173, 65], \"category\": \"Text\", \"text\": \"INVOICE 42\"}, {\"bbox\": [29, 82, 310, 105], \"category\": \"Text\", \"text\": \"Notebook 2 x 50 = 100\"}, {\"bbox\": [29, 123, 96, 145], \"category\": \"Text\", \"text\": \"Tax 7\"}, {\"bbox\": [29, 164, 164, 186], \"category\": \"Text\", \"text\": \"TOTAL 107\"}]",
+    "elements": [
+      {
+        "index": 0,
+        "category": "Text",
+        "text": "INVOICE 42",
+        "confidence": null,
+        "native_bbox": [
+          29.0,
+          42.0,
+          173.0,
+          65.0
+        ],
+        "bbox": [
+          28.571428571428573,
+          43.75,
+          170.44334975369458,
+          67.70833333333334
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 1,
+        "category": "Text",
+        "text": "Notebook 2 x 50 = 100",
+        "confidence": null,
+        "native_bbox": [
+          29.0,
+          82.0,
+          310.0,
+          105.0
+        ],
+        "bbox": [
+          28.571428571428573,
+          85.41666666666667,
+          305.4187192118227,
+          109.37500000000001
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 2,
+        "category": "Text",
+        "text": "Tax 7",
+        "confidence": null,
+        "native_bbox": [
+          29.0,
+          123.0,
+          96.0,
+          145.0
+        ],
+        "bbox": [
+          28.571428571428573,
+          128.125,
+          94.58128078817734,
+          151.04166666666669
+        ],
+        "geometry_status": "valid"
+      },
+      {
+        "index": 3,
+        "category": "Text",
+        "text": "TOTAL 107",
+        "confidence": null,
+        "native_bbox": [
+          29.0,
+          164.0,
+          164.0,
+          186.0
+        ],
+        "bbox": [
+          28.571428571428573,
+          170.83333333333334,
+          161.57635467980296,
+          193.75
+        ],
+        "geometry_status": "valid"
+      }
+    ],
+    "tables": [],
+    "image": {
+      "width": 800,
+      "height": 350
+    },
+    "model_image": {
+      "width": 812,
+      "height": 336
+    },
+    "coordinate_frame": "input_image_pixels",
+    "reading_order": "model_sequence",
+    "confidence": null
+  },
+  "meta": {
+    "api_version": "v1",
+    "request_id": "742412bbebde44fe9c76d5548737db9d",
+    "model": "dots-studio/dots.mocr",
+    "revision": "7c53434cd403d2e7f5f1d745eb2a2467a6473423",
+    "backend": "vllm",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "duration_ms": 2260.383
+  }
+}
